@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { MEMBERSHIP_TIERS, formatInr } from '@/config/membership';
 import { PaymentCheckout } from './PaymentCheckout';
+import { TestModeCheckout } from './TestModeCheckout';
+import { paymentsEnabled, testPaymentsEnabled } from '@/lib/membership';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Complete Payment' };
@@ -65,19 +67,36 @@ export default async function PaymentPage({ params }: Props) {
               <div className="font-display font-bold text-3xl">{formatInr(tier.annualFeeRupees)}</div>
             </div>
 
-            <PaymentCheckout
-              paymentToken={params.token}
-              applicationNo={app.applicationNo}
-              amountPaise={app.annualFeePaise}
-              amountRupees={tier.annualFeeRupees}
-              contactName={app.contactName}
-              contactEmail={app.contactEmail}
-              contactPhone={app.contactPhone}
-              organizationName={app.organizationName}
-            />
+            {paymentsEnabled() ? (
+              <PaymentCheckout
+                paymentToken={params.token}
+                applicationNo={app.applicationNo}
+                amountPaise={app.annualFeePaise}
+                amountRupees={tier.annualFeeRupees}
+                contactName={app.contactName}
+                contactEmail={app.contactEmail}
+                contactPhone={app.contactPhone}
+                organizationName={app.organizationName}
+              />
+            ) : testPaymentsEnabled() ? (
+              <TestModeCheckout
+                paymentToken={params.token}
+                applicationNo={app.applicationNo}
+                amountRupees={tier.annualFeeRupees}
+              />
+            ) : (
+              <div className="p-4 bg-stone-100 border border-stone-300 rounded-lg text-sm text-stone-700">
+                <strong className="block mb-1">Online payment is not yet available</strong>
+                The Association is completing its registration formalities and the
+                payment gateway is not live. The Secretariat will contact you at{' '}
+                <span className="font-medium">{app.contactEmail}</span> with payment
+                instructions. Your approval remains valid.
+              </div>
+            )}
 
             <p className="text-xs text-stone-500 text-center">
-              Payment link valid until {app.paymentExpiresAt?.toLocaleDateString('en-IN')} · Secure processing by Razorpay
+              Payment link valid until {app.paymentExpiresAt?.toLocaleDateString('en-IN')}
+              {paymentsEnabled() ? ' · Secure processing by Razorpay' : ''}
             </p>
           </div>
         </div>

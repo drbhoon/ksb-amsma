@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   description:
     "India's national voice for the aggregate industry — advancing knowledge, sustainability, and responsible practice for the infrastructure of tomorrow.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://amsma.org.in'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://amsma.in'),
   openGraph: {
     type: 'website',
     locale: 'en_IN',

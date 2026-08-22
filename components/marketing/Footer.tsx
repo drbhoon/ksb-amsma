@@ -42,8 +42,8 @@ export function Footer() {
             <li>Pokhran Road No 3, Thane 400 610</li>
             <li>Maharashtra, India</li>
             <li className="pt-2">
-              <a href="mailto:info@amsma.org.in" className="hover:text-amber-light transition-colors">
-                info@amsma.org.in
+              <a href="mailto:info@amsma.in" className="hover:text-amber-light transition-colors">
+                info@amsma.in
               </a>
             </li>
           </FooterCol>

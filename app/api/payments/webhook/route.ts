@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyWebhookSignature } from '@/lib/razorpay';
-import { generateMemberNo } from '@/lib/membership';
-import { sendPaymentReceipt } from '@/lib/email';
-import { MEMBERSHIP_TIERS } from '@/config/membership';
+import { activateMembership } from '@/lib/membership';
 
 /**
  * Razorpay webhook — server-side reconciliation.
@@ -49,58 +47,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ received: true, note: 'no matching application' });
     }
 
-    // Idempotent: skip if already active
-    if (app.status === 'ACTIVE') {
-      return NextResponse.json({ received: true, already: true });
-    }
+    // activateMembership is idempotent, so Razorpay's retries are safe and a
+    // race with the client-side verify callback cannot double-create a Member.
+    const { memberNo, already } = await activateMembership({
+      applicationId: app.id,
+      paymentRef: payment.id,
+      amountPaidPaise: app.annualFeePaise,
+    });
 
-    const now = new Date();
-    const expiresAt = new Date(now);
-    expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-    const memberNo = await generateMemberNo();
-    const tier = MEMBERSHIP_TIERS[app.tier];
-
-    await prisma.$transaction([
-      prisma.membershipApplication.update({
-        where: { id: app.id },
-        data: {
-          status: 'ACTIVE',
-          razorpayPaymentId: payment.id,
-          amountPaidPaise: app.annualFeePaise,
-          paidAt: now,
-        },
-      }),
-      prisma.member.create({
-        data: {
-          memberNo,
-          applicationId: app.id,
-          tier: app.tier,
-          organizationName: app.organizationName,
-          contactName: app.contactName,
-          email: app.contactEmail,
-          phone: app.contactPhone,
-          address: `${app.addressLine}, ${app.city}, ${app.state} - ${app.pincode}`,
-          city: app.city,
-          state: app.state,
-          pan: app.pan,
-          gstNumber: app.gstNumber,
-          crushingCapacityMtMonth: app.crushingCapacityMtMonth,
-          expiresAt,
-          admittedAt: now,
-          status: 'ACTIVE',
-        },
-      }),
-    ]);
-
-    sendPaymentReceipt({
-      applicantEmail: app.contactEmail,
-      contactName: app.contactName,
-      organizationName: app.organizationName,
-      memberNo,
-      amountRupees: tier.annualFeeRupees,
-      razorpayPaymentId: payment.id,
-      paidAt: now,
-    }).catch((e) => console.error('[webhook] receipt email failed', e));
+    if (already) return NextResponse.json({ received: true, already: true, memberNo });
 
     return NextResponse.json({ received: true, activated: true, memberNo });
   } catch (err) {

@@ -1,5 +1,6 @@
 import { prisma } from './db';
 import { APPROVAL_QUORUM, REJECTION_THRESHOLD } from '@/config/committee-members';
+import { sendPaymentReceipt } from './email';
 import type {
   MembershipApplication,
   ApplicationStatus,
@@ -105,3 +106,96 @@ export type ApplicationWithReviews = MembershipApplication & {
     committeeMember: { name: string; role: string };
   }>;
 };
+
+/**
+ * Activate a membership: flip the application to ACTIVE and write the Member row
+ * (the Register of Members per Rules Sec 4.iii), then email a receipt.
+ *
+ * Shared by the Razorpay verify endpoint and — while Razorpay is on hold — the
+ * test-mode activation endpoint, so both paths produce identical database state.
+ * Idempotent: calling twice returns the member created the first time.
+ */
+export async function activateMembership(params: {
+  applicationId: string;
+  /** Razorpay payment id, or a TEST-* reference when payments are stubbed. */
+  paymentRef: string;
+  amountPaidPaise?: number;
+}): Promise<{ memberNo: string; already: boolean }> {
+  const app = await prisma.membershipApplication.findUnique({
+    where: { id: params.applicationId },
+  });
+  if (!app) throw new Error(`Application ${params.applicationId} not found`);
+
+  // Idempotency — a webhook and a client callback can both land here.
+  if (app.status === 'ACTIVE') {
+    const existing = await prisma.member.findUnique({ where: { applicationId: app.id } });
+    if (existing) return { memberNo: existing.memberNo, already: true };
+  }
+
+  const now = new Date();
+  const expiresAt = new Date(now);
+  expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+
+  const memberNo = await generateMemberNo();
+  const amountPaise = params.amountPaidPaise ?? app.annualFeePaise;
+
+  const [, member] = await prisma.$transaction([
+    prisma.membershipApplication.update({
+      where: { id: app.id },
+      data: {
+        status: 'ACTIVE',
+        razorpayPaymentId: params.paymentRef,
+        amountPaidPaise: amountPaise,
+        paidAt: now,
+      },
+    }),
+    prisma.member.create({
+      data: {
+        memberNo,
+        applicationId: app.id,
+        tier: app.tier,
+        organizationName: app.organizationName,
+        contactName: app.contactName,
+        email: app.contactEmail,
+        phone: app.contactPhone,
+        address: `${app.addressLine}, ${app.city}, ${app.state} - ${app.pincode}`,
+        city: app.city,
+        state: app.state,
+        pan: app.pan,
+        gstNumber: app.gstNumber,
+        crushingCapacityMtMonth: app.crushingCapacityMtMonth,
+        expiresAt,
+        admittedAt: now,
+        status: 'ACTIVE',
+      },
+    }),
+  ]);
+
+  sendPaymentReceipt({
+    applicantEmail: app.contactEmail,
+    contactName: app.contactName,
+    organizationName: app.organizationName,
+    memberNo: member.memberNo,
+    amountRupees: Math.round(amountPaise / 100),
+    razorpayPaymentId: params.paymentRef,
+    paidAt: now,
+  }).catch((e) => console.error('[activateMembership] receipt email failed', e));
+
+  return { memberNo: member.memberNo, already: false };
+}
+
+/** True when Razorpay is configured and enabled. While the Society is in */
+/** formation Razorpay is on hold, so this is false and the pay page shows  */
+/** a test-mode activation instead.                                        */
+export function paymentsEnabled(): boolean {
+  return (
+    process.env.PAYMENTS_ENABLED === 'true' &&
+    Boolean(process.env.RAZORPAY_KEY_ID) &&
+    Boolean(process.env.RAZORPAY_KEY_SECRET)
+  );
+}
+
+/** Test-mode activation is only available when payments are stubbed. */
+export function testPaymentsEnabled(): boolean {
+  return process.env.TEST_MODE_PAYMENTS === 'true' && !paymentsEnabled();
+}

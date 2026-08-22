@@ -52,15 +52,72 @@ function button(href: string, label: string, variant: 'primary' | 'danger' = 'pr
           font-size:14px;">${label}</a>`;
 }
 
+/**
+ * Delivery mode — fail-safe by design.
+ *
+ * `config/committee-members.ts` holds REAL addresses of real people (IIT Patna,
+ * VNIT Nagpur, RDC). A stray test application must never mail them. So outbound
+ * mail is OFF unless explicitly switched on:
+ *
+ *   EMAIL_REDIRECT_TO="a@x.com,b@y.com"  → every message goes to these addresses
+ *                                          instead of the real recipient, with the
+ *                                          intended recipient shown in the subject.
+ *                                          This is the mode for Railway testing.
+ *   EMAIL_LIVE=true                      → real delivery to real recipients.
+ *                                          Production only.
+ *   neither                              → nothing is sent; each attempt is logged.
+ *
+ * If both are set, EMAIL_REDIRECT_TO wins — the safer of the two.
+ */
+type EmailMode = 'redirect' | 'live' | 'off';
+
+function redirectTargets(): string[] {
+  return (process.env.EMAIL_REDIRECT_TO || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+export function emailMode(): EmailMode {
+  if (redirectTargets().length > 0) return 'redirect';
+  if (process.env.EMAIL_LIVE === 'true') return 'live';
+  return 'off';
+}
+
 async function send(to: string, subject: string, html: string) {
+  const mode = emailMode();
+
+  if (mode === 'off') {
+    console.warn(
+      `[email] BLOCKED (mode=off) → "${to}" · ${subject}
+` +
+        '        Set EMAIL_REDIRECT_TO to test, or EMAIL_LIVE=true for real delivery.'
+    );
+    return { skipped: true, reason: 'mode-off' as const };
+  }
+
   const client = getResend();
   if (!client) {
     console.warn('[email] RESEND_API_KEY not set — skipping', { to, subject });
-    return { skipped: true };
+    return { skipped: true, reason: 'no-api-key' as const };
   }
+
+  // In redirect mode the true recipient is preserved in the subject so testers
+  // can tell which committee member's magic link they are looking at.
+  const recipients = mode === 'redirect' ? redirectTargets() : [to];
+  const finalSubject = mode === 'redirect' ? `[→ ${to}] ${subject}` : subject;
+
   try {
-    const { data, error } = await client.emails.send({ from: FROM, to, subject, html });
+    const { data, error } = await client.emails.send({
+      from: FROM,
+      to: recipients,
+      subject: finalSubject,
+      html,
+    });
     if (error) throw error;
+    if (mode === 'redirect') {
+      console.log(`[email] redirected "${to}" → ${recipients.join(', ')} · ${subject}`);
+    }
     return { success: true, id: data?.id };
   } catch (err) {
     console.error('[email] send failed', { to, subject, err });

@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { verifyCheckoutSignature } from '@/lib/razorpay';
-import { generateMemberNo } from '@/lib/membership';
-import { sendPaymentReceipt } from '@/lib/email';
-import { MEMBERSHIP_TIERS } from '@/config/membership';
+import { activateMembership } from '@/lib/membership';
 
 const schema = z.object({
   paymentToken: z.string().min(10).max(200),
@@ -41,68 +39,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Payment signature verification failed.' }, { status: 400 });
     }
 
-    // Idempotent: if webhook already ran, just return existing member
-    if (app.status === 'ACTIVE') {
-      const existing = await prisma.member.findUnique({ where: { applicationId: app.id } });
-      return NextResponse.json({ success: true, memberNo: existing?.memberNo, already: true });
-    }
-
-    // Compute expiry: 12 months from now
-    const now = new Date();
-    const expiresAt = new Date(now);
-    expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-
-    const memberNo = await generateMemberNo();
-    const tier = MEMBERSHIP_TIERS[app.tier];
-
-    // Transactionally: activate application + create Member row
-    const [_updatedApp, member] = await prisma.$transaction([
-      prisma.membershipApplication.update({
-        where: { id: app.id },
-        data: {
-          status: 'ACTIVE',
-          razorpayPaymentId: d.razorpay_payment_id,
-          amountPaidPaise: app.annualFeePaise,
-          paidAt: now,
-        },
-      }),
-      prisma.member.create({
-        data: {
-          memberNo,
-          applicationId: app.id,
-          tier: app.tier,
-          organizationName: app.organizationName,
-          contactName: app.contactName,
-          email: app.contactEmail,
-          phone: app.contactPhone,
-          address: `${app.addressLine}, ${app.city}, ${app.state} - ${app.pincode}`,
-          city: app.city,
-          state: app.state,
-          pan: app.pan,
-          gstNumber: app.gstNumber,
-          crushingCapacityMtMonth: app.crushingCapacityMtMonth,
-          expiresAt,
-          admittedAt: now,
-          status: 'ACTIVE',
-        },
-      }),
-    ]);
-
-    // Receipt email — fire and forget
-    sendPaymentReceipt({
-      applicantEmail: app.contactEmail,
-      contactName: app.contactName,
-      organizationName: app.organizationName,
-      memberNo: member.memberNo,
-      amountRupees: tier.annualFeeRupees,
-      razorpayPaymentId: d.razorpay_payment_id,
-      paidAt: now,
-    }).catch((e) => console.error('[payments/verify] receipt email failed', e));
-
-    return NextResponse.json({
-      success: true,
-      memberNo: member.memberNo,
+    // Activate — idempotent, so a racing webhook is harmless
+    const { memberNo, already } = await activateMembership({
+      applicationId: app.id,
+      paymentRef: d.razorpay_payment_id,
+      amountPaidPaise: app.annualFeePaise,
     });
+
+    return NextResponse.json({ success: true, memberNo, already });
   } catch (err) {
     console.error('[payments/verify]', err);
     return NextResponse.json({ error: 'Payment verification failed.' }, { status: 500 });

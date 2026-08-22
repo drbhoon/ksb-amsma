@@ -19,13 +19,16 @@ async function main() {
 
   for (const m of COMMITTEE_MEMBERS) {
     const role = roleMap[m.role];
+    // The apply route looks proposer/seconder up by lowercased email, so the
+    // stored address must be lowercase or the lookup silently fails.
+    const email = m.email.toLowerCase().trim();
     if (!role) {
       console.warn(`⚠  Unknown role "${m.role}" for ${m.name} — skipping`);
       continue;
     }
 
     const result = await prisma.committeeMember.upsert({
-      where: { email: m.email },
+      where: { email },
       update: {
         name: m.name,
         slug: m.slug,
@@ -36,7 +39,7 @@ async function main() {
       create: {
         slug: m.slug,
         name: m.name,
-        email: m.email,
+        email,
         role,
         title: m.title,
         canApproveApplications: m.canApproveApplications,

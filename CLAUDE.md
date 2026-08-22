@@ -37,7 +37,7 @@ or informally "Vijay".
 | Phase | Scope | Status |
 |-------|-------|--------|
 | 1 | Scaffold, design system, homepage, newsletter | ✅ Done |
-| 2 | Static content pages (About / Committee / Objectives) — MDX | 🔜 Placeholder folders exist under `app/(marketing)/` |
+| 2 | Static content pages (About / Committee / Objectives) | 🔜 "Coming soon" placeholders now exist for all 10 nav routes; real content pending |
 | 3 | Membership: application → magic-link committee review → Razorpay → Register of Members | ✅ Done |
 | 4 | Events with paid registration | ⏳ Schema stubs exist |
 | 5 | Admin panel (NextAuth), R2 file uploads, member directory | ⏳ |
@@ -70,10 +70,11 @@ concurrent applications.
 
 ## Configuration files — edit before production
 
-- **`config/committee-members.ts`** — the 8 founding committee members. **Emails
-  are placeholders and MUST be updated with real addresses before running
-  `npm run db:seed` on production.** Magic-link review invitations go to whatever
-  is in this file.
+- **`config/committee-members.ts`** — the 8 founding committee members. These are
+  **real addresses of real people**, several unverified (marked `TODO: verify`).
+  They are safe during testing only because outbound mail is gated behind
+  `EMAIL_REDIRECT_TO` / `EMAIL_LIVE` (see "Email is fail-safe by design").
+  Verify every address before setting `EMAIL_LIVE=true`.
 - **`config/membership.ts`** — fee amounts. Locked by MOA; treat as immutable.
 
 ## Local development
@@ -81,38 +82,80 @@ concurrent applications.
 ```bash
 cp .env.example .env.local     # edit — at minimum set DATABASE_URL
 npm install
-npm run db:push                # push Prisma schema to Postgres
+npm run db:migrate             # apply prisma/migrations (or db:push for a scratch DB)
 npm run db:seed                # populate 8 founding committee members
 npm run dev                    # http://localhost:3000
 ```
 
 ## Railway deployment
 
-1. Create new Railway project → deploy from GitHub `drbhoon/ksb-amsma`
-2. Add a Postgres service (auto-populates `DATABASE_URL`)
-3. Set all env vars from `.env.example`:
-   - `RESEND_API_KEY`, `FROM_EMAIL` (verify `amsma.in` in Resend dashboard first)
-   - `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`,
-     `NEXT_PUBLIC_RAZORPAY_KEY_ID` — start with **test-mode** keys
-   - `NEXT_PUBLIC_SITE_URL` = Railway URL initially, then `https://amsma.in`
-4. Deploy — build runs `prisma generate && next build`
-5. **Run seed once** after first deploy: `railway run npm run db:seed`
-6. Configure Razorpay webhook in dashboard:
-   - URL: `https://<railway-url>/api/payments/webhook`
-   - Event: `payment.captured`
-   - Secret must match `RAZORPAY_WEBHOOK_SECRET`
+Project `amsma-website` deploys from `main` of `github.com/drbhoon/ksb-amsma`.
 
-## End-to-end test flow (test mode)
+Schema and seed are handled automatically by `railway.toml`:
+`prisma migrate deploy` applies `prisma/migrations/0_init` (all 9 tables), then
+`db:seed` upserts the 8 committee members. The seed is idempotent, so it is safe
+on every boot; a seed failure is logged but does not block startup.
 
-1. Visit `/membership/apply`, fill form using **two founder emails** as proposer
-   and seconder (must match `config/committee-members.ts`)
-2. Submit — check server logs for the 8 magic-link review URLs (or founder inboxes
-   if Resend is live)
-3. Open 6 review links → approve each → status transitions to `PAYMENT_PENDING`,
-   payment email fires to applicant
-4. Follow payment link → Razorpay opens → test card `4111 1111 1111 1111`, any
-   future expiry, any CVV
-5. On success → `Member` row created with `AMSMA-M-0001`, receipt email sent
+Variables to set (the five marked `[SET NOW]` in `.env.example` are enough for
+the current test round):
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` — reference the Postgres service |
+| `NEXT_PUBLIC_SITE_URL` | the Railway public URL, `https://`, no trailing slash |
+| `DEV_ACCESS_KEY` | a long random string — guards `/dev/links` |
+| `EMAIL_REDIRECT_TO` | `ksbhoon@rdc.in,drbhoon@gmail.com` |
+| `TEST_MODE_PAYMENTS` | `true` |
+
+`NEXT_PUBLIC_SITE_URL` is baked into review and payment links, so set it before
+generating any test application — links made with a wrong value point at the
+wrong host and cannot be repaired without re-applying.
+
+## Current testing setup (Railway, Aug 2026)
+
+Razorpay is **on hold** — the Society is still in formation and has no gateway
+account. `amsma.in` is owned but not yet hosted, so Resend cannot deliver mail
+until the domain is verified. Testing therefore runs without email and without
+payments, using two mechanisms added for the purpose:
+
+**1. Test console — `/dev/links?key=<DEV_ACCESS_KEY>`**
+Lists every application with its 8 committee review links, the payment link, the
+live vote tally, and an environment panel (committee seeded? email mode? payment
+mode?). This is how the committee review step is reached while email is down.
+404s unless `DEV_ACCESS_KEY` is set. Turn it off before the site goes public.
+
+**2. Test-mode payment — `TEST_MODE_PAYMENTS=true`**
+The pay page shows "Record as paid (test mode)" instead of Razorpay checkout.
+It calls `/api/payments/test-activate`, which runs the same `activateMembership()`
+as a real payment, so the Member row, member number and receipt are all exercised.
+Member rows from this path carry a `TEST-*` payment reference. Disables itself
+automatically once `PAYMENTS_ENABLED=true`.
+
+### Email is fail-safe by design
+
+`config/committee-members.ts` holds **real addresses of real people** (IIT Patna,
+VNIT Nagpur, RDC). Outbound mail is therefore OFF unless explicitly switched on:
+
+| Env | Behaviour |
+|-----|-----------|
+| `EMAIL_REDIRECT_TO=a@x,b@y` | All mail goes to those addresses; real recipient shown in subject as `[→ real@addr]`. **Testing mode.** |
+| `EMAIL_LIVE=true` | Real delivery to real recipients. Production only. |
+| neither | Nothing sent; every attempt logged. Default. |
+
+Current testers: `ksbhoon@rdc.in`, `drbhoon@gmail.com`.
+
+### Test walkthrough
+
+1. Open `/dev/links?key=…` — confirm "Committee seeded 8 / 8". If it shows 0, the
+   seed did not run and no application can be submitted.
+2. Copy any two committee emails from that page.
+3. Submit at `/membership/apply` using those two as Proposer and Seconder.
+4. Reload `/dev/links?key=…` — the application appears with 8 pending review links.
+5. Open 6 review links, approve each. On the 6th the status flips to
+   `PAYMENT_PENDING` and a payment link appears on the console.
+6. Open the payment link → "Record as paid (test mode)" → `Member` row created as
+   `AMSMA-M-0001`.
+7. To test rejection instead, reject on 3 links — status flips to `REJECTED`.
 
 ## Directory layout
 
@@ -156,8 +199,14 @@ prisma/
   override a decision. Manageable at expected volume; will become painful past
   ~30 applications.
 - **Application/member numbering not race-safe** under concurrency. See above.
-- **Placeholder committee emails** in `config/committee-members.ts` — must be
-  updated before production seed.
+- **Unverified committee emails** in `config/committee-members.ts` — confirm each
+  before enabling live email.
+- **`/dev/links` test console** exposes applicant data to anyone holding
+  `DEV_ACCESS_KEY`. Unset that variable before the site goes public; the route
+  404s without it.
+- **Phase 2 pages are placeholders** — `ComingSoon` stubs so the nav does not 404.
+- **Newsletter has no unsubscribe flow** — `unsubscribedAt` exists on the model
+  but nothing writes to it.
 - **No PDF invoice generation** — payment receipt email is HTML only. GST invoice
   workflow deferred.
 
@@ -172,6 +221,7 @@ prisma/
 ## Git history
 
 ```
+1a6e228  Add CLAUDE.md — handover context for Claude Code CLI
 45c26de  Phase 3: Membership flow — application, magic-link committee review, Razorpay payment
 f2c5a3a  Phase 1: Scaffold, design system, homepage, newsletter end-to-end
 ```
