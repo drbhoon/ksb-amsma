@@ -9,13 +9,14 @@ builder = "NIXPACKS"
 # and the seed needs tsx — all of them devDependencies.
 buildCommand = "npm install --include=dev --legacy-peer-deps && npx prisma generate && npm run build"
 
-# migrate deploy applies prisma/migrations/ (0_init creates all 9 tables on a
-# fresh Postgres). The seed is idempotent — it upserts the 8 committee members —
-# so it is safe on every boot, and must run at least once or no application can
-# be submitted. Seed failure is logged but does not block startup.
 [deploy]
-startCommand = "npx prisma migrate deploy && (npm run db:seed || echo '[deploy] seed failed — continuing') && npm run start"
+# scripts/start.sh applies prisma/migrations (0_init creates all 9 tables on a
+# fresh Postgres), seeds the 8 committee members idempotently, then serves.
+# It logs each phase so a failed boot names the step that died.
+startCommand = "sh scripts/start.sh"
 healthcheckPath = "/"
-healthcheckTimeout = 60
+# Generous: migrate + seed + Next.js cold start on a small instance can take
+# well over a minute, and a healthcheck timeout reads as an unexplained failure.
+healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
