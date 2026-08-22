@@ -5,14 +5,29 @@
 # announces itself: a failed boot shows which step died instead of just a
 # healthcheck timeout with no explanation.
 #
-# Uses ./node_modules/.bin directly rather than npx — the binaries are already
-# installed (buildCommand passes --include=dev) and npx would otherwise try to
-# reach the network on every boot, which is slow and can hang the healthcheck.
+# prisma and tsx are runtime dependencies, not devDependencies, because this
+# script needs them AFTER the build - a builder that prunes devDependencies from
+# the runtime image would otherwise leave the container unable to start.
+# resolve() still falls back to npx so a pruned image degrades to slow rather
+# than broken.
 
 set -e
 
-BIN=./node_modules/.bin
 PORT="${PORT:-3000}"
+
+# Prefer the installed binary; fall back to npx without a network install prompt.
+resolve() {
+  if [ -x "./node_modules/.bin/$1" ]; then
+    echo "./node_modules/.bin/$1"
+  else
+    echo "[start] WARNING: $1 not found in node_modules, falling back to npx" >&2
+    echo "npx --yes $1"
+  fi
+}
+
+PRISMA="$(resolve prisma)"
+TSX="$(resolve tsx)"
+NEXT="$(resolve next)"
 
 echo "[start] node $(node -v), port ${PORT}"
 
@@ -30,15 +45,15 @@ if [ -z "$NEXT_PUBLIC_SITE_URL" ]; then
 fi
 
 echo "[start] applying database migrations..."
-"$BIN/prisma" migrate deploy
+$PRISMA migrate deploy
 
 echo "[start] seeding committee members..."
-if "$BIN/tsx" prisma/seed.ts; then
+if $TSX prisma/seed.ts; then
   echo "[start] seed complete"
 else
-  echo "[start] WARNING: seed failed — applications cannot be submitted until it"
+  echo "[start] WARNING: seed failed - applications cannot be submitted until it"
   echo "[start] succeeds, because proposer and seconder must match committee rows."
 fi
 
 echo "[start] starting Next.js..."
-exec "$BIN/next" start -p "$PORT"
+exec $NEXT start -p "$PORT"
