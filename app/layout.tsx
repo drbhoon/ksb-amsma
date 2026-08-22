@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Fraunces } from 'next/font/google';
 import './globals.css';
+import { siteUrl } from '@/lib/site-url';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
   },
   description:
     "India's national voice for the aggregate industry — advancing knowledge, sustainability, and responsible practice for the infrastructure of tomorrow.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://amsma.in'),
+  metadataBase: new URL(siteUrl()),
   openGraph: {
     type: 'website',
     locale: 'en_IN',

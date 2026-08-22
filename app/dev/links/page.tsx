@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { MEMBERSHIP_TIERS, formatInr } from '@/config/membership';
 import { APPROVAL_QUORUM, REJECTION_THRESHOLD } from '@/config/committee-members';
 import { emailMode } from '@/lib/email';
+import { siteUrl } from '@/lib/site-url';
 import { paymentsEnabled, testPaymentsEnabled } from '@/lib/membership';
 
 export const dynamic = 'force-dynamic';
@@ -30,7 +31,7 @@ export default async function DevLinksPage({ searchParams }: Props) {
   const expected = process.env.DEV_ACCESS_KEY;
   if (!expected || searchParams.key !== expected) notFound();
 
-  const site = process.env.NEXT_PUBLIC_SITE_URL || '';
+  const site = siteUrl();
 
   const [applications, committee, subscriberCount, members] = await Promise.all([
     prisma.membershipApplication.findMany({

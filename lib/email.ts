@@ -1,7 +1,8 @@
 import { Resend } from 'resend';
+import { siteUrl } from './site-url';
 
 const FROM = process.env.FROM_EMAIL || 'AMSMA <noreply@amsma.in>';
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://amsma.in';
+const SITE = siteUrl();
 
 // Lazy singleton — don't instantiate at module load (breaks Next.js build
 // when RESEND_API_KEY is absent at build time)
