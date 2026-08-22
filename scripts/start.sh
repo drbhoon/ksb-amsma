@@ -31,12 +31,41 @@ NEXT="$(resolve next)"
 
 echo "[start] node $(node -v), port ${PORT}"
 
+# Railway substitutes ${{Service.VAR}} references at deploy time. If the stored
+# value has whitespace wrapped around the reference, the substitution silently
+# fails and injects the whitespace alone - which is NOT caught by -z, and which
+# Prisma then reports as "resolved to an empty string". Trim first, then judge.
+DATABASE_URL=$(printf '%s' "$DATABASE_URL" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+export DATABASE_URL
+
+case "$DATABASE_URL" in
+  *'${{'*)
+    echo "[start] FATAL: DATABASE_URL still contains an unresolved Railway"
+    echo "[start] reference: $DATABASE_URL"
+    echo "[start] The referenced service or variable name does not exist."
+    echo "[start] Check the Postgres service is named exactly 'Postgres'."
+    exit 1
+    ;;
+esac
+
 if [ -z "$DATABASE_URL" ]; then
-  echo "[start] FATAL: DATABASE_URL is not set."
-  echo "[start] Add a Postgres service in Railway and set this service's"
-  echo "[start] DATABASE_URL variable to \${{Postgres.DATABASE_URL}}."
+  echo "[start] FATAL: DATABASE_URL is empty or whitespace only."
+  echo "[start] If it is set to \${{Postgres.DATABASE_URL}} in the dashboard,"
+  echo "[start] the reference failed to resolve - almost always stray spaces or"
+  echo "[start] a tab around the value. Re-enter it with no surrounding"
+  echo "[start] whitespace, or from a terminal:"
+  echo "[start]   railway variables --set 'DATABASE_URL=\${{Postgres.DATABASE_URL}}' --service ksb-amsma"
   exit 1
 fi
+
+case "$DATABASE_URL" in
+  postgres://*|postgresql://*) ;;
+  *)
+    echo "[start] FATAL: DATABASE_URL does not look like a Postgres URL."
+    echo "[start] It should begin with postgresql:// - got: $(printf '%s' "$DATABASE_URL" | cut -c1-24)..."
+    exit 1
+    ;;
+esac
 
 if [ -z "$NEXT_PUBLIC_SITE_URL" ]; then
   echo "[start] WARNING: NEXT_PUBLIC_SITE_URL is not set. Committee review links"
