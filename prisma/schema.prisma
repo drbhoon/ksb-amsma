@@ -1,0 +1,185 @@
+// AMSMA Prisma Schema
+// See docs/database.md for ERD and design decisions
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== MEMBERSHIP =====
+
+enum MembershipTier {
+  ASSOCIATE
+  CORPORATE
+  PATRON
+}
+
+enum MemberStatus {
+  PENDING       // application submitted, payment pending
+  ACTIVE        // paid, active
+  EXPIRED       // renewal due
+  REJECTED
+}
+
+model Member {
+  id               String         @id @default(cuid())
+  tier             MembershipTier
+  organizationName String?
+  contactName      String
+  email            String         @unique
+  phone            String?
+  address          String?
+  city             String?
+  state            String?
+  gstNumber        String?
+  status           MemberStatus   @default(PENDING)
+
+  // Razorpay
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  amountPaid        Int?          // in paise
+  paidAt            DateTime?
+  expiresAt         DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([tier])
+}
+
+// ===== EVENTS =====
+
+model Event {
+  id            String              @id @default(cuid())
+  slug          String              @unique
+  title         String
+  description   String              @db.Text
+  location      String
+  startDate     DateTime
+  endDate       DateTime
+  capacity      Int?
+  priceInPaise  Int?                // null = free event
+  isPublic      Boolean             @default(true)
+  coverImageUrl String?
+  registrations EventRegistration[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([startDate])
+  @@index([isPublic])
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+model EventRegistration {
+  id           String             @id @default(cuid())
+  eventId      String
+  event        Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name         String
+  email        String
+  phone        String?
+  organization String?
+
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  amountPaid        Int?
+
+  status    RegistrationStatus @default(PENDING)
+  createdAt DateTime           @default(now())
+
+  @@index([eventId, status])
+  @@index([email])
+}
+
+// ===== CONTENT =====
+
+model Publication {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?  @db.Text
+  category     String   // Research | Technical | Policy | Training | Annual Report
+  fileUrl      String   // R2 URL
+  fileSizeBytes Int
+  pageCount    Int?
+  publishedAt  DateTime
+  isPublic     Boolean  @default(true)
+  downloadCount Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category, publishedAt])
+  @@index([isPublic])
+}
+
+model GalleryImage {
+  id           String   @id @default(cuid())
+  title        String
+  category     String   // Conference | Site Visit | Workshop | Policy | International
+  imageUrl     String   // R2 URL
+  thumbnailUrl String?
+  eventDate    DateTime?
+  displayOrder Int      @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([category, displayOrder])
+}
+
+// ===== NEWSLETTER =====
+
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  subscribedAt   DateTime  @default(now())
+  unsubscribedAt DateTime?
+  source         String?   // 'homepage' | 'footer' | etc.
+}
+
+// ===== ADMIN AUTH (NextAuth-compatible) =====
+
+enum AdminRole {
+  SUPER_ADMIN  // Full access — President
+  EDITOR       // Content editor — Secretary, VP
+  VIEWER       // Read-only
+}
+
+model AdminUser {
+  id          String    @id @default(cuid())
+  email       String    @unique
+  name        String
+  role        AdminRole @default(EDITOR)
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  sessions Session[]
+}
+
+// NextAuth session table
+model Session {
+  id           String    @id @default(cuid())
+  sessionToken String    @unique
+  userId       String
+  expires      DateTime
+  user         AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// NextAuth magic-link tokens
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
