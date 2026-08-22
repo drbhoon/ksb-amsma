@@ -10,49 +10,184 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ===== MEMBERSHIP =====
+// ============================================================
+// COMMITTEE (Phase 3)
+// ============================================================
 
-enum MembershipTier {
-  ASSOCIATE
-  CORPORATE
-  PATRON
+enum CommitteeRole {
+  FOUNDER_PATRON
+  FOUNDER_PRESIDENT
+  FIRST_PRESIDENT
+  VICE_PRESIDENT
+  SECRETARY
+  TREASURER
+  FOUNDER_MEMBER
 }
 
+model CommitteeMember {
+  id                     String        @id @default(cuid())
+  slug                   String        @unique
+  name                   String
+  email                  String        @unique
+  role                   CommitteeRole
+  title                  String
+  canApproveApplications Boolean       @default(true)
+  createdAt              DateTime      @default(now())
+
+  reviews ApplicationReview[]
+}
+
+// ============================================================
+// MEMBERSHIP APPLICATION FLOW (Phase 3)
+// ============================================================
+
+enum MembershipTier {
+  ORDINARY_LARGE
+  ORDINARY_REGULAR
+  ASSOCIATE
+  INSTITUTIONAL
+}
+
+enum ApplicationStatus {
+  SUBMITTED           // Just received, review invites being sent
+  UNDER_REVIEW        // Emails sent, awaiting committee votes
+  APPROVED            // Reached 6/8 approvals → payment link sent
+  REJECTED            // Reached 3/8 rejections OR explicitly rejected
+  PAYMENT_PENDING     // Approved, awaiting payment (same as APPROVED but clearer)
+  ACTIVE              // Paid, member is active
+  EXPIRED             // Approved but payment window elapsed
+}
+
+model MembershipApplication {
+  id             String            @id @default(cuid())
+  applicationNo  String            @unique  // Human-friendly, e.g. AMSMA-2026-0001
+  tier           MembershipTier
+  status         ApplicationStatus @default(SUBMITTED)
+
+  // Applicant / organisation
+  organizationName String
+  contactName      String
+  contactEmail     String
+  contactPhone     String
+  addressLine      String
+  city             String
+  state            String
+  pincode          String
+  pan              String
+  gstNumber        String?
+
+  // Category-specific
+  crushingCapacityMtMonth Int?     // Ordinary only
+  natureOfBusiness        String?  // Associate / Institutional descriptor
+
+  // Signatory (per Rules — authorized representative)
+  signatoryName        String
+  signatoryDesignation String
+  signatoryEmail       String
+  signatoryPhone       String
+
+  // Supporting docs (Phase 3: cloud storage URL; Phase 5: R2 upload)
+  companyProofUrl String?
+  companyProofType String? // 'incorporation' | 'gst_cert' | 'partnership_deed'
+
+  // Proposer & Seconder (existing members — required per Q2)
+  proposerName    String
+  proposerEmail   String
+  seconderName    String
+  seconderEmail   String
+
+  // Fees
+  annualFeePaise Int
+  amountPaidPaise Int?
+
+  // Payment
+  paymentToken       String?   @unique  // For /pay/[token] URL
+  razorpayOrderId    String?
+  razorpayPaymentId  String?
+  paidAt             DateTime?
+  paymentLinkSentAt  DateTime?
+  paymentExpiresAt   DateTime?
+
+  // Decision tracking
+  submittedAt   DateTime  @default(now())
+  decidedAt     DateTime?
+  rejectionReason String?
+
+  reviews ApplicationReview[]
+
+  @@index([status])
+  @@index([tier])
+  @@index([contactEmail])
+}
+
+enum ReviewDecision {
+  PENDING
+  APPROVE
+  REJECT
+}
+
+model ApplicationReview {
+  id                String                @id @default(cuid())
+  applicationId     String
+  application       MembershipApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  committeeMemberId String
+  committeeMember   CommitteeMember       @relation(fields: [committeeMemberId], references: [id], onDelete: Cascade)
+
+  // Magic-link auth
+  token         String    @unique
+  tokenExpiresAt DateTime
+
+  decision      ReviewDecision @default(PENDING)
+  comment       String?
+  decidedAt     DateTime?
+  emailSentAt   DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([applicationId, committeeMemberId])
+  @@index([token])
+  @@index([applicationId, decision])
+}
+
+// ============================================================
+// APPROVED MEMBERS (Register of Members per Rules Sec 4.iii)
+// ============================================================
+
 enum MemberStatus {
-  PENDING       // application submitted, payment pending
-  ACTIVE        // paid, active
-  EXPIRED       // renewal due
-  REJECTED
+  ACTIVE
+  EXPIRED
+  TERMINATED
 }
 
 model Member {
-  id               String         @id @default(cuid())
-  tier             MembershipTier
-  organizationName String?
-  contactName      String
-  email            String         @unique
-  phone            String?
-  address          String?
-  city             String?
-  state            String?
-  gstNumber        String?
-  status           MemberStatus   @default(PENDING)
+  id                       String         @id @default(cuid())
+  memberNo                 String         @unique  // AMSMA-M-0001
+  applicationId            String         @unique  // FK to originating application
+  tier                     MembershipTier
+  organizationName         String
+  contactName              String
+  email                    String         @unique
+  phone                    String
+  address                  String
+  city                     String
+  state                    String
+  pan                      String
+  gstNumber                String?
+  crushingCapacityMtMonth  Int?
 
-  // Razorpay
-  razorpayOrderId   String?
-  razorpayPaymentId String?
-  amountPaid        Int?          // in paise
-  paidAt            DateTime?
-  expiresAt         DateTime?
+  admittedAt DateTime  @default(now())
+  expiresAt  DateTime  // 12 months from admission
+  status     MemberStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status])
-  @@index([tier])
 }
 
-// ===== EVENTS =====
+// ============================================================
+// EVENTS (Phase 4 — placeholder)
+// ============================================================
 
 model Event {
   id            String              @id @default(cuid())
@@ -63,7 +198,7 @@ model Event {
   startDate     DateTime
   endDate       DateTime
   capacity      Int?
-  priceInPaise  Int?                // null = free event
+  priceInPaise  Int?
   isPublic      Boolean             @default(true)
   coverImageUrl String?
   registrations EventRegistration[]
@@ -72,7 +207,6 @@ model Event {
   updatedAt DateTime @updatedAt
 
   @@index([startDate])
-  @@index([isPublic])
 }
 
 enum RegistrationStatus {
@@ -98,45 +232,47 @@ model EventRegistration {
   createdAt DateTime           @default(now())
 
   @@index([eventId, status])
-  @@index([email])
 }
 
-// ===== CONTENT =====
+// ============================================================
+// CONTENT (Phase 5 — placeholder)
+// ============================================================
 
 model Publication {
-  id           String   @id @default(cuid())
-  title        String
-  description  String?  @db.Text
-  category     String   // Research | Technical | Policy | Training | Annual Report
-  fileUrl      String   // R2 URL
+  id            String   @id @default(cuid())
+  title         String
+  description   String?  @db.Text
+  category      String
+  fileUrl       String
   fileSizeBytes Int
-  pageCount    Int?
-  publishedAt  DateTime
-  isPublic     Boolean  @default(true)
-  downloadCount Int     @default(0)
+  pageCount     Int?
+  publishedAt   DateTime
+  isPublic      Boolean  @default(true)
+  downloadCount Int      @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([category, publishedAt])
-  @@index([isPublic])
 }
 
 model GalleryImage {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   title        String
-  category     String   // Conference | Site Visit | Workshop | Policy | International
-  imageUrl     String   // R2 URL
+  category     String
+  imageUrl     String
   thumbnailUrl String?
   eventDate    DateTime?
-  displayOrder Int      @default(0)
+  displayOrder Int       @default(0)
 
   createdAt DateTime @default(now())
 
   @@index([category, displayOrder])
 }
 
-// ===== NEWSLETTER =====
+// ============================================================
+// NEWSLETTER (Phase 1)
+// ============================================================
 
 model NewsletterSubscriber {
   id             String    @id @default(cuid())
@@ -144,42 +280,5 @@ model NewsletterSubscriber {
   name           String?
   subscribedAt   DateTime  @default(now())
   unsubscribedAt DateTime?
-  source         String?   // 'homepage' | 'footer' | etc.
-}
-
-// ===== ADMIN AUTH (NextAuth-compatible) =====
-
-enum AdminRole {
-  SUPER_ADMIN  // Full access — President
-  EDITOR       // Content editor — Secretary, VP
-  VIEWER       // Read-only
-}
-
-model AdminUser {
-  id          String    @id @default(cuid())
-  email       String    @unique
-  name        String
-  role        AdminRole @default(EDITOR)
-  lastLoginAt DateTime?
-  createdAt   DateTime  @default(now())
-
-  sessions Session[]
-}
-
-// NextAuth session table
-model Session {
-  id           String    @id @default(cuid())
-  sessionToken String    @unique
-  userId       String
-  expires      DateTime
-  user         AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-// NextAuth magic-link tokens
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
+  source         String?
 }

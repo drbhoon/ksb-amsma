@@ -1,9 +1,7 @@
 import Link from 'next/link';
-import { Header } from '@/components/marketing/Header';
-import { Footer } from '@/components/marketing/Footer';
 import { NewsletterForm } from '@/components/forms/NewsletterForm';
+import { COMMITTEE_MEMBERS } from '@/config/committee-members';
 
-// Content lives here — edit via GitHub commits (Phase 2 will move this to MDX)
 const OBJECTIVES = [
   { num: '01', title: 'Knowledge & Research', body: 'Advance industry science through peer-reviewed research, technical papers, and best-practice dissemination across academic and industrial partners.' },
   { num: '02', title: 'Policy & Advocacy',    body: 'Represent the industry in matters of mining policy, environmental clearance, royalty structures, and infrastructure standards with central and state governments.' },
@@ -13,28 +11,13 @@ const OBJECTIVES = [
   { num: '06', title: 'Global Engagement',    body: 'Collaborate with international bodies including GAIN and UEPG to share knowledge, benchmark practice and represent India abroad.' },
 ];
 
-const COMMITTEE = [
-  { initials: 'TN', role: 'Founder Patron',      name: 'Prof. Dr. Trilok Nath Singh',        title: 'Director, IIT Patna' },
-  { initials: 'RB', role: 'Founder President',   name: 'Dr. Ramesh M. Bhatawdekar',          title: 'Consultant, Aggregates & Mining' },
-  { initials: 'BK', role: 'First President',     name: 'Mr. B.R.V. Susheel Kumar',           title: 'Mines Department, Telangana' },
-  { initials: 'KB', role: 'Vice President',      name: 'Dr. Karnail Singh Bhoon',            title: 'COTO, RDC Concrete (India) Ltd.' },
-  { initials: 'AB', role: 'Founder Member',      name: 'Mr. Anil Kumar Banchhor',            title: 'MD & CEO, RDC Concrete (I) Ltd.' },
-  { initials: 'RR', role: 'Founder Member',      name: 'Prof. Rahul V. Ralegaonkar',         title: 'Professor, VNIT Nagpur' },
-  { initials: 'SA', role: 'Founder Member',      name: 'Mr. Srikant Annavarapu',             title: 'MD, Master Geotech Services' },
-  { initials: 'RS', role: 'Secretary',           name: 'Mr. Rudra Mohan Sahu',               title: 'Jagannath Stones' },
-];
-
 export default function HomePage() {
   return (
     <>
-      <Header />
-      <main>
-        <Hero />
-        <Objectives />
-        <Committee />
-        <NewsletterSection />
-      </main>
-      <Footer />
+      <Hero />
+      <Objectives />
+      <Committee />
+      <NewsletterSection />
     </>
   );
 }
@@ -44,10 +27,7 @@ function Hero() {
     <section
       className="relative text-white py-24 md:py-32 overflow-hidden"
       style={{
-        background: `
-          linear-gradient(135deg, rgba(15,17,20,0.85) 0%, rgba(26,29,36,0.75) 60%, rgba(217,123,48,0.4) 100%),
-          #1a1d24
-        `,
+        background: `linear-gradient(135deg, rgba(15,17,20,0.85) 0%, rgba(26,29,36,0.75) 60%, rgba(217,123,48,0.4) 100%), #1a1d24`,
       }}
     >
       <div
@@ -57,8 +37,7 @@ function Hero() {
             radial-gradient(circle at 15% 25%, rgba(255,255,255,0.04) 2px, transparent 3px),
             radial-gradient(circle at 45% 65%, rgba(255,255,255,0.03) 3px, transparent 4px),
             radial-gradient(circle at 75% 35%, rgba(232,168,56,0.08) 4px, transparent 6px),
-            radial-gradient(circle at 85% 85%, rgba(255,255,255,0.03) 2px, transparent 3px)
-          `,
+            radial-gradient(circle at 85% 85%, rgba(255,255,255,0.03) 2px, transparent 3px)`,
           backgroundSize: '200px 200px',
         }}
       />
@@ -72,20 +51,19 @@ function Hero() {
             <em className="text-amber-light not-italic">developed India</em>, one aggregate at a time.
           </h1>
           <p className="text-lg md:text-xl leading-relaxed text-white/85 max-w-2xl mb-10">
-            AMSMA unites manufacturers, suppliers, researchers and policy-makers behind a single mission
-            — advancing the aggregate industry through knowledge, sustainability, and responsible practice.
+            AMSMA unites manufacturers of aggregate and M sand, alongside researchers and policy-makers,
+            behind a single mission — advancing the industry through knowledge, sustainability, and responsible practice.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Link href="/membership/apply" className="btn-accent">Become a Member</Link>
-            <Link href="/about" className="btn-outline">Explore Our Work</Link>
+            <Link href="/membership" className="btn-accent">Become a Member</Link>
+            <Link href="#objectives" className="btn-outline">Explore Our Work</Link>
           </div>
         </div>
-
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 pt-10 border-t border-white/10 relative z-10">
-          <Stat num="8+"     label="Founding Members" />
-          <Stat num="15+"    label="States Represented" />
+          <Stat num="8"       label="Founding Members" />
+          <Stat num="15+"     label="States Represented" />
           <Stat num="3.5 Bn t" label="Annual Industry Output" />
-          <Stat num="2026"   label="Year Founded" />
+          <Stat num="2026"    label="Year Founded" />
         </div>
       </div>
     </section>
@@ -125,9 +103,7 @@ function Objectives() {
             >
               <div className="absolute top-0 left-0 right-0 h-[3px] bg-amber scale-x-0 origin-left
                               transition-transform duration-500 group-hover:scale-x-100" />
-              <span className="font-display font-extrabold text-2xl text-amber block mb-4">
-                {obj.num}
-              </span>
+              <span className="font-display font-extrabold text-2xl text-amber block mb-4">{obj.num}</span>
               <h3 className="font-display font-semibold text-xl mb-3 tracking-tight">{obj.title}</h3>
               <p className="prose-body text-[0.95rem]">{obj.body}</p>
             </div>
@@ -144,18 +120,16 @@ function Committee() {
       <div className="container-x">
         <div className="max-w-3xl mb-16">
           <span className="section-eyebrow">Managing Committee</span>
-          <h2 className="section-title mt-4">
-            Distinguished leaders shaping the aggregate industry&apos;s future.
-          </h2>
+          <h2 className="section-title mt-4">Distinguished leaders shaping the aggregate industry&apos;s future.</h2>
           <p className="mt-5 text-lg prose-body">
             Our founding committee brings together academic authority, industry experience, and
             technical expertise from across India.
           </p>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {COMMITTEE.map((m) => (
+          {COMMITTEE_MEMBERS.map((m) => (
             <div
-              key={m.name}
+              key={m.slug}
               className="bg-white rounded-xl overflow-hidden border border-black/5 transition-all
                          hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)]"
             >
@@ -165,20 +139,14 @@ function Committee() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    background: `
-                      radial-gradient(circle at 20% 30%, rgba(232,168,56,0.15) 0%, transparent 40%),
-                      radial-gradient(circle at 80% 70%, rgba(217,123,48,0.1) 0%, transparent 40%)
-                    `,
+                    background: `radial-gradient(circle at 20% 30%, rgba(232,168,56,0.15) 0%, transparent 40%),
+                                 radial-gradient(circle at 80% 70%, rgba(217,123,48,0.1) 0%, transparent 40%)`,
                   }}
                 />
               </div>
               <div className="p-5">
-                <div className="text-xs text-amber font-semibold uppercase tracking-[0.1em] mb-2">
-                  {m.role}
-                </div>
-                <div className="font-display font-semibold text-[1.05rem] leading-tight mb-1">
-                  {m.name}
-                </div>
+                <div className="text-xs text-amber font-semibold uppercase tracking-[0.1em] mb-2">{m.role}</div>
+                <div className="font-display font-semibold text-[1.05rem] leading-tight mb-1">{m.name}</div>
                 <div className="text-sm text-stone-500">{m.title}</div>
               </div>
             </div>
@@ -197,9 +165,7 @@ function NewsletterSection() {
           <div>
             <span className="inline-block text-sm font-semibold uppercase tracking-[0.12em] text-amber-light
                              pl-12 relative before:content-[''] before:absolute before:left-0 before:top-1/2
-                             before:w-8 before:h-[2px] before:bg-amber-light">
-              Stay Informed
-            </span>
+                             before:w-8 before:h-[2px] before:bg-amber-light">Stay Informed</span>
             <h2 className="font-display font-bold text-3xl md:text-4xl leading-tight tracking-tight mt-4">
               The AMSMA monthly briefing.
             </h2>
