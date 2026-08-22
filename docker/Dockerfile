@@ -1,6 +1,16 @@
 # AMSMA — Multi-stage Dockerfile
-# Targets: Railway (prototype) and RDC.ai Azure Linux (production)
-# Optimised for Next.js 14 standalone output — final image ~150 MB
+# Target: RDC.ai Azure Linux (production, Phase 6).
+#
+# Deliberately NOT at the repo root: Railway auto-detects a root Dockerfile and
+# uses it in preference to the Nixpacks builder that railway.toml asks for, and
+# this image is not compatible with railway.toml's startCommand (the standalone
+# runner has no prisma CLI and no tsx, so migrate/seed cannot run in it).
+# Keeping it here makes Railway's builder choice unambiguous.
+#
+# Build with:  docker build -f docker/Dockerfile -t amsma .
+#
+# ⚠ Phase 6 TODO before this is production-ready: the runner stage must be able
+# to apply migrations and seed the committee — today it can only serve.
 
 # ============ deps stage ============
 FROM node:20-alpine AS deps
@@ -24,6 +34,12 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npx prisma generate
+
+# next.config.mjs uses output:'standalone', whose runner stage copies ./public.
+# Git cannot track an empty directory, so on a clean checkout public/ may not
+# exist and that COPY would fail the build. Create it unconditionally.
+RUN mkdir -p public
+
 RUN npm run build
 
 # ============ runner stage ============
