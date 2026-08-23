@@ -153,6 +153,11 @@ two independent gates:
 | `RESEND_API_KEY` | Once amsma.in is hosted and verified, for SPF/DKIM on the Association's own domain. Gmail takes precedence if both are set. |
 | neither | Nothing is delivered; every attempt is logged. |
 
+Sending from `amsma.in` needs only DNS records (SPF/DKIM) proving domain
+ownership - **no mailbox at that address, and no web hosting**. Receiving is
+separate: set `REPLY_TO` to a mailbox that exists, or replies to `noreply@`
+bounce.
+
 To check delivery without submitting an application:
 `/api/dev/test-email?key=<DEV_ACCESS_KEY>&to=<address>` - in redirect mode it can
 only reach the `EMAIL_REDIRECT_TO` addresses whatever `to` says.

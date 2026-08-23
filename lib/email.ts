@@ -11,6 +11,19 @@ import { siteUrl } from './site-url';
  * than us pretending to send as noreply@amsma.in and having Gmail silently
  * change it.
  */
+/**
+ * Where replies go.
+ *
+ * Mail is sent from noreply@amsma.in, an address that will never have a
+ * mailbox: verifying a domain with Resend proves ownership for SENDING and
+ * creates nothing to receive with. Without a Reply-To, a committee member who
+ * hits Reply on a review invitation gets a bounce. Point replies at a mailbox
+ * that actually exists.
+ */
+function replyToAddress(): string | undefined {
+  return process.env.REPLY_TO || process.env.GMAIL_USER || undefined;
+}
+
 function fromAddress(): string {
   const gmailUser = process.env.GMAIL_USER;
   if (gmailUser && process.env.GMAIL_APP_PASSWORD) {
@@ -168,6 +181,7 @@ async function send(to: string, subject: string, html: string) {
       const info = await transporter.sendMail({
         from,
         to: recipients.join(', '),
+        replyTo: replyToAddress(),
         subject: finalSubject,
         html,
       });
@@ -178,9 +192,11 @@ async function send(to: string, subject: string, html: string) {
     }
 
     const client = getResend()!;
+    const replyTo = replyToAddress();
     const { data, error } = await client.emails.send({
       from,
       to: recipients,
+      ...(replyTo ? { replyTo } : {}),
       subject: finalSubject,
       html,
     });
