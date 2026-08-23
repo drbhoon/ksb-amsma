@@ -13,7 +13,7 @@ export function Footer() {
                   AMSMA
                 </span>
                 <span className="text-[0.65rem] text-white/50 uppercase tracking-[0.15em] mt-0.5">
-                  Aggregate Manufacturers &amp; Suppliers
+                  Aggregate &amp; M sand Manufacturers Association
                 </span>
               </div>
             </div>

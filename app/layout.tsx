@@ -18,7 +18,7 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: {
-    default: 'AMSMA — Aggregate Manufacturers & Suppliers Members Association of India',
+    default: 'AMSMA — Aggregate & M sand Manufacturers Association',
     template: '%s · AMSMA',
   },
   description:

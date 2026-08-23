@@ -45,7 +45,7 @@ export function Header() {
             <div className="flex flex-col leading-tight">
               <span className="font-display font-extrabold text-xl tracking-tight">AMSMA</span>
               <span className="text-[0.65rem] text-stone-500 uppercase tracking-[0.15em] mt-0.5">
-                Aggregate Manufacturers &amp; Suppliers
+                Aggregate &amp; M sand Manufacturers Association
               </span>
             </div>
           </Link>
