@@ -7,49 +7,27 @@ import {
   reviewTokenExpiryFromNow,
 } from '@/lib/membership';
 import { generateToken } from '@/lib/tokens';
+import { applicationSchema, toFieldErrors } from '@/lib/application-schema';
 import {
   sendReviewInvitation,
   sendApplicationConfirmation,
 } from '@/lib/email';
 
-const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
-
-const schema = z.object({
-  tier: z.enum(['ORDINARY_LARGE', 'ORDINARY_REGULAR', 'ASSOCIATE', 'INSTITUTIONAL']),
-  organizationName: z.string().min(2).max(200),
-  contactName: z.string().min(2).max(120),
-  contactEmail: z.string().email().max(200),
-  contactPhone: z.string().min(6).max(20),
-  addressLine: z.string().min(5).max(400),
-  city: z.string().min(2).max(80),
-  state: z.string().min(2).max(80),
-  pincode: z.string().regex(/^[0-9]{6}$/, 'PIN must be 6 digits'),
-  pan: z.string().regex(panRegex, 'Invalid PAN format'),
-  gstNumber: z.string().max(15).optional().or(z.literal('')),
-  crushingCapacityMtMonth: z.string().optional().or(z.literal('')),
-  natureOfBusiness: z.string().max(200).optional().or(z.literal('')),
-  signatoryName: z.string().min(2).max(120),
-  signatoryDesignation: z.string().min(2).max(120),
-  signatoryEmail: z.string().email().max(200),
-  signatoryPhone: z.string().min(6).max(20),
-  companyProofUrl: z.string().url('Must be a valid URL').max(500),
-  companyProofType: z.enum(['incorporation', 'gst_cert', 'partnership_deed']),
-  proposerName: z.string().min(2).max(120),
-  proposerEmail: z.string().email().max(200),
-  seconderName: z.string().min(2).max(120),
-  seconderEmail: z.string().email().max(200),
-  agreeRules: z.literal(true, {
-    errorMap: () => ({ message: 'You must agree to the Rules & Regulations' }),
-  }),
-});
-
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const parsed = schema.safeParse(body);
+    const parsed = applicationSchema.safeParse(body);
     if (!parsed.success) {
+      const fieldErrors = toFieldErrors(parsed.error);
+      const count = Object.keys(fieldErrors).length;
       return NextResponse.json(
-        { error: parsed.error.errors[0]?.message || 'Invalid input' },
+        {
+          error:
+            count === 1
+              ? Object.values(fieldErrors)[0]
+              : `Please correct ${count} fields before submitting.`,
+          fieldErrors,
+        },
         { status: 400 }
       );
     }
@@ -57,52 +35,36 @@ export async function POST(req: Request) {
     const tier = MEMBERSHIP_TIERS[d.tier];
 
     // --- Business validation ---
-
-    // Ordinary tiers require crushing capacity
-    let capacityInt: number | null = null;
-    if (tier.requiresCrushingCapacity) {
-      capacityInt = parseInt(d.crushingCapacityMtMonth || '', 10);
-      if (Number.isNaN(capacityInt) || capacityInt < 50_000) {
-        return NextResponse.json(
-          { error: 'Ordinary Members require a minimum crushing capacity of 50,000 MT/month' },
-          { status: 400 }
-        );
-      }
-      // Auto-adjust tier based on capacity threshold
-      const chosenTier =
-        capacityInt >= 100_000 ? MEMBERSHIP_TIERS.ORDINARY_LARGE : MEMBERSHIP_TIERS.ORDINARY_REGULAR;
-      if (chosenTier.id !== d.tier) {
-        return NextResponse.json(
-          {
-            error: `Capacity of ${capacityInt.toLocaleString('en-IN')} MT/month qualifies for "${chosenTier.label}". Please select the correct category.`,
-          },
-          { status: 400 }
-        );
-      }
-    }
+    // Capacity thresholds and tier/capacity agreement are enforced by
+    // applicationSchema, so by here they are known good. Only the parsed
+    // integer is still needed for persistence.
+    const capacityInt = tier.requiresCrushingCapacity
+      ? parseInt(String(d.crushingCapacityMtMonth || ''), 10)
+      : null;
 
     // Proposer/Seconder must be existing committee members (Phase 1: only founders exist)
     const proposerLower = d.proposerEmail.toLowerCase().trim();
     const seconderLower = d.seconderEmail.toLowerCase().trim();
-    if (proposerLower === seconderLower) {
-      return NextResponse.json(
-        { error: 'Proposer and Seconder must be different persons' },
-        { status: 400 }
-      );
-    }
     const [proposer, seconder] = await Promise.all([
       prisma.committeeMember.findUnique({ where: { email: proposerLower } }),
       prisma.committeeMember.findUnique({ where: { email: seconderLower } }),
     ]);
+    const missing: Record<string, string> = {};
     if (!proposer) {
-      return NextResponse.json(
-        { error: `Proposer email "${d.proposerEmail}" is not a recognised committee member.` },
-        { status: 400 }
-      );
+      missing.proposerEmail = `"${d.proposerEmail}" is not a committee member. Use one of the committee email addresses listed above.`;
     }
     if (!seconder) {
+      missing.seconderEmail = `"${d.seconderEmail}" is not a committee member. Use one of the committee email addresses listed above.`;
+    }
+    if (Object.keys(missing).length) {
       return NextResponse.json(
-        { error: `Seconder email "${d.seconderEmail}" is not a recognised committee member.` },
+        {
+          error:
+            Object.keys(missing).length === 1
+              ? Object.values(missing)[0]
+              : 'Neither the proposer nor the seconder is a recognised committee member.',
+          fieldErrors: missing,
+        },
         { status: 400 }
       );
     }
@@ -116,7 +78,12 @@ export async function POST(req: Request) {
     });
     if (existing) {
       return NextResponse.json(
-        { error: `An application (${existing.applicationNo}) with this contact email is already in progress.` },
+        {
+          error: `An application (${existing.applicationNo}) with this contact email is already in progress.`,
+          fieldErrors: {
+            contactEmail: `Already used by application ${existing.applicationNo}. Use a different contact email, or contact the Secretariat about the existing application.`,
+          },
+        },
         { status: 409 }
       );
     }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TIERS_LIST, MEMBERSHIP_TIERS, formatInr, type MembershipTierId } from '@/config/membership';
 import { COMMITTEE_MEMBERS } from '@/config/committee-members';
+import { applicationSchema, toFieldErrors, FIELD_LABELS } from '@/lib/application-schema';
 
 type FormData = {
   tier: MembershipTierId | '';
@@ -47,19 +48,60 @@ export function MembershipApplicationForm() {
   const [form, setForm] = useState<FormData>(initialForm);
   const [status, setStatus] = useState<'idle' | 'submitting' | 'error'>('idle');
   const [error, setError] = useState('');
+  // One message per field, shown inline AND collected into the summary panel.
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const selectedTier = form.tier ? MEMBERSHIP_TIERS[form.tier] : null;
   const isOrdinary = selectedTier?.category === 'Ordinary';
 
   function update<K extends keyof FormData>(key: K, value: FormData[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+    // Clear a field's error as soon as the applicant edits it - leaving a stale
+    // message under a field they have just fixed is its own kind of confusing.
+    setFieldErrors((prev) => {
+      if (!prev[key as string]) return prev;
+      const next = { ...prev };
+      delete next[key as string];
+      return next;
+    });
+  }
+
+  /** Move focus to the first field with a problem so it is never off-screen. */
+  function focusFirstError(errs: Record<string, string>) {
+    const first = Object.keys(errs)[0];
+    if (!first) return;
+    const el = document.getElementById(`field-${first}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      (el as HTMLInputElement).focus?.({ preventScroll: true });
+    } else {
+      document.getElementById('error-summary')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setStatus('submitting');
     setError('');
+    setFieldErrors({});
 
+    // Validate locally against the same schema the server uses, so every problem
+    // is reported at once rather than one browser tooltip at a time.
+    const check = applicationSchema.safeParse(form);
+    if (!check.success) {
+      const errs = toFieldErrors(check.error);
+      setFieldErrors(errs);
+      setStatus('error');
+      const n = Object.keys(errs).length;
+      setError(
+        n === 1
+          ? 'One field needs attention before you can submit.'
+          : `${n} fields need attention before you can submit.`
+      );
+      focusFirstError(errs);
+      return;
+    }
+
+    setStatus('submitting');
     try {
       const res = await fetch('/api/membership/apply', {
         method: 'POST',
@@ -67,7 +109,16 @@ export function MembershipApplicationForm() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Submission failed');
+      if (!res.ok) {
+        // The server can reject for reasons the browser cannot know about -
+        // an unrecognised committee member, a duplicate application - and
+        // returns those against the field they belong to.
+        if (data.fieldErrors) {
+          setFieldErrors(data.fieldErrors);
+          focusFirstError(data.fieldErrors);
+        }
+        throw new Error(data.error || 'Submission failed');
+      }
       router.push(`/membership/apply/success?no=${encodeURIComponent(data.applicationNo)}`);
     } catch (err) {
       setStatus('error');
@@ -76,9 +127,15 @@ export function MembershipApplicationForm() {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-10">
+    <form onSubmit={submit} noValidate className="space-y-10">
       {/* ==== Category ==== */}
       <Section title="1. Membership Category" note="Fees and eligibility per Rule 4 of the Rules & Regulations.">
+        {fieldErrors.tier && (
+          <p id="field-tier" role="alert" tabIndex={-1} className="flex items-start gap-1.5 text-sm text-red-700">
+            <span aria-hidden="true" className="mt-[2px] leading-none">&#9888;</span>
+            <span>{fieldErrors.tier}</span>
+          </p>
+        )}
         <div className="grid gap-3">
           {TIERS_LIST.map((tier) => (
             <label
@@ -111,16 +168,34 @@ export function MembershipApplicationForm() {
 
       {/* ==== Organisation ==== */}
       <Section title="2. Organisation Details">
-        <Input label="Organisation name *" value={form.organizationName} onChange={(v) => update('organizationName', v)} required />
+        <Input label="Organisation name *" value={form.organizationName} onChange={(v) => update('organizationName', v)} name="organizationName" error={fieldErrors.organizationName} required />
         <div className="grid md:grid-cols-2 gap-4">
-          <Input label="PAN *" value={form.pan} onChange={(v) => update('pan', v.toUpperCase())} required maxLength={10} placeholder="ABCDE1234F" pattern="^[A-Z]{5}[0-9]{4}[A-Z]$" />
-          <Input label="GST number" value={form.gstNumber} onChange={(v) => update('gstNumber', v.toUpperCase())} maxLength={15} placeholder="Optional" />
+          <Input
+            label="PAN *"
+            value={form.pan}
+            onChange={(v) => update('pan', v.toUpperCase())}
+            name="pan"
+            error={fieldErrors.pan}
+            required
+            maxLength={10}
+            placeholder="ABCDE1234F"
+            hint="10 characters: five letters, four digits, one letter."
+          />
+          <Input
+            label="GST number"
+            value={form.gstNumber}
+            onChange={(v) => update('gstNumber', v.toUpperCase())}
+            name="gstNumber"
+            error={fieldErrors.gstNumber}
+            maxLength={15}
+            placeholder="Optional"
+          />
         </div>
-        <Textarea label="Registered address *" value={form.addressLine} onChange={(v) => update('addressLine', v)} required />
+        <Textarea label="Registered address *" value={form.addressLine} onChange={(v) => update('addressLine', v)} name="addressLine" error={fieldErrors.addressLine} required />
         <div className="grid md:grid-cols-3 gap-4">
-          <Input label="City *" value={form.city} onChange={(v) => update('city', v)} required />
-          <Input label="State *" value={form.state} onChange={(v) => update('state', v)} required />
-          <Input label="PIN *" value={form.pincode} onChange={(v) => update('pincode', v)} required maxLength={6} pattern="[0-9]{6}" />
+          <Input label="City *" value={form.city} onChange={(v) => update('city', v)} name="city" error={fieldErrors.city} required />
+          <Input label="State *" value={form.state} onChange={(v) => update('state', v)} name="state" error={fieldErrors.state} required />
+          <Input label="PIN *" value={form.pincode} onChange={(v) => update('pincode', v)} name="pincode" error={fieldErrors.pincode} required maxLength={6} pattern="[0-9]{6}" />
         </div>
 
         {isOrdinary && (
@@ -134,7 +209,7 @@ export function MembershipApplicationForm() {
               type="number"
               min={50000}
               value={form.crushingCapacityMtMonth}
-              onChange={(v) => update('crushingCapacityMtMonth', v)}
+              onChange={(v) => update('crushingCapacityMtMonth', v)} name="crushingCapacityMtMonth" error={fieldErrors.crushingCapacityMtMonth}
               required
               placeholder="e.g. 75000"
             />
@@ -145,7 +220,7 @@ export function MembershipApplicationForm() {
           <Input
             label="Nature of business *"
             value={form.natureOfBusiness}
-            onChange={(v) => update('natureOfBusiness', v)}
+            onChange={(v) => update('natureOfBusiness', v)} name="natureOfBusiness" error={fieldErrors.natureOfBusiness}
             required
             placeholder={selectedTier?.category === 'Associate' ? 'e.g. OEM supplier of crushing equipment' : 'e.g. Civil engineering research institute'}
           />
@@ -155,19 +230,19 @@ export function MembershipApplicationForm() {
       {/* ==== Contact ==== */}
       <Section title="3. Primary Contact">
         <div className="grid md:grid-cols-2 gap-4">
-          <Input label="Contact person name *" value={form.contactName} onChange={(v) => update('contactName', v)} required />
-          <Input label="Contact phone *" type="tel" value={form.contactPhone} onChange={(v) => update('contactPhone', v)} required placeholder="+91 98XXXXXXXX" />
+          <Input label="Contact person name *" value={form.contactName} onChange={(v) => update('contactName', v)} name="contactName" error={fieldErrors.contactName} required />
+          <Input label="Contact phone *" type="tel" value={form.contactPhone} onChange={(v) => update('contactPhone', v)} name="contactPhone" error={fieldErrors.contactPhone} required placeholder="+91 98XXXXXXXX" />
         </div>
-        <Input label="Contact email *" type="email" value={form.contactEmail} onChange={(v) => update('contactEmail', v)} required />
+        <Input label="Contact email *" type="email" value={form.contactEmail} onChange={(v) => update('contactEmail', v)} name="contactEmail" error={fieldErrors.contactEmail} required />
       </Section>
 
       {/* ==== Signatory ==== */}
       <Section title="4. Authorised Signatory" note="The person authorised to represent your organisation at Association meetings.">
         <div className="grid md:grid-cols-2 gap-4">
-          <Input label="Signatory name *" value={form.signatoryName} onChange={(v) => update('signatoryName', v)} required />
-          <Input label="Designation *" value={form.signatoryDesignation} onChange={(v) => update('signatoryDesignation', v)} required />
-          <Input label="Signatory email *" type="email" value={form.signatoryEmail} onChange={(v) => update('signatoryEmail', v)} required />
-          <Input label="Signatory phone *" type="tel" value={form.signatoryPhone} onChange={(v) => update('signatoryPhone', v)} required />
+          <Input label="Signatory name *" value={form.signatoryName} onChange={(v) => update('signatoryName', v)} name="signatoryName" error={fieldErrors.signatoryName} required />
+          <Input label="Designation *" value={form.signatoryDesignation} onChange={(v) => update('signatoryDesignation', v)} name="signatoryDesignation" error={fieldErrors.signatoryDesignation} required />
+          <Input label="Signatory email *" type="email" value={form.signatoryEmail} onChange={(v) => update('signatoryEmail', v)} name="signatoryEmail" error={fieldErrors.signatoryEmail} required />
+          <Input label="Signatory phone *" type="tel" value={form.signatoryPhone} onChange={(v) => update('signatoryPhone', v)} name="signatoryPhone" error={fieldErrors.signatoryPhone} required />
         </div>
       </Section>
 
@@ -178,7 +253,7 @@ export function MembershipApplicationForm() {
             <Select
               label="Document type *"
               value={form.companyProofType}
-              onChange={(v) => update('companyProofType', v)}
+              onChange={(v) => update('companyProofType', v)} name="companyProofType" error={fieldErrors.companyProofType}
               required
               options={[
                 { value: '', label: 'Select…' },
@@ -189,7 +264,17 @@ export function MembershipApplicationForm() {
             />
           </div>
           <div className="md:col-span-2">
-            <Input label="Document URL *" type="url" value={form.companyProofUrl} onChange={(v) => update('companyProofUrl', v)} required placeholder="https://drive.google.com/…" />
+            <Input
+              label="Document URL *"
+              type="url"
+              value={form.companyProofUrl}
+              onChange={(v) => update('companyProofUrl', v)}
+              name="companyProofUrl"
+              error={fieldErrors.companyProofUrl}
+              required
+              placeholder="https://drive.google.com/file/d/…"
+              hint="Paste a sharing link to the document itself. If you omit https:// we will add it."
+            />
           </div>
         </div>
       </Section>
@@ -200,21 +285,27 @@ export function MembershipApplicationForm() {
           Current committee members: {COMMITTEE_MEMBERS.map(m => m.name.replace(/^(Prof\. Dr\.|Dr\.|Mr\.|Ms\.) /, '')).join(' · ')}
         </div>
         <div className="grid md:grid-cols-2 gap-4">
-          <Input label="Proposer name *" value={form.proposerName} onChange={(v) => update('proposerName', v)} required />
-          <Input label="Proposer email *" type="email" value={form.proposerEmail} onChange={(v) => update('proposerEmail', v)} required />
-          <Input label="Seconder name *" value={form.seconderName} onChange={(v) => update('seconderName', v)} required />
-          <Input label="Seconder email *" type="email" value={form.seconderEmail} onChange={(v) => update('seconderEmail', v)} required />
+          <Input label="Proposer name *" value={form.proposerName} onChange={(v) => update('proposerName', v)} name="proposerName" error={fieldErrors.proposerName} required />
+          <Input label="Proposer email *" type="email" value={form.proposerEmail} onChange={(v) => update('proposerEmail', v)} name="proposerEmail" error={fieldErrors.proposerEmail} required />
+          <Input label="Seconder name *" value={form.seconderName} onChange={(v) => update('seconderName', v)} name="seconderName" error={fieldErrors.seconderName} required />
+          <Input label="Seconder email *" type="email" value={form.seconderEmail} onChange={(v) => update('seconderEmail', v)} name="seconderEmail" error={fieldErrors.seconderEmail} required />
         </div>
       </Section>
 
       {/* ==== Consent ==== */}
       <Section title="7. Declaration">
-        <label className="flex items-start gap-3 p-4 bg-stone-50 border border-stone-200 rounded-lg">
+        <label
+          className={
+            'flex items-start gap-3 p-4 rounded-lg border ' +
+            (fieldErrors.agreeRules ? 'bg-red-50 border-red-400' : 'bg-stone-50 border-stone-200')
+          }
+        >
           <input
             type="checkbox"
             checked={form.agreeRules}
             onChange={(e) => update('agreeRules', e.target.checked)}
-            required
+            id="field-agreeRules"
+            aria-invalid={fieldErrors.agreeRules ? true : undefined}
             className="mt-1"
           />
           <span className="text-sm text-stone-700">
@@ -224,10 +315,40 @@ export function MembershipApplicationForm() {
             payment of the annual subscription is required only after approval.
           </span>
         </label>
+        <FieldError id="field-agreeRules" message={fieldErrors.agreeRules} />
       </Section>
 
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">{error}</div>
+      {(error || Object.keys(fieldErrors).length > 0) && (
+        <div
+          id="error-summary"
+          role="alert"
+          tabIndex={-1}
+          className="p-4 bg-red-50 border border-red-300 rounded-lg"
+        >
+          <p className="font-semibold text-red-900">{error || 'Please correct the following:'}</p>
+          {Object.keys(fieldErrors).length > 0 && (
+            <ul className="mt-3 space-y-1.5">
+              {Object.entries(fieldErrors).map(([field, message]) => (
+                <li key={field} className="text-sm text-red-800">
+                  <a
+                    href={`#field-${field}`}
+                    onClick={(ev) => {
+                      ev.preventDefault();
+                      const el = document.getElementById(`field-${field}`);
+                      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      (el as HTMLInputElement | null)?.focus?.({ preventScroll: true });
+                    }}
+                    className="font-medium underline underline-offset-2 hover:text-red-900"
+                  >
+                    {FIELD_LABELS[field] ?? field}
+                  </a>
+                  {' — '}
+                  {message}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
 
       <div className="flex flex-col md:flex-row md:items-center gap-4 pt-4">
@@ -268,13 +389,41 @@ type InputProps = {
   pattern?: string;
   min?: number;
   placeholder?: string;
+  name?: string;
+  error?: string;
+  hint?: string;
 };
 
-function Input({ label, value, onChange, type = 'text', required, maxLength, pattern, min, placeholder }: InputProps) {
+/** Shared classes so an errored control looks the same everywhere. */
+function controlClass(hasError?: boolean) {
   return (
-    <label className="block">
-      <span className="block text-sm font-medium text-stone-700 mb-1">{label}</span>
+    'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ' +
+    (hasError
+      ? 'border-red-500 bg-red-50 focus:ring-red-400 focus:border-red-500'
+      : 'border-stone-300 focus:ring-amber focus:border-amber')
+  );
+}
+
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) return null;
+  return (
+    <p id={`${id}-error`} role="alert" className="mt-1 flex items-start gap-1.5 text-sm text-red-700">
+      <span aria-hidden="true" className="mt-[2px] leading-none">&#9888;</span>
+      <span>{message}</span>
+    </p>
+  );
+}
+
+function Input({
+  label, value, onChange, type = 'text', required, maxLength, pattern, min, placeholder, name, error, hint,
+}: InputProps) {
+  const id = `field-${name ?? label}`;
+  return (
+    <div className="block">
+      <label htmlFor={id} className="block text-sm font-medium text-stone-700 mb-1">{label}</label>
       <input
+        id={id}
+        name={name}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -283,41 +432,57 @@ function Input({ label, value, onChange, type = 'text', required, maxLength, pat
         pattern={pattern}
         min={min}
         placeholder={placeholder}
-        className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber focus:border-amber"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+        className={controlClass(!!error)}
       />
-    </label>
+      {hint && !error && <p id={`${id}-hint`} className="mt-1 text-xs text-stone-500">{hint}</p>}
+      <FieldError id={id} message={error} />
+    </div>
   );
 }
 
-function Textarea({ label, value, onChange, required }: { label: string; value: string; onChange: (v: string) => void; required?: boolean }) {
+function Textarea({ label, value, onChange, required, name, error }: { label: string; value: string; onChange: (v: string) => void; required?: boolean; name?: string; error?: string }) {
+  const id = `field-${name ?? label}`;
   return (
-    <label className="block">
-      <span className="block text-sm font-medium text-stone-700 mb-1">{label}</span>
+    <div className="block">
+      <label htmlFor={id} className="block text-sm font-medium text-stone-700 mb-1">{label}</label>
       <textarea
+        id={id}
+        name={name}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}
         rows={2}
-        className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber focus:border-amber"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        className={controlClass(!!error)}
       />
-    </label>
+      <FieldError id={id} message={error} />
+    </div>
   );
 }
 
-function Select({ label, value, onChange, options, required }: { label: string; value: string; onChange: (v: string) => void; required?: boolean; options: Array<{ value: string; label: string }> }) {
+function Select({ label, value, onChange, options, required, name, error }: { label: string; value: string; onChange: (v: string) => void; required?: boolean; name?: string; error?: string; options: Array<{ value: string; label: string }> }) {
+  const id = `field-${name ?? label}`;
   return (
-    <label className="block">
-      <span className="block text-sm font-medium text-stone-700 mb-1">{label}</span>
+    <div className="block">
+      <label htmlFor={id} className="block text-sm font-medium text-stone-700 mb-1">{label}</label>
       <select
+        id={id}
+        name={name}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}
-        className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber focus:border-amber bg-white"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        className={controlClass(!!error) + ' bg-white'}
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>{o.label}</option>
         ))}
       </select>
-    </label>
+      <FieldError id={id} message={error} />
+    </div>
   );
 }
