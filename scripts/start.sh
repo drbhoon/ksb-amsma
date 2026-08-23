@@ -84,5 +84,14 @@ else
   echo "[start] succeeds, because proposer and seconder must match committee rows."
 fi
 
+if [ -n "$TEST_PROPOSER_EMAILS" ]; then
+  echo "[start] ***********************************************************"
+  echo "[start] RULE 4 OVERRIDE ACTIVE - proposer/seconder allowlist in use:"
+  echo "[start]   $TEST_PROPOSER_EMAILS"
+  echo "[start] These addresses cannot vote; the approval quorum is unchanged."
+  echo "[start] Unset TEST_PROPOSER_EMAILS before the site goes public."
+  echo "[start] ***********************************************************"
+fi
+
 echo "[start] starting Next.js..."
 exec $NEXT start -p "$PORT"

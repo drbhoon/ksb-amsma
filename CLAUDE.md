@@ -144,6 +144,20 @@ VNIT Nagpur, RDC). Outbound mail is therefore OFF unless explicitly switched on:
 
 Current testers: `ksbhoon@rdc.in`, `drbhoon@gmail.com`.
 
+### Rule 4 override (TEMPORARY)
+
+`TEST_PROPOSER_EMAILS` accepts extra addresses as Proposer/Seconder so testers
+can apply from their own mailbox. Currently `ksbhoon@rdc.in,drbhoon@gmail.com`.
+
+These are deliberately **not** `CommitteeMember` rows. Adding them there would
+raise the approver count to 10 and move the two-thirds quorum from 6 to 7,
+silently breaking Schedule C. As an allowlist they affect the proposer check
+only; they receive no review invitation and cannot vote.
+
+The override announces itself in the boot log and as a red banner on
+`/dev/links`. **Unset the variable before the site goes public** — Rule 4 is then
+enforced again with no code change.
+
 ### Test walkthrough
 
 1. Open `/dev/links?key=…` — confirm "Committee seeded 8 / 8". If it shows 0, the

@@ -8,6 +8,7 @@ import {
 } from '@/lib/membership';
 import { generateToken } from '@/lib/tokens';
 import { applicationSchema, toFieldErrors } from '@/lib/application-schema';
+import { isTestProposerAllowed } from '@/lib/test-overrides';
 import {
   sendReviewInvitation,
   sendApplicationConfirmation,
@@ -49,12 +50,20 @@ export async function POST(req: Request) {
       prisma.committeeMember.findUnique({ where: { email: proposerLower } }),
       prisma.committeeMember.findUnique({ where: { email: seconderLower } }),
     ]);
+    // TEMPORARY: TEST_PROPOSER_EMAILS lets testers propose from their own
+    // mailbox while the Register of Members is empty. These addresses are not
+    // committee members and cannot vote - the approval quorum is unaffected.
     const missing: Record<string, string> = {};
-    if (!proposer) {
+    if (!proposer && !isTestProposerAllowed(proposerLower)) {
       missing.proposerEmail = `"${d.proposerEmail}" is not a committee member. Use one of the committee email addresses listed above.`;
     }
-    if (!seconder) {
+    if (!seconder && !isTestProposerAllowed(seconderLower)) {
       missing.seconderEmail = `"${d.seconderEmail}" is not a committee member. Use one of the committee email addresses listed above.`;
+    }
+    if (!proposer || !seconder) {
+      console.warn(
+        `[apply] TEST OVERRIDE in use - proposer=${proposerLower}${proposer ? '' : ' (allowlisted)'} seconder=${seconderLower}${seconder ? '' : ' (allowlisted)'}`
+      );
     }
     if (Object.keys(missing).length) {
       return NextResponse.json(
