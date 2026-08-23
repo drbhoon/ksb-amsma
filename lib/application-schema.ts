@@ -222,12 +222,28 @@ export const applicationSchema = z
 
 export type ApplicationInput = z.infer<typeof applicationSchema>;
 
-/** Collapse a ZodError into one message per field, in form order. */
+/**
+ * Collapse a ZodError into one message per field, in form order.
+ *
+ * When a key is absent from the payload entirely, zod's type check fires before
+ * any custom message and yields a bare "Required" - useless to an applicant.
+ * Substitute a sentence naming the field so no default message ever reaches the
+ * screen, whatever a future field is added.
+ */
 export function toFieldErrors(error: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {};
   for (const issue of error.issues) {
     const key = String(issue.path[0] ?? 'form');
-    if (!out[key]) out[key] = issue.message;
+    if (out[key]) continue;
+
+    const isMissing =
+      issue.code === z.ZodIssueCode.invalid_type &&
+      (issue.received === 'undefined' || issue.received === 'null');
+
+    out[key] =
+      isMissing || issue.message === 'Required'
+        ? `${FIELD_LABELS[key] ?? key} is required.`
+        : issue.message;
   }
   return out;
 }
