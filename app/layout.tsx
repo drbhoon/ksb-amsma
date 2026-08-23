@@ -29,9 +29,10 @@ export const metadata: Metadata = {
     locale: 'en_IN',
     siteName: 'AMSMA',
   },
+  // Off until SITE_INDEXABLE=true. See app/robots.ts for why.
   robots: {
-    index: true,
-    follow: true,
+    index: process.env.SITE_INDEXABLE === 'true',
+    follow: process.env.SITE_INDEXABLE === 'true',
   },
 };
 
