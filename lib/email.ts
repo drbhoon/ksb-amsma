@@ -1,7 +1,25 @@
 import { Resend } from 'resend';
+import nodemailer, { type Transporter } from 'nodemailer';
 import { siteUrl } from './site-url';
 
-const FROM = process.env.FROM_EMAIL || 'AMSMA <noreply@amsma.in>';
+/**
+ * Sender address.
+ *
+ * Gmail will not let you send as an arbitrary address: it rewrites From to the
+ * authenticated account unless the address is a verified alias. So when the
+ * Gmail transport is active the account address wins over FROM_EMAIL, rather
+ * than us pretending to send as noreply@amsma.in and having Gmail silently
+ * change it.
+ */
+function fromAddress(): string {
+  const gmailUser = process.env.GMAIL_USER;
+  if (gmailUser && process.env.GMAIL_APP_PASSWORD) {
+    return process.env.FROM_NAME
+      ? `${process.env.FROM_NAME} <${gmailUser}>`
+      : `AMSMA <${gmailUser}>`;
+  }
+  return process.env.FROM_EMAIL || 'AMSMA <noreply@amsma.in>';
+}
 const SITE = siteUrl();
 
 // Lazy singleton — don't instantiate at module load (breaks Next.js build
@@ -12,6 +30,37 @@ function getResend(): Resend | null {
   if (!key) return null;
   if (!_resend) _resend = new Resend(key);
   return _resend;
+}
+
+let _gmail: Transporter | null = null;
+function getGmail(): Transporter | null {
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+  if (!user || !pass) return null;
+  if (!_gmail) {
+    _gmail = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      // Google prints App Passwords with spaces for readability; SMTP expects
+      // them without. Strip whitespace so a pasted value just works.
+      auth: { user, pass: pass.replace(/\s+/g, '') },
+    });
+  }
+  return _gmail;
+}
+
+export type EmailProvider = 'gmail' | 'resend' | 'none';
+
+/**
+ * Which transport will actually carry the mail. Gmail wins when configured:
+ * it needs no verified domain, which is what the Association requires until
+ * amsma.in has DNS. Resend takes over once the domain is live.
+ */
+export function emailProvider(): EmailProvider {
+  if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) return 'gmail';
+  if (process.env.RESEND_API_KEY) return 'resend';
+  return 'none';
 }
 
 // ---------- Shared HTML wrapper ----------
@@ -90,40 +139,75 @@ async function send(to: string, subject: string, html: string) {
 
   if (mode === 'off') {
     console.warn(
-      `[email] BLOCKED (mode=off) → "${to}" · ${subject}
+      `[email] BLOCKED (mode=off) -> "${to}" - ${subject}
 ` +
         '        Set EMAIL_REDIRECT_TO to test, or EMAIL_LIVE=true for real delivery.'
     );
     return { skipped: true, reason: 'mode-off' as const };
   }
 
-  const client = getResend();
-  if (!client) {
-    console.warn('[email] RESEND_API_KEY not set — skipping', { to, subject });
-    return { skipped: true, reason: 'no-api-key' as const };
+  const provider = emailProvider();
+  if (provider === 'none') {
+    console.warn(
+      `[email] NO PROVIDER configured -> "${to}" - ${subject}
+` +
+        '        Set GMAIL_USER + GMAIL_APP_PASSWORD, or RESEND_API_KEY.'
+    );
+    return { skipped: true, reason: 'no-provider' as const };
   }
 
   // In redirect mode the true recipient is preserved in the subject so testers
   // can tell which committee member's magic link they are looking at.
   const recipients = mode === 'redirect' ? redirectTargets() : [to];
-  const finalSubject = mode === 'redirect' ? `[→ ${to}] ${subject}` : subject;
+  const finalSubject = mode === 'redirect' ? `[-> ${to}] ${subject}` : subject;
+  const from = fromAddress();
 
   try {
+    if (provider === 'gmail') {
+      const transporter = getGmail()!;
+      const info = await transporter.sendMail({
+        from,
+        to: recipients.join(', '),
+        subject: finalSubject,
+        html,
+      });
+      if (mode === 'redirect') {
+        console.log(`[email] gmail: redirected "${to}" -> ${recipients.join(', ')} - ${subject}`);
+      }
+      return { success: true, id: info.messageId, provider };
+    }
+
+    const client = getResend()!;
     const { data, error } = await client.emails.send({
-      from: FROM,
+      from,
       to: recipients,
       subject: finalSubject,
       html,
     });
     if (error) throw error;
     if (mode === 'redirect') {
-      console.log(`[email] redirected "${to}" → ${recipients.join(', ')} · ${subject}`);
+      console.log(`[email] resend: redirected "${to}" -> ${recipients.join(', ')} - ${subject}`);
     }
-    return { success: true, id: data?.id };
+    return { success: true, id: data?.id, provider };
   } catch (err) {
-    console.error('[email] send failed', { to, subject, err });
-    return { success: false, error: err };
+    console.error(`[email] send failed via ${provider}`, { to, subject, err });
+    return { success: false, error: err, provider };
   }
+}
+
+/** Send a throwaway message to confirm the transport actually delivers. */
+export async function sendTestEmail(to: string) {
+  const html = wrap(
+    `<h2 style="font-size:20px;margin:0 0 16px;">Email is working</h2>
+     <p>This is a test message from the AMSMA website. If you can read it, the
+        mail transport is configured correctly and committee review invitations
+        will be delivered.</p>
+     <p style="color:#6b7280;font-size:13px;margin-top:32px;">
+        Provider: ${emailProvider()} &middot; Mode: ${emailMode()} &middot; Sent ${new Date().toISOString()}
+     </p>`,
+    'AMSMA email transport test'
+  );
+  return send(to, 'AMSMA - email transport test', html);
 }
 
 // ============ Phase 1: Newsletter welcome ============

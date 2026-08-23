@@ -144,6 +144,19 @@ VNIT Nagpur, RDC). Outbound mail is therefore OFF unless explicitly switched on:
 
 Current testers: `ksbhoon@rdc.in`, `drbhoon@gmail.com`.
 
+**A mode alone does not send.** A transport must also be configured - these are
+two independent gates:
+
+| Provider | When |
+|---|---|
+| `GMAIL_USER` + `GMAIL_APP_PASSWORD` | Now. Sends via `amsma2026@gmail.com`, needs no verified domain. Gmail rewrites From to the authenticated account, so `FROM_EMAIL` is ignored while this is set. ~500 mails/day. |
+| `RESEND_API_KEY` | Once amsma.in is hosted and verified, for SPF/DKIM on the Association's own domain. Gmail takes precedence if both are set. |
+| neither | Nothing is delivered; every attempt is logged. |
+
+To check delivery without submitting an application:
+`/api/dev/test-email?key=<DEV_ACCESS_KEY>&to=<address>` - in redirect mode it can
+only reach the `EMAIL_REDIRECT_TO` addresses whatever `to` says.
+
 ### Rule 4 override (TEMPORARY)
 
 `TEST_PROPOSER_EMAILS` accepts extra addresses as Proposer/Seconder so testers

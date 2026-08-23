@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { MEMBERSHIP_TIERS, formatInr } from '@/config/membership';
 import { APPROVAL_QUORUM, REJECTION_THRESHOLD } from '@/config/committee-members';
-import { emailMode } from '@/lib/email';
+import { emailMode, emailProvider } from '@/lib/email';
 import { siteUrl } from '@/lib/site-url';
 import { paymentsEnabled, testPaymentsEnabled } from '@/lib/membership';
 import { testProposerEmails } from '@/lib/test-overrides';
@@ -50,6 +50,7 @@ export default async function DevLinksPage({ searchParams }: Props) {
   ]);
 
   const mode = emailMode();
+  const provider = emailProvider();
   const overrideEmails = testProposerEmails();
 
   return (
@@ -104,6 +105,12 @@ export default async function DevLinksPage({ searchParams }: Props) {
               k="Payments"
               v={paymentsEnabled() ? 'Razorpay live' : testPaymentsEnabled() ? 'Test mode' : 'Disabled'}
               bad={!paymentsEnabled() && !testPaymentsEnabled()}
+            />
+            <Stat
+              k="Mail provider"
+              v={provider === 'none' ? 'not configured' : provider}
+              bad={provider === 'none'}
+              note={provider === 'none' ? 'Nothing can be delivered' : undefined}
             />
             <Stat k="Members registered" v={String(members.length)} />
             <Stat k="Applications" v={String(applications.length)} />
