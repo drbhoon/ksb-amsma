@@ -1,0 +1,1521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>AMSMA — National Network concept mockup</title>
+<link rel="icon" href="data:,">
+<meta name="description" content="Concept mockup: AMSMA as a modern national member network for India's aggregate and M-sand industry. Illustrative design only.">
+<style>
+/* ============================================================
+   AMSMA — "National Network" concept (Direction C)
+   Modern association / member ecosystem · India-wide reach
+   Palette: cobalt · vermillion · parchment
+   ============================================================ */
+
+:root{
+  --cobalt-ink:#08142F;
+  --cobalt-deep:#0D2353;
+  --cobalt:#17377E;
+  --cobalt-mid:#2B53A8;
+  --cobalt-line:rgba(23,55,126,.28);
+  --verm:#E0481E;
+  --verm-deep:#C23610;
+  --verm-bright:#F05A2E;
+  --parchment:#F3EBD9;
+  --parchment-deep:#E8DCC0;
+  --paper:#FBF6EA;
+  --ink:#211D14;
+  --ink-soft:#4A4435;
+  --line-ink:rgba(33,29,20,.22);
+  --white:#FFFFFF;
+  --display:'Oswald','Arial Narrow','Roboto Condensed','Helvetica Neue Condensed','Arial Narrow','Liberation Sans Narrow',sans-serif;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif;
+  --shadow:6px 6px 0 rgba(13,35,83,.16);
+  --shadow-lift:10px 10px 0 rgba(13,35,83,.22);
+  --mast-h:76px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);
+  background:var(--parchment);
+  color:var(--ink);
+  line-height:1.6;
+  font-size:16px;
+  overflow-x:hidden;
+}
+img,video,svg{max-width:100%;display:block}
+a{color:var(--cobalt)}
+a:hover{color:var(--verm-deep)}
+::selection{background:var(--verm);color:var(--white)}
+
+h1,h2,h3,h4,.display{
+  font-family:var(--display);
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.01em;
+  line-height:1.02;
+  color:var(--cobalt-deep);
+}
+
+.wrap{max-width:1280px;margin-inline:auto;padding-inline:clamp(18px,4vw,48px)}
+
+/* ---------- focus & skip ---------- */
+:focus-visible{outline:3px solid var(--verm);outline-offset:3px;border-radius:2px}
+.skip-link{
+  position:absolute;left:-9999px;top:0;z-index:200;
+  background:var(--verm-deep);color:var(--white);
+  padding:.7em 1.2em;font-weight:700;text-decoration:none;
+}
+.skip-link:focus{left:0;top:0}
+
+/* ---------- buttons & chips ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:.55em;
+  font-family:var(--display);font-weight:600;
+  text-transform:uppercase;letter-spacing:.06em;
+  font-size:.95rem;line-height:1;
+  padding:.95em 1.5em .9em;
+  text-decoration:none;cursor:pointer;border:2px solid var(--cobalt-deep);
+  background:var(--verm-deep);color:var(--white);
+  box-shadow:5px 5px 0 var(--cobalt-deep);
+  transition:transform .16s ease,box-shadow .16s ease,background .16s ease;
+}
+.btn:hover{background:var(--verm);color:var(--white);transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--cobalt-deep)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--cobalt-deep)}
+.btn-ghost{
+  background:transparent;color:var(--cobalt-deep);box-shadow:none;
+}
+.btn-ghost:hover{background:var(--cobalt-deep);color:var(--paper);box-shadow:none}
+.btn-light{background:var(--paper);color:var(--cobalt-deep);border-color:var(--paper);box-shadow:5px 5px 0 rgba(0,0,0,.25)}
+.btn-light:hover{background:var(--white);color:var(--verm-deep)}
+
+.chip{
+  display:inline-block;font-family:var(--display);font-weight:600;
+  text-transform:uppercase;letter-spacing:.14em;font-size:.72rem;
+  padding:.42em .8em .36em;border:1.5px solid var(--cobalt-deep);
+  background:var(--paper);color:var(--cobalt-deep);line-height:1;
+}
+.chip-verm{background:var(--verm);border-color:var(--verm-deep);color:var(--white)}
+.chip-light{border-color:rgba(243,235,217,.55);background:transparent;color:var(--parchment)}
+
+.eyebrow{
+  font-family:var(--display);font-weight:600;text-transform:uppercase;
+  letter-spacing:.22em;font-size:.8rem;color:var(--verm-deep);
+  display:flex;align-items:center;gap:.8em;
+}
+.eyebrow::before{content:"";width:34px;height:3px;background:var(--verm);flex:none}
+.eyebrow-on-dark{color:var(--verm-bright)}
+
+/* ---------- masthead ---------- */
+.masthead{
+  position:sticky;top:0;z-index:100;
+  background:var(--cobalt-ink);
+  border-bottom:3px solid var(--verm);
+}
+.masthead-row{
+  display:flex;align-items:center;gap:clamp(12px,2vw,28px);
+  min-height:var(--mast-h);padding-block:10px;
+  flex-wrap:wrap;
+}
+.brand{
+  display:flex;align-items:center;gap:.7em;text-decoration:none;
+  flex:none;
+}
+.brand-mark{
+  width:44px;height:44px;flex:none;
+  background:var(--cobalt);
+  border:2px solid var(--parchment);
+  display:grid;place-items:center;
+}
+.brand-name{
+  font-family:var(--display);font-weight:700;font-size:1.55rem;
+  letter-spacing:.08em;color:var(--parchment);line-height:1;text-transform:uppercase;
+}
+.brand-name b{color:var(--verm-bright);font-weight:700}
+.brand-sub{
+  display:block;font-family:var(--sans);font-weight:600;
+  font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(243,235,217,.75);margin-top:.3em;max-width:230px;line-height:1.35;
+}
+
+/* prominent Landing / About switch */
+.view-switch{
+  display:flex;border:2px solid var(--parchment);
+  margin-left:auto;flex:none;
+}
+.view-switch [role="tab"]{
+  font-family:var(--display);font-weight:600;text-transform:uppercase;
+  letter-spacing:.12em;font-size:.85rem;line-height:1;
+  min-height:44px;padding:.85em 1.35em .8em;cursor:pointer;border:0;
+  background:transparent;color:var(--parchment);
+  transition:background .15s ease,color .15s ease;
+}
+.view-switch [role="tab"] + [role="tab"]{border-left:2px solid var(--parchment)}
+.view-switch [role="tab"][aria-selected="true"]{
+  background:var(--verm);color:var(--white);
+}
+
+.menu-toggle{
+  display:none;flex:none;min-height:44px;
+  font-family:var(--display);font-weight:600;text-transform:uppercase;
+  letter-spacing:.12em;font-size:.85rem;
+  background:transparent;border:2px solid var(--parchment);color:var(--parchment);
+  padding:.7em 1em;cursor:pointer;
+}
+.menu-toggle[aria-expanded="true"]{background:var(--verm);border-color:var(--verm);color:var(--white)}
+
+.site-nav{
+  display:flex;align-items:center;gap:2px;
+  margin-left:auto;
+}
+.site-nav a{
+  font-family:var(--display);font-weight:500;text-transform:uppercase;
+  letter-spacing:.1em;font-size:.82rem;color:var(--parchment);
+  text-decoration:none;padding:.55em .7em;position:relative;
+}
+.site-nav a:hover{color:var(--verm-bright)}
+.site-nav a[aria-current="true"]{color:var(--verm-bright)}
+.site-nav a[aria-current="true"]::after{
+  content:"";position:absolute;left:.7em;right:.7em;bottom:.25em;height:3px;background:var(--verm);
+}
+.site-nav .btn-join{
+  margin-left:1em;padding:.8em 1.2em .75em;font-size:.82rem;
+  background:var(--verm);border-color:var(--verm-deep);
+  box-shadow:4px 4px 0 var(--verm-deep);color:var(--white);
+}
+.site-nav .btn-join:hover{background:var(--verm-bright);box-shadow:6px 6px 0 var(--verm-deep)}
+
+/* ---------- shared section scaffolding ---------- */
+.section{padding-block:clamp(56px,7vw,96px)}
+.section-head{
+  display:flex;align-items:flex-end;gap:clamp(16px,3vw,40px);
+  margin-bottom:clamp(28px,4vw,48px);
+}
+.section-head h2{
+  font-size:clamp(1.9rem,3.6vw,3.1rem);
+}
+.section-head .rule{flex:1;height:2px;background:var(--line-ink);position:relative;margin-bottom:.5em}
+.section-head .rule::after{
+  content:"";position:absolute;right:0;top:-4px;width:10px;height:10px;
+  background:var(--verm);transform:rotate(45deg);
+}
+.section-lead{max-width:64ch;font-size:1.05rem;color:var(--ink-soft)}
+
+.tick-box{
+  border:2px solid var(--cobalt-deep);background:var(--paper);
+  box-shadow:var(--shadow);position:relative;
+}
+.tick-box::before,.tick-box::after{
+  content:"";position:absolute;width:14px;height:14px;border:2px solid var(--verm);background:var(--paper);
+}
+.tick-box::before{top:-2px;left:-2px;border-right:0;border-bottom:0}
+.tick-box::after{bottom:-2px;right:-2px;border-left:0;border-top:0}
+
+/* ---------- hero (Landing) ---------- */
+.hero{
+  background:var(--parchment);
+  position:relative;overflow:hidden;
+  border-bottom:3px solid var(--cobalt-deep);
+}
+.hero-grid{
+  display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);
+  gap:clamp(24px,4vw,56px);align-items:center;
+  padding-block:clamp(48px,6vw,84px);
+}
+.hero h1{
+  font-size:clamp(2.5rem,5.6vw,4.4rem);
+  margin:.35em 0 .45em;
+}
+.hero h1 .hl{color:var(--verm-deep)}
+.hero-lede{font-size:clamp(1.02rem,1.4vw,1.18rem);color:var(--ink-soft);max-width:52ch}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:16px;margin-top:1.8em}
+.hero-facts{
+  display:flex;flex-wrap:wrap;gap:8px 0;margin-top:2.2em;
+  border-top:2px solid var(--line-ink);padding-top:1.1em;
+}
+.hero-facts span{
+  font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;
+  font-size:.72rem;font-weight:600;color:var(--cobalt-deep);
+  padding-right:1.1em;margin-right:1.1em;border-right:2px solid var(--line-ink);
+}
+.hero-facts span:last-child{border-right:0;margin-right:0;padding-right:0}
+
+.hero-media{position:relative}
+.hero-media .frame{
+  border:2px solid var(--cobalt-deep);background:var(--cobalt-ink);
+  box-shadow:var(--shadow-lift);
+  padding:10px;
+}
+.hero-media video{
+  width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;background:var(--cobalt-ink);
+}
+.hero-media figcaption{
+  font-size:.8rem;color:var(--ink-soft);margin-top:.8em;
+  padding-left:1em;border-left:3px solid var(--verm);
+}
+.hero-media .stamp{
+  position:absolute;top:-16px;right:-8px;
+  background:var(--verm-deep);color:var(--white);
+  font-family:var(--display);font-weight:700;text-transform:uppercase;
+  letter-spacing:.12em;font-size:.68rem;padding:.6em .9em;
+  border:2px solid var(--cobalt-deep);box-shadow:4px 4px 0 var(--cobalt-deep);
+  transform:rotate(2deg);
+}
+
+/* hero constellation (network motif) */
+.constellation{
+  position:absolute;inset:0;pointer-events:none;opacity:.9;
+}
+.constellation svg{position:absolute;right:-60px;top:0;height:100%;width:auto;max-width:none}
+@media (max-width:1080px){.constellation{display:none}}
+
+/* ---------- pan-india strip ---------- */
+.panstrip{background:var(--cobalt-deep);color:var(--parchment)}
+.panstrip-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:2px;background:rgba(243,235,217,.22);
+  border:2px solid rgba(243,235,217,.22);
+}
+.panstrip-cell{background:var(--cobalt-deep);padding:clamp(18px,2.4vw,30px) clamp(14px,1.8vw,26px)}
+.panstrip-cell .k{
+  font-family:var(--display);font-weight:600;text-transform:uppercase;
+  letter-spacing:.16em;font-size:.68rem;color:var(--verm-bright);display:block;margin-bottom:.5em;
+}
+.panstrip-cell .v{
+  font-family:var(--display);font-weight:700;text-transform:uppercase;
+  letter-spacing:.03em;font-size:clamp(1rem,1.6vw,1.3rem);color:var(--parchment);line-height:1.2;
+}
+.panstrip-cell .s{font-size:.8rem;color:rgba(243,235,217,.72);margin-top:.35em;display:block}
+
+/* ---------- pillars (our work) ---------- */
+.pillars{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:clamp(14px,1.8vw,24px);
+}
+.pillar{
+  border:2px solid var(--cobalt-deep);background:var(--paper);
+  padding:clamp(18px,2vw,26px) clamp(16px,1.8vw,24px);
+  position:relative;transition:transform .16s ease,box-shadow .16s ease;
+}
+.pillar:hover{transform:translate(-3px,-3px);box-shadow:var(--shadow-lift)}
+.pillar .num{
+  font-family:var(--display);font-weight:700;font-size:2.6rem;line-height:1;
+  color:transparent;-webkit-text-stroke:2px var(--cobalt-mid);
+  display:block;margin-bottom:.45em;
+}
+.pillar h3{font-size:1.18rem;margin-bottom:.5em;color:var(--cobalt-deep)}
+.pillar p{font-size:.9rem;color:var(--ink-soft)}
+.pillar .link-row{margin-top:1em}
+.pillar .link-row a{
+  font-family:var(--display);font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;font-size:.78rem;color:var(--verm-deep);text-decoration:none;
+}
+.pillar .link-row a::after{content:"→";margin-left:.4em}
+
+/* ---------- journey (production film) ---------- */
+.journey{background:var(--parchment-deep);border-block:3px solid var(--cobalt-deep)}
+.journey-grid{
+  display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+  gap:clamp(24px,4vw,56px);align-items:center;
+}
+.journey-frames{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.journey-frames figure{border:2px solid var(--cobalt-deep);background:var(--paper);box-shadow:var(--shadow)}
+.journey-frames img{width:100%;aspect-ratio:16/9;object-fit:cover}
+.journey-frames figcaption{font-size:.72rem;padding:.6em .8em;color:var(--ink-soft)}
+.steps{counter-reset:step}
+.step{
+  counter-increment:step;display:grid;
+  grid-template-columns:auto 1fr;gap:14px 18px;
+  padding:16px 0;border-top:2px solid var(--line-ink);
+}
+.step:first-child{border-top:0}
+.step::before{
+  content:"0" counter(step);
+  font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1;
+  color:var(--verm-deep);background:var(--paper);
+  border:2px solid var(--cobalt-deep);
+  width:44px;height:44px;display:grid;place-items:center;
+}
+.step h4{font-size:1.02rem;color:var(--cobalt-deep)}
+.step p{font-size:.88rem;color:var(--ink-soft);margin-top:.15em}
+.step-note{font-size:.78rem;color:var(--ink-soft);margin-top:1.4em;font-style:italic}
+
+/* ---------- biodiversity band (landing) ---------- */
+.bio-band{background:var(--cobalt-deep);color:var(--parchment)}
+.bio-grid{
+  display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);
+  gap:clamp(24px,4vw,56px);align-items:center;
+}
+.bio-grid h2{color:var(--parchment);font-size:clamp(1.8rem,3.4vw,2.9rem)}
+.bio-grid .eyebrow{color:var(--verm-bright)}
+.bio-grid p{color:rgba(243,235,217,.85);margin-top:.8em}
+.bio-frame{border:2px solid rgba(243,235,217,.5);background:var(--cobalt-ink);box-shadow:8px 8px 0 rgba(0,0,0,.3)}
+.bio-frame img{width:100%;aspect-ratio:16/9;object-fit:cover}
+.bio-frame figcaption{font-size:.74rem;color:rgba(243,235,217,.7);padding:.7em .9em}
+.bio-cta{margin-top:1.5em}
+
+/* ---------- membership (landing) ---------- */
+.membership{background:var(--paper)}
+.pathway{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:2px;background:var(--cobalt-deep);
+  border:2px solid var(--cobalt-deep);margin-bottom:clamp(28px,4vw,44px);
+}
+.path-step{background:var(--paper);padding:clamp(16px,2vw,24px);position:relative}
+.path-step .pnum{
+  font-family:var(--display);font-weight:700;font-size:1.05rem;color:var(--white);
+  background:var(--verm-deep);border:2px solid var(--cobalt-deep);
+  width:38px;height:38px;display:grid;place-items:center;margin-bottom:.8em;
+}
+.path-step h4{font-size:1rem;color:var(--cobalt-deep);margin-bottom:.35em}
+.path-step p{font-size:.84rem;color:var(--ink-soft)}
+.path-step:not(:last-child)::after{
+  content:"→";position:absolute;right:-14px;top:50%;transform:translateY(-50%);
+  z-index:2;font-family:var(--display);font-weight:700;color:var(--verm);
+  background:var(--paper);border:2px solid var(--verm);width:26px;height:26px;
+  display:grid;place-items:center;font-size:.9rem;
+}
+
+.cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(16px,2.4vw,28px)}
+.cat-card{
+  border:2px solid var(--cobalt-deep);background:var(--parchment);
+  padding:clamp(18px,2.4vw,28px);position:relative;
+  display:flex;flex-direction:column;
+}
+.cat-card .cat-code{
+  font-family:var(--display);font-weight:700;font-size:.72rem;letter-spacing:.22em;
+  color:var(--verm-deep);border:1.5px solid var(--verm-deep);
+  padding:.4em .7em .34em;align-self:flex-start;margin-bottom:1em;background:var(--paper);
+}
+.cat-card h3{font-size:1.35rem;color:var(--cobalt-deep)}
+.cat-card .who{font-size:.86rem;color:var(--ink-soft);margin-top:.3em}
+.cat-card ul{list-style:none;margin-top:1.1em;font-size:.85rem;color:var(--ink);display:grid;gap:.45em}
+.cat-card ul li{padding-left:1.2em;position:relative}
+.cat-card ul li::before{content:"▸";position:absolute;left:0;color:var(--verm)}
+.cat-card .cat-cta{
+  margin-top:auto;padding-top:1.2em;
+}
+.cat-card .cat-cta a{
+  min-height:44px;display:inline-flex;align-items:center;
+  font-family:var(--display);font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;font-size:.8rem;color:var(--verm-deep);text-decoration:none;
+}
+.cat-card .cat-cta a::after{content:"→";margin-left:.45em}
+.cat-card .note{font-size:.74rem;color:var(--ink-soft);margin-top:.5em}
+
+.rights-band{
+  margin-top:clamp(28px,4vw,44px);
+  border:2px solid var(--verm-deep);background:var(--parchment);
+  padding:clamp(18px,2.6vw,30px);
+  display:grid;grid-template-columns:auto 1fr;gap:clamp(16px,3vw,36px);align-items:center;
+}
+.rights-band .rb-mark{
+  width:64px;height:64px;background:var(--verm-deep);border:2px solid var(--cobalt-deep);
+  display:grid;place-items:center;box-shadow:4px 4px 0 var(--cobalt-deep);
+}
+.rights-band h3{color:var(--cobalt-deep);font-size:1.2rem;margin-bottom:.4em}
+.rights-band p{font-size:.9rem;color:var(--ink-soft);max-width:80ch}
+.membership-cta{
+  margin-top:clamp(28px,4vw,44px);display:flex;flex-wrap:wrap;gap:16px;align-items:center;
+}
+
+/* ---------- events ---------- */
+.events{background:var(--parchment)}
+.event-row{
+  display:grid;grid-template-columns:120px 1fr auto;
+  gap:clamp(14px,2.4vw,32px);align-items:center;
+  padding:clamp(16px,2.2vw,24px) 0;
+  border-top:2px solid var(--cobalt-deep);
+}
+.event-row:last-child{border-bottom:2px solid var(--cobalt-deep)}
+.event-row .eidx{
+  font-family:var(--display);font-weight:700;font-size:1.9rem;color:var(--cobalt-mid);
+  -webkit-text-stroke:1.5px var(--cobalt-mid);color:transparent;
+}
+.event-row h3{font-size:1.15rem;color:var(--cobalt-deep)}
+.event-row p{font-size:.88rem;color:var(--ink-soft);margin-top:.2em}
+.events-note{
+  margin-top:1.6em;font-size:.8rem;color:var(--ink-soft);
+  border-left:3px solid var(--verm);padding-left:1em;
+}
+
+/* ---------- contact ---------- */
+.contact{background:var(--paper)}
+.contact-grid{
+  display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+  gap:clamp(24px,4vw,56px);
+}
+.contact-card{
+  border:2px solid var(--cobalt-deep);background:var(--parchment);
+  padding:clamp(18px,2.4vw,30px);
+}
+.contact-card h3{font-size:1.05rem;color:var(--cobalt-deep);margin-bottom:.3em}
+.contact-card .addr{font-size:.92rem;color:var(--ink-soft);font-style:normal;line-height:1.7}
+.contact-card .mail{font-family:var(--display);font-weight:600;font-size:1.05rem;color:var(--verm-deep);text-decoration:none;letter-spacing:.04em}
+.contact-card .small{font-size:.78rem;color:var(--ink-soft);margin-top:1em}
+.contact-card .small a{color:var(--cobalt)}
+.form-grid{display:grid;gap:14px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field label{
+  display:block;font-family:var(--display);font-weight:600;text-transform:uppercase;
+  letter-spacing:.12em;font-size:.7rem;color:var(--cobalt-deep);margin-bottom:.4em;
+}
+.field input,.field textarea{
+  width:100%;border:2px solid var(--cobalt-deep);background:var(--paper);
+  font:inherit;font-size:.92rem;padding:.7em .8em;color:var(--ink);
+}
+.field input:focus,.field textarea:focus{outline:3px solid var(--verm);outline-offset:1px}
+.form-note{font-size:.76rem;color:var(--ink-soft)}
+
+/* ---------- About view ---------- */
+.about-hero{background:var(--cobalt-deep);color:var(--parchment);position:relative;overflow:hidden}
+.about-hero::before{
+  content:"";position:absolute;inset:0;
+  background-image:radial-gradient(rgba(243,235,217,.16) 1.5px,transparent 1.5px);
+  background-size:26px 26px;pointer-events:none;
+}
+.about-hero .wrap{position:relative}
+.about-hero h1{color:var(--parchment);font-size:clamp(2.3rem,5vw,3.9rem);margin:.35em 0 .4em}
+.about-hero h1 .hl{color:var(--verm-bright)}
+.about-hero .lede{max-width:62ch;color:rgba(243,235,217,.85);font-size:clamp(1rem,1.4vw,1.14rem)}
+.about-hero .about-facts{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:2px;
+  background:rgba(243,235,217,.25);border:2px solid rgba(243,235,217,.25);
+  margin-top:clamp(28px,4vw,44px);
+}
+.about-hero .af{
+  background:var(--cobalt-deep);padding:16px 14px;
+}
+.about-hero .af .k{
+  display:block;font-family:var(--display);font-weight:600;text-transform:uppercase;
+  letter-spacing:.14em;font-size:.62rem;color:var(--verm-bright);margin-bottom:.45em;
+}
+.about-hero .af .v{
+  font-family:var(--display);font-weight:700;text-transform:uppercase;
+  letter-spacing:.03em;font-size:.92rem;color:var(--parchment);line-height:1.25;
+}
+
+.about-story{background:var(--parchment)}
+.story-grid{
+  display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);
+  gap:clamp(24px,4vw,56px);align-items:start;
+}
+.story-copy p{margin-bottom:1.1em;color:var(--ink-soft);max-width:68ch}
+.story-copy strong{color:var(--cobalt-deep)}
+.story-copy .pull{
+  border-left:4px solid var(--verm);padding-left:1.1em;margin:1.4em 0;
+  font-family:var(--display);font-weight:600;text-transform:uppercase;
+  font-size:1.15rem;letter-spacing:.02em;color:var(--cobalt-deep);line-height:1.3;
+}
+.story-media{position:sticky;top:calc(var(--mast-h) + 20px)}
+.story-media .frame{border:2px solid var(--cobalt-deep);background:var(--cobalt-ink);box-shadow:var(--shadow-lift);padding:10px}
+.story-media video{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--cobalt-ink)}
+.story-media figcaption{font-size:.78rem;color:var(--ink-soft);margin-top:.8em;padding-left:1em;border-left:3px solid var(--verm)}
+.story-media .film-quote{
+  margin-top:14px;border:2px solid var(--cobalt-deep);background:var(--paper);
+  padding:14px 16px;font-size:.82rem;color:var(--ink-soft);
+}
+.story-media .film-quote em{color:var(--cobalt-deep);font-style:normal;font-weight:700}
+
+/* transcript accordion */
+details.transcript{
+  margin-top:12px;border:1.5px solid var(--cobalt-line);background:var(--paper);
+}
+details.transcript summary{
+  cursor:pointer;list-style:none;padding:.7em 1em;
+  font-family:var(--display);font-weight:600;text-transform:uppercase;
+  letter-spacing:.1em;font-size:.76rem;color:var(--cobalt-deep);
+  display:flex;justify-content:space-between;align-items:center;gap:1em;
+}
+details.transcript summary::-webkit-details-marker{display:none}
+details.transcript summary::after{content:"+";font-size:1.1rem;color:var(--verm-deep)}
+details.transcript[open] summary::after{content:"–"}
+details.transcript .tr-body{padding:0 1em 1em;font-size:.85rem;color:var(--ink-soft);border-top:1.5px solid var(--cobalt-line)}
+details.transcript .tr-body ul{margin:.6em 0 .4em 1.2em;display:grid;gap:.3em}
+details.transcript .tr-body .silent{
+  font-family:var(--display);font-weight:600;text-transform:uppercase;
+  letter-spacing:.1em;font-size:.68rem;color:var(--verm-deep);margin-bottom:.4em;
+}
+
+/* ---------- network diagram (About) ---------- */
+.network{background:var(--cobalt-ink);color:var(--parchment)}
+.network h2{color:var(--parchment)}
+.network .section-lead{color:rgba(243,235,217,.8)}
+.diagram-wrap{
+  position:relative;border:2px solid rgba(243,235,217,.35);
+  background:
+    radial-gradient(rgba(243,235,217,.12) 1.5px,transparent 1.5px),
+    var(--cobalt-deep);
+  background-size:28px 28px,auto;
+  padding:clamp(12px,2vw,24px);
+}
+.diagram-wrap svg{width:100%;height:auto}
+.diagram-caption{
+  margin-top:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  font-size:.8rem;color:rgba(243,235,217,.75);
+}
+.diagram-caption .chip-light{font-size:.62rem}
+.network-notes{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:2px;
+  background:rgba(243,235,217,.25);border:2px solid rgba(243,235,217,.25);margin-top:clamp(24px,3vw,36px);
+}
+.network-notes .nn{background:var(--cobalt-deep);padding:clamp(16px,2vw,22px)}
+.network-notes .nn .nnum{
+  font-family:var(--display);font-weight:700;color:var(--verm-bright);font-size:1.05rem;display:block;margin-bottom:.5em;
+}
+.network-notes .nn h4{color:var(--parchment);font-size:.95rem;margin-bottom:.3em}
+.network-notes .nn p{font-size:.8rem;color:rgba(243,235,217,.78)}
+
+/* ---------- objectives (About) ---------- */
+.objectives{background:var(--parchment-deep);border-block:3px solid var(--cobalt-deep)}
+.obj-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;background:var(--cobalt-deep);border:2px solid var(--cobalt-deep)}
+.obj{
+  background:var(--paper);padding:clamp(18px,2.4vw,28px);
+  display:grid;grid-template-columns:auto 1fr;gap:18px;
+}
+.obj .onum{
+  font-family:var(--display);font-weight:700;font-size:1.7rem;line-height:1;
+  color:var(--white);background:var(--cobalt);border:2px solid var(--cobalt-deep);
+  width:52px;height:52px;display:grid;place-items:center;
+}
+.obj:nth-child(even) .onum{background:var(--verm-deep)}
+.obj h3{font-size:1.05rem;color:var(--cobalt-deep);margin-bottom:.35em}
+.obj p{font-size:.87rem;color:var(--ink-soft)}
+
+/* ---------- membership categories (About) ---------- */
+.cat-detail{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(16px,2.4vw,28px);
+}
+.cd{
+  border:2px solid var(--cobalt-deep);background:var(--paper);
+  padding:clamp(18px,2.4vw,28px);
+}
+.cd .cd-head{display:flex;align-items:center;gap:14px;margin-bottom:1em}
+.cd .cd-code{
+  font-family:var(--display);font-weight:700;font-size:.72rem;letter-spacing:.22em;
+  color:var(--white);background:var(--cobalt-deep);padding:.5em .75em .42em;
+}
+.cd:nth-child(2) .cd-code{background:var(--verm-deep)}
+.cd h3{font-size:1.25rem;color:var(--cobalt-deep)}
+.cd .cd-who{font-size:.85rem;color:var(--ink-soft);margin-bottom:1em}
+.cd dl{display:grid;gap:10px;font-size:.84rem}
+.cd dt{
+  font-family:var(--display);font-weight:600;text-transform:uppercase;
+  letter-spacing:.1em;font-size:.66rem;color:var(--verm-deep);
+}
+.cd dd{color:var(--ink-soft);margin-top:.15em}
+
+/* ---------- CTA band ---------- */
+.cta-band{background:var(--verm-deep);border-block:3px solid var(--cobalt-deep)}
+.cta-band-inner{
+  display:flex;flex-wrap:wrap;align-items:center;gap:clamp(16px,3vw,40px);
+  padding-block:clamp(36px,5vw,56px);
+}
+.cta-band h2{color:var(--white);font-size:clamp(1.7rem,3.2vw,2.7rem);flex:1;min-width:280px}
+.cta-band .btn{background:var(--cobalt-deep);border-color:var(--cobalt-ink);box-shadow:5px 5px 0 var(--cobalt-ink)}
+.cta-band .btn:hover{background:var(--cobalt);color:var(--white)}
+
+/* ---------- footer ---------- */
+.footer{background:var(--cobalt-ink);color:rgba(243,235,217,.8)}
+.footer-grid{
+  display:grid;grid-template-columns:1.3fr .8fr 1fr;
+  gap:clamp(24px,4vw,56px);padding-block:clamp(40px,5vw,64px);
+}
+.footer h4{
+  font-family:var(--display);font-weight:600;text-transform:uppercase;
+  letter-spacing:.16em;font-size:.78rem;color:var(--verm-bright);margin-bottom:1em;
+}
+.footer .f-blurb{font-size:.86rem;max-width:44ch;margin-top:1em;color:rgba(243,235,217,.72)}
+.footer ul{list-style:none;display:grid;gap:.5em}
+.footer a{color:rgba(243,235,217,.85);text-decoration:none;font-size:.9rem}
+.footer a:hover{color:var(--verm-bright)}
+.footer .f-contact{font-size:.88rem;display:grid;gap:.5em;font-style:normal}
+.footer .f-contact a{color:var(--verm-bright)}
+.footer-bottom{
+  border-top:2px solid rgba(243,235,217,.2);
+  padding-block:18px;display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between;
+  font-size:.76rem;color:rgba(243,235,217,.6);
+}
+
+/* ---------- responsive ---------- */
+@media (max-width:1080px){
+  .pillars{grid-template-columns:repeat(2,1fr)}
+  .panstrip-grid{grid-template-columns:repeat(2,1fr)}
+  .about-hero .about-facts{grid-template-columns:repeat(3,1fr)}
+  .network-notes{grid-template-columns:1fr}
+}
+
+@media (max-width:960px){
+  :root{--mast-h:64px}
+  .site-nav{
+    display:none;position:absolute;top:100%;left:0;right:0;
+    background:var(--cobalt-ink);border-bottom:3px solid var(--verm);
+    flex-direction:column;align-items:stretch;gap:0;padding:10px 18px 18px;
+    box-shadow:0 12px 24px rgba(0,0,0,.35);
+  }
+  .masthead.nav-open .site-nav{display:flex}
+  .site-nav a{padding:.8em .4em;border-top:1px solid rgba(243,235,217,.18)}
+  .site-nav .btn-join{margin:12px 0 0;justify-content:center}
+  .menu-toggle{display:inline-flex;align-items:center;gap:.5em}
+  .masthead-row{min-height:var(--mast-h)}
+  .view-switch{margin-left:0;order:3;width:100%;justify-content:stretch}
+  .view-switch [role="tab"]{flex:1;text-align:center;padding:.8em 1em}
+  .brand{margin-right:auto}
+  .hero-grid,.journey-grid,.bio-grid,.story-grid,.contact-grid{grid-template-columns:1fr}
+  .story-media{position:static}
+  .obj-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .cat-detail{grid-template-columns:1fr}
+}
+
+@media (max-width:640px){
+  .pillars{grid-template-columns:1fr}
+  .pathway{grid-template-columns:1fr}
+  .path-step:not(:last-child)::after{content:"↓";right:50%;top:auto;bottom:-16px;transform:translateX(50%)}
+  .path-step{border-bottom:2px solid var(--cobalt-deep)}
+  .path-step:last-child{border-bottom:0}
+  .cat-grid{grid-template-columns:1fr}
+  .rights-band{grid-template-columns:1fr}
+  .event-row{grid-template-columns:auto 1fr;grid-template-areas:"idx title" "idx desc"}
+  .event-row .eidx{grid-area:idx}
+  .event-row h3{grid-area:title}
+  .event-row p{grid-area:desc}
+  .event-row .chip{grid-column:1/-1;justify-self:start}
+  .form-row{grid-template-columns:1fr}
+  .about-hero .about-facts{grid-template-columns:1fr 1fr}
+  .footer-grid{grid-template-columns:1fr}
+  .obj{grid-template-columns:1fr}
+  .obj .onum{width:44px;height:44px;font-size:1.4rem}
+  .hero-facts span{border-right:0;padding-right:0;margin-right:0;display:block;width:100%}
+  .journey-frames{grid-template-columns:1fr}
+  section{scroll-margin-top:150px}
+}
+
+section{scroll-margin-top:calc(var(--mast-h) + 26px)}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto!important}
+  .btn:hover{transform:none}
+  .pillar:hover{transform:none}
+}
+@media (prefers-reduced-motion:no-preference){
+  html{scroll-behavior:smooth}
+}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="masthead" id="masthead">
+  <div class="wrap masthead-row">
+    <a class="brand" href="#view-landing" data-goto="home" aria-label="AMSMA — back to Home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+          <circle cx="13" cy="13" r="3.4" fill="#F05A2E"/>
+          <path d="M13 1.5v7M13 17.5v7M1.5 13h7M17.5 13h7M4.9 4.9l5 5M16.1 16.1l5 5M21.1 4.9l-5 5M9.9 16.1l-5 5" stroke="#F3EBD9" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand-name">AMS<b>MA</b><span class="brand-sub">Aggregate &amp; M sand Manufacturers Association</span></span>
+    </a>
+
+    <div class="view-switch" role="tablist" aria-label="Mockup views">
+      <button id="tab-landing" role="tab" aria-selected="true" aria-controls="view-landing" data-view-tab="landing">Landing</button>
+      <button id="tab-about" role="tab" aria-selected="false" aria-controls="view-about" data-view-tab="about">About</button>
+    </div>
+
+    <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="site-nav">
+      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="2"/></svg>
+      Menu
+    </button>
+
+    <nav class="site-nav" id="site-nav" aria-label="Primary">
+      <a href="#view-landing" data-goto="home">Home</a>
+      <a href="#about" data-goto="about">About</a>
+      <a href="#our-work" data-goto="our-work">Our work</a>
+      <a href="#membership" data-goto="membership">Membership</a>
+      <a href="#events" data-goto="events">Events</a>
+      <a href="#contact" data-goto="contact">Contact</a>
+      <a class="btn btn-join" href="#membership" data-goto="membership">Join AMSMA</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ==================== LANDING VIEW ==================== -->
+<section id="view-landing" role="tabpanel" aria-labelledby="tab-landing" data-view="landing">
+
+  <div class="hero">
+    <div class="constellation" aria-hidden="true">
+      <svg viewBox="0 0 480 900" fill="none" aria-hidden="true">
+        <g stroke="#17377E" stroke-width="1.4" opacity=".5">
+          <path d="M30 90 L150 210 L300 120 L420 260 L330 420 L480 470"/>
+          <path d="M150 210 L180 380 L330 420 L300 620 L420 780"/>
+          <path d="M60 300 L180 380 L240 540 L180 700"/>
+          <path d="M420 260 L450 460 L300 620"/>
+        </g>
+        <g fill="#E0481E">
+          <circle cx="30" cy="90" r="6"/><circle cx="150" cy="210" r="7"/>
+          <circle cx="300" cy="120" r="5"/><circle cx="420" cy="260" r="6"/>
+          <circle cx="180" cy="380" r="6"/><circle cx="330" cy="420" r="7"/>
+          <circle cx="60" cy="300" r="5"/><circle cx="240" cy="540" r="6"/>
+          <circle cx="180" cy="700" r="5"/><circle cx="450" cy="460" r="6"/>
+          <circle cx="300" cy="620" r="5"/>
+        </g>
+        <g fill="none" stroke="#17377E" stroke-width="1.2" opacity=".45">
+          <circle cx="150" cy="210" r="34" stroke-dasharray="4 6"/>
+          <circle cx="330" cy="420" r="44" stroke-dasharray="4 6"/>
+          <circle cx="420" cy="260" r="30" stroke-dasharray="4 6"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Aggregate &amp; M sand Manufacturers Association</p>
+        <h1>One association. <span class="hl">An all-India scope.</span></h1>
+        <p class="hero-lede">AMSMA brings businesses, institutions and technical expertise together to share knowledge, support good practice and contribute to informed policy across India’s aggregate and M-sand sector.</p>
+        <div class="hero-ctas">
+          <a class="btn" href="#membership" data-goto="membership">Join the network</a>
+          <a class="btn btn-ghost" href="#about" data-goto="about">About AMSMA</a>
+        </div>
+        <div class="hero-facts" aria-label="Key facts">
+          <span>Formed May 2026</span>
+          <span>Operation: All India</span>
+          <span>Secretariat: Thane, Maharashtra</span>
+          <span>Status: formed for registration</span>
+        </div>
+      </div>
+
+      <figure class="hero-media">
+        <span class="stamp" aria-hidden="true">From pit to pavement</span>
+        <div class="frame">
+          <video controls preload="metadata" playsinline
+                 poster="../assets/aggregate-production-poster.jpg"
+                 aria-describedby="tr-landing-video" aria-label="Film: the aggregate production journey">
+            <source src="../assets/aggregate-production.mp4" type="video/mp4">
+            <a href="../assets/aggregate-production.mp4">Download the film (MP4)</a>
+          </video>
+        </div>
+        <figcaption>The aggregate production journey — extraction, crushing, screening and stockpiling. Footage supplied for this concept.</figcaption>
+        <details class="transcript" id="tr-landing-video">
+          <summary>Video text equivalent</summary>
+          <div class="tr-body">
+            <p class="silent">No intelligible speech was verified in the supplied audio.</p>
+            <ul>
+              <li>Excavator loading blasted rock at a quarry face.</li>
+              <li>Rock is reduced in crushers.</li>
+              <li>Crushed material moves on conveyors.</li>
+              <li>Material is screened and graded into sizes.</li>
+              <li>Finished aggregate is stockpiled.</li>
+            </ul>
+            <p>Shows the aggregate production journey from extraction to stockpile. No claims about output, quality or site ownership are implied.</p>
+          </div>
+        </details>
+      </figure>
+    </div>
+  </div>
+
+  <div class="panstrip" aria-label="Association at a glance">
+    <div class="wrap">
+      <div class="panstrip-grid">
+        <div class="panstrip-cell"><span class="k">Area of operation</span><span class="v">Across India</span><span class="s">Governing records set an all-India scope</span></div>
+        <div class="panstrip-cell"><span class="k">Legal form</span><span class="v">Non-profit</span><span class="s">Income used only for the association's aims</span></div>
+        <div class="panstrip-cell"><span class="k">Membership</span><span class="v">Companies</span><span class="s">Producers plus allied and institutional members</span></div>
+        <div class="panstrip-cell"><span class="k">Purpose</span><span class="v">Shared progress</span><span class="s">Knowledge, standards, policy, environment</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="section" id="our-work" aria-labelledby="h-ourwork">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Our work</p>
+          <h2 id="h-ourwork">What the network does</h2>
+        </div>
+        <div class="rule" aria-hidden="true"></div>
+      </div>
+      <p class="section-lead">These themes group the Association’s governing objects. They describe its purpose, not claims of completed programmes or outcomes.</p>
+
+      <div class="pillars" style="margin-top:32px">
+        <article class="pillar">
+          <span class="num" aria-hidden="true">01</span>
+          <h3>Policy &amp; representation</h3>
+          <p>Bring sector knowledge into policy discussions with government and relevant organisations, with attention to public interest and national development.</p>
+        </article>
+        <article class="pillar">
+          <span class="num" aria-hidden="true">02</span>
+          <h3>Knowledge &amp; research</h3>
+          <p>Exchange of technical information, research and best practices between members — from extraction methods to materials quality and end use.</p>
+        </article>
+        <article class="pillar">
+          <span class="num" aria-hidden="true">03</span>
+          <h3>Standards &amp; ethics</h3>
+          <p>Industry standards, professional ethics and responsible conduct, agreed by members and upheld across the network.</p>
+        </article>
+        <article class="pillar">
+          <span class="num" aria-hidden="true">04</span>
+          <h3>Environment &amp; sustainability</h3>
+          <p>Environmental protection and sustainable development: responsible extraction, land stewardship and the restoration that follows.</p>
+        </article>
+      </div>
+      <p style="margin-top:20px"><a class="btn btn-ghost" href="#objectives" data-goto="objectives">See the full objectives →</a></p>
+    </div>
+  </section>
+
+  <section class="journey section" aria-labelledby="h-journey">
+    <div class="wrap journey-grid">
+      <div>
+        <p class="eyebrow">The production film</p>
+        <h2 id="h-journey" style="font-size:clamp(1.8rem,3.4vw,2.8rem);margin:.3em 0 .6em">From pit to pavement</h2>
+        <div class="steps">
+          <div class="step">
+            <div>
+              <h4>Extraction</h4>
+              <p>Rock is extracted at member quarry sites, with overburden and land handled responsibly.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div>
+              <h4>Crushing</h4>
+              <p>Oversized rock is reduced in crushers to the sizes construction needs.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div>
+              <h4>Screening &amp; grading</h4>
+              <p>Material is screened and graded, then washed and checked for consistency.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div>
+              <h4>Stockpiling</h4>
+              <p>Finished aggregate is stockpiled and dispatched to infrastructure projects across the country.</p>
+            </div>
+          </div>
+        </div>
+        <p class="step-note">The journey above is drawn from the production film supplied for this concept. Watch the full film on this page — with controls and a text equivalent.</p>
+      </div>
+
+      <div class="journey-frames">
+        <figure>
+          <img src="../assets/process-quarry.jpg" alt="Excavator loading rock at a quarry — still from the supplied production film." loading="lazy">
+          <figcaption>Extraction — still from the supplied production film.</figcaption>
+        </figure>
+        <figure>
+          <img src="../assets/process-conveyor.jpg" alt="Conveyor carrying crushed aggregate — still from the supplied production film." loading="lazy">
+          <figcaption>Crushing and conveying — still from the supplied production film.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="bio-band section" aria-labelledby="h-bio">
+    <div class="wrap bio-grid">
+      <figure class="bio-frame">
+        <img src="../assets/bee-eater.jpg" alt="Small bird perched in flower-rich vegetation at an extraction site — still from the supplied habitat film." loading="lazy">
+        <figcaption>Still from the habitat film supplied for this concept.</figcaption>
+      </figure>
+      <div>
+        <p class="eyebrow eyebrow-on-dark">Land &amp; wildlife</p>
+        <h2 id="h-bio">Quarry habitats can support wildlife</h2>
+        <p>The footage shows birds using exposed banks and vegetated quarry areas. Species, site and ecological quality are not verified. Some quarry landforms can provide habitat, depending on local conditions and long-term management.</p>
+        <p>The About view pairs the film with a full text equivalent and replaces its unsupported end-card claim with cautious, site-specific language.</p>
+        <p class="bio-cta"><a class="btn btn-light" href="#about" data-goto="about">Watch the habitat film →</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="membership section" id="membership" aria-labelledby="h-membership">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Membership</p>
+          <h2 id="h-membership">Review the membership routes</h2>
+        </div>
+        <div class="rule" aria-hidden="true"></div>
+      </div>
+      <p class="section-lead">Membership is by application. Four categories fit the industry's shape — from producer companies to suppliers, institutions and honorary members.</p>
+
+      <div class="pathway" style="margin-top:32px">
+        <div class="path-step">
+          <span class="pnum" aria-hidden="true">01</span>
+          <h4>Check eligibility</h4>
+          <p>Membership is open to eligible companies — producers of aggregate and M-sand, and allied organisations.</p>
+        </div>
+        <div class="path-step">
+          <span class="pnum" aria-hidden="true">02</span>
+          <h4>Choose a category</h4>
+          <p>Ordinary, Associate, Honorary or Institutional — each with its own fit and purpose.</p>
+        </div>
+        <div class="path-step">
+          <span class="pnum" aria-hidden="true">03</span>
+          <h4>Submit an application</h4>
+          <p>Send your application to the secretariat; the association responds with the next steps.</p>
+        </div>
+        <div class="path-step">
+          <span class="pnum" aria-hidden="true">04</span>
+          <h4>Join the network</h4>
+          <p>Take part in meetings and education, and draw on the association's information and advice.</p>
+        </div>
+      </div>
+
+      <div class="cat-grid">
+        <article class="cat-card">
+          <span class="cat-code">ORD</span>
+          <h3>Ordinary</h3>
+          <p class="who">Aggregate and M-sand producer companies — the core of the association.</p>
+          <ul>
+            <li>Producer companies with a crushing capacity of 50,000 metric tonnes per month or more.</li>
+            <li>Full participation in general meetings and educational programmes.</li>
+            <li>Information and advice from the association on industry matters.</li>
+          </ul>
+          <div class="cat-cta"><a href="mailto:info@amsma.in?subject=AMSMA%20membership%20application">Ask about Ordinary membership</a></div>
+        </article>
+        <article class="cat-card">
+          <span class="cat-code">ASS</span>
+          <h3>Associate</h3>
+          <p class="who">Suppliers, OEMs and service providers allied to the aggregate value chain.</p>
+          <ul>
+            <li>Equipment, technology and service companies serving producers.</li>
+            <li>Access to the network, its knowledge exchanges and its programmes.</li>
+            <li>Information and advice from the association on industry matters.</li>
+          </ul>
+          <div class="cat-cta"><a href="mailto:info@amsma.in?subject=AMSMA%20membership%20application">Ask about Associate membership</a></div>
+        </article>
+        <article class="cat-card">
+          <span class="cat-code">INS</span>
+          <h3>Institutional</h3>
+          <p class="who">Educational and research institutions in construction materials and allied fields.</p>
+          <ul>
+            <li>Universities, research bodies and training institutes in the sector.</li>
+            <li>Participation in seminars, workshops and training programmes.</li>
+            <li>Connection to industry practice and the association's knowledge base.</li>
+          </ul>
+          <div class="cat-cta"><a href="mailto:info@amsma.in?subject=AMSMA%20membership%20application">Ask about Institutional membership</a></div>
+        </article>
+        <article class="cat-card">
+          <span class="cat-code">HON</span>
+          <h3>Honorary</h3>
+          <p class="who">An eminent person may be invited by a two-thirds Managing Committee vote.</p>
+          <ul>
+            <li>Invited eminent people who subscribe to the Association’s objects.</li>
+            <li>Honorary members cannot vote or be elected to office.</li>
+            <li>Other member rights apply, subject to the Rules and approved policy.</li>
+          </ul>
+          <div class="cat-cta"><a href="mailto:info@amsma.in?subject=AMSMA%20membership%20enquiry">Enquire about Honorary membership</a></div>
+        </article>
+      </div>
+
+      <div class="rights-band">
+        <span class="rb-mark" aria-hidden="true">
+          <svg width="34" height="34" viewBox="0 0 34 34" fill="none"><path d="M17 2l4 12h11l-9 7 3.4 12L17 26l-9.4 7L11 21l-9-7h11L17 2z" fill="#F3EBD9"/></svg>
+        </span>
+        <div>
+          <h3>Member participation</h3>
+          <p>The Rules describe participation in meetings and educational activities, and access to information and advice. Category-specific rights and voting rules need review before launch.</p>
+        </div>
+      </div>
+
+      <div class="membership-cta">
+        <a class="btn" href="mailto:info@amsma.in?subject=AMSMA%20membership%20application">Review how to apply</a>
+        <a class="btn btn-ghost" href="#membership-categories" data-goto="membership-categories">Membership details on About</a>
+        <span class="form-note">The current fee schedule is set by the association's rules — the secretariat shares it on request.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="events section" id="events" aria-labelledby="h-events">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Events</p>
+          <h2 id="h-events">Where the network meets</h2>
+        </div>
+        <div class="rule" aria-hidden="true"></div>
+      </div>
+      <p class="section-lead">The association brings members together through seminars, workshops and training programmes — the forums where knowledge travels across the network.</p>
+
+      <div style="margin-top:28px">
+        <div class="event-row">
+          <span class="eidx" aria-hidden="true">S</span>
+          <div>
+            <h3>Seminars</h3>
+            <p>Policy briefings and technical seminars on the issues facing the industry — from regulation to materials and markets.</p>
+          </div>
+          <span class="chip">Dates announced to members</span>
+        </div>
+        <div class="event-row">
+          <span class="eidx" aria-hidden="true">W</span>
+          <div>
+            <h3>Workshops</h3>
+            <p>Hands-on workshops on production practice, quality control and site management.</p>
+          </div>
+          <span class="chip">Dates announced to members</span>
+        </div>
+        <div class="event-row">
+          <span class="eidx" aria-hidden="true">T</span>
+          <div>
+            <h3>Training programmes</h3>
+            <p>Structured training for member teams and sector professionals, building capability across the network.</p>
+          </div>
+          <span class="chip">Dates announced to members</span>
+        </div>
+      </div>
+
+      <p class="events-note">This concept shows the structure of the member calendar. Programme dates are announced to members as they are finalised — nothing on this mockup is a scheduled event.</p>
+      <p style="margin-top:18px"><a class="btn" href="mailto:info@amsma.in?subject=AMSMA%20events%20enquiry">Ask about upcoming programmes</a></p>
+    </div>
+  </section>
+
+  <section class="contact section" id="contact" aria-labelledby="h-contact">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Contact</p>
+          <h2 id="h-contact">Reach the secretariat</h2>
+        </div>
+        <div class="rule" aria-hidden="true"></div>
+      </div>
+
+      <div class="contact-grid">
+        <div class="contact-card">
+          <h3>Registered office</h3>
+          <address class="addr">
+            2C 183, Kalpataru Hills Ph 2,<br>
+            Pokhran Road No 3,<br>
+            Thane 400 610, Maharashtra, India
+          </address>
+          <p style="margin-top:18px"><a class="mail" href="mailto:info@amsma.in">info@amsma.in</a></p>
+          <p class="small">Correspondence for membership, events and general enquiries goes through the secretariat. The address shown is the registered-office locality already listed on the association's current website.</p>
+        </div>
+
+        <div>
+          <form class="form-grid" id="contact-form" novalidate>
+            <div class="form-row">
+              <div class="field">
+                <label for="f-name">Name</label>
+                <input id="f-name" name="name" type="text" autocomplete="name" placeholder="Your name">
+              </div>
+              <div class="field">
+                <label for="f-org">Organisation</label>
+                <input id="f-org" name="org" type="text" autocomplete="organization" placeholder="Company or institution">
+              </div>
+            </div>
+            <div class="field">
+              <label for="f-email">Email</label>
+              <input id="f-email" name="email" type="email" autocomplete="email" placeholder="you@organisation.in">
+            </div>
+            <div class="field">
+              <label for="f-msg">Message</label>
+              <textarea id="f-msg" name="message" rows="5" placeholder="Membership, events, or a general enquiry…"></textarea>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center">
+              <button class="btn" type="submit">Send enquiry</button>
+              <span class="form-note" id="form-feedback" role="status">Demo form — enquiries route to info@amsma.in in the live build.</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</section>
+
+<!-- ==================== ABOUT VIEW ==================== -->
+<section id="view-about" role="tabpanel" aria-labelledby="tab-about" data-view="about" hidden>
+
+  <div class="about-hero" id="about">
+    <div class="wrap" style="padding-block:clamp(48px,6vw,84px)">
+      <p class="eyebrow eyebrow-on-dark">About AMSMA</p>
+      <h1>Formed for public benefit. <span class="hl">Built for the sector.</span></h1>
+      <p class="lede">The Aggregate &amp; M sand Manufacturers Association is a society formed for registration in Maharashtra with an area of operation extending across India. Its objects connect industry development with education, public benefit, environmental responsibility and sound professional practice.</p>
+
+      <div class="about-facts" aria-label="Association facts">
+        <div class="af"><span class="k">Formation</span><span class="v">May 2026</span></div>
+        <div class="af"><span class="k">Operation</span><span class="v">Across India</span></div>
+        <div class="af"><span class="k">Secretariat</span><span class="v">Thane, Maharashtra</span></div>
+        <div class="af"><span class="k">Legal form</span><span class="v">Non-profit society</span></div>
+        <div class="af"><span class="k">Status</span><span class="v">Formed for registration</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="about-story section" aria-labelledby="h-story">
+    <div class="wrap story-grid">
+      <div class="story-copy">
+        <p class="eyebrow">Who we are</p>
+        <h2 id="h-story" style="font-size:clamp(1.8rem,3.4vw,2.8rem);margin:.3em 0 .6em">The story of the association</h2>
+        <p><strong>The formation records state that members met in Mumbai on 26 May 2026</strong> and formed the Association for registration. Its area of operation extends across India, and its registered office is recorded in Thane, Maharashtra. No registration certificate was supplied.</p>
+        <p><strong>The Memorandum states a non-profit character.</strong> Its income and property are used only for its stated aims; no part is distributed to members as profit. Everything it does exists for the industry's common benefit: knowledge and research, policy engagement, environmental protection, sustainable development, education and training, standards and ethics, technology, and international cooperation.</p>
+        <p><strong>Membership is by application,</strong> subject to the detailed category rules and Managing Committee review. The supplied Rules contain an unresolved conflict about individual Associate eligibility.</p>
+        <p class="pull">“An all-India scope for knowledge, responsibility and constructive engagement.”</p>
+        <p><strong>Why it matters.</strong> Aggregates and M-sand are the raw materials of India's infrastructure. The Association seeks to advance knowledge, standards and responsible practice for public benefit. Activity and outcome claims require evidence before launch.</p>
+      </div>
+
+      <div class="story-media">
+        <figure>
+          <div class="frame">
+            <video controls preload="metadata" playsinline
+                   poster="../assets/quarry-nesting-habitat-poster.jpg"
+                   aria-describedby="tr-about-video" aria-label="Film: wildlife at extraction sites">
+              <source src="../assets/quarry-nesting-habitat.mp4" type="video/mp4">
+              <a href="../assets/quarry-nesting-habitat.mp4">Download the film (MP4)</a>
+            </video>
+          </div>
+          <figcaption>Habitat at extraction sites — nesting birds in a quarry landscape. Footage supplied for this concept.</figcaption>
+        </figure>
+        <div class="film-quote">
+          <em>Evidence-cautious replacement for the generated end card:</em><br>
+          “Quarry habitats can support wildlife.”<br>
+          “Site conditions and responsible management determine the outcome.”
+        </div>
+        <details class="transcript" id="tr-about-video">
+          <summary>Video text equivalent</summary>
+          <div class="tr-body">
+            <p class="silent">No intelligible speech was verified in the supplied audio.</p>
+            <ul>
+              <li>Quarry machinery at an extraction site.</li>
+              <li>An exposed sandy nesting bank, with burrow-nesting birds.</li>
+              <li>Close views of adult birds and nestlings.</li>
+              <li>The generated end card is not used as evidence; the mockup replaces it with cautious habitat wording.</li>
+            </ul>
+            <p>Quarry habitats can support wildlife. Site conditions and responsible management determine the outcome. The generated footage is illustrative and does not depict an identified AMSMA member site.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="network section" id="network" aria-labelledby="h-network">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow eyebrow-on-dark">The network</p>
+          <h2 id="h-network">The national network</h2>
+        </div>
+        <div class="rule" aria-hidden="true" style="background:rgba(243,235,217,.3)"></div>
+      </div>
+      <p class="section-lead">The Association’s area of operation extends across India. Its Rules define a General Body of members and management through a Managing Committee.</p>
+
+      <div class="diagram-wrap" style="margin-top:32px">
+        <svg viewBox="0 0 760 640" role="img" aria-label="Illustrative network diagram: a stylised outline of India with nodes for the association's functions connected to a central secretariat node.">
+          <!-- stylised subcontinent outline (illustrative, not to scale) -->
+          <path d="M320 45 L360 38 L380 52 L420 58 L460 52 L500 62 L545 70 L575 92 L590 120 L560 130 L530 120 L505 140 L480 160 L455 150 L430 175 L415 195 L395 180 L375 165 L380 190 L395 215 L395 240 L380 270 L370 300 L365 340 L358 380 L350 420 L345 460 L340 500 L335 540 L330 575 L322 610 L300 585 L288 555 L282 520 L276 485 L270 450 L265 415 L258 380 L250 345 L246 315 L238 290 L218 280 L196 270 L172 268 L152 282 L148 258 L162 244 L178 238 L190 222 L178 206 L158 198 L172 184 L196 192 L214 202 L228 214 L244 224 L250 196 L246 164 L242 132 L246 102 L250 78 L258 62 L268 48 L290 42 Z"
+                fill="rgba(243,235,217,.10)" stroke="#F3EBD9" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 5"/>
+          <!-- network lines -->
+          <g stroke="#F05A2E" stroke-width="2.2" opacity=".9">
+            <path d="M380 300 L470 190"/>
+            <path d="M380 300 L250 235"/>
+            <path d="M380 300 L470 420"/>
+            <path d="M380 300 L250 420"/>
+            <path d="M380 300 L330 560"/>
+            <path d="M380 300 L540 120"/>
+            <path d="M380 300 L175 155"/>
+          </g>
+          <!-- central node -->
+          <g>
+            <circle cx="380" cy="300" r="26" fill="#C23610" stroke="#F3EBD9" stroke-width="3"/>
+            <circle cx="380" cy="300" r="40" fill="none" stroke="#F05A2E" stroke-width="1.6" stroke-dasharray="4 7"/>
+            <text x="380" y="296" text-anchor="middle" fill="#FFFFFF" font-family="sans-serif" font-size="15" font-weight="700">AMS</text>
+            <text x="380" y="312" text-anchor="middle" fill="#FFFFFF" font-family="sans-serif" font-size="15" font-weight="700">MA</text>
+          </g>
+          <!-- function nodes -->
+          <g font-family="sans-serif" font-size="13" font-weight="600" fill="#F3EBD9">
+            <circle cx="470" cy="190" r="15" fill="#17377E" stroke="#F05A2E" stroke-width="2.5"/><text x="490" y="185">Policy &amp; advocacy</text>
+            <circle cx="250" cy="235" r="15" fill="#17377E" stroke="#F05A2E" stroke-width="2.5"/><text x="130" y="230" text-anchor="end">Standards &amp; ethics</text>
+            <circle cx="470" cy="420" r="15" fill="#17377E" stroke="#F05A2E" stroke-width="2.5"/><text x="492" y="416">Knowledge &amp; research</text>
+            <circle cx="250" cy="420" r="15" fill="#17377E" stroke="#F05A2E" stroke-width="2.5"/><text x="112" y="416" text-anchor="end">Seminars &amp; training</text>
+            <circle cx="330" cy="560" r="15" fill="#17377E" stroke="#F05A2E" stroke-width="2.5"/><text x="350" y="556">Environment &amp; restoration</text>
+            <circle cx="540" cy="120" r="15" fill="#17377E" stroke="#F05A2E" stroke-width="2.5"/><text x="562" y="116">Technology &amp; innovation</text>
+            <circle cx="175" cy="155" r="15" fill="#17377E" stroke="#F05A2E" stroke-width="2.5"/><text x="68" y="151" text-anchor="end">International cooperation</text>
+          </g>
+          <!-- member dots (schematic only) -->
+          <g fill="#F05A2E">
+            <circle cx="520" cy="230" r="4.5"/><circle cx="540" cy="320" r="4.5"/><circle cx="480" cy="500" r="4.5"/>
+            <circle cx="290" cy="180" r="4.5"/><circle cx="210" cy="310" r="4.5"/><circle cx="230" cy="500" r="4.5"/>
+            <circle cx="355" cy="380" r="4.5"/><circle cx="330" cy="470" r="4.5"/><circle cx="300" cy="120" r="4.5"/>
+          </g>
+        </svg>
+        <div class="diagram-caption">
+          <span class="chip chip-light">Illustrative diagram</span>
+          <span>The outline and nodes are schematic — a network of functions, not a map of member locations. No member sites or counts are implied.</span>
+        </div>
+      </div>
+
+      <div class="network-notes">
+        <div class="nn"><span class="nnum">01</span><h4>One membership, many regions</h4><p>The governing records set an all-India area of operation and common objects.</p></div>
+        <div class="nn"><span class="nnum">02</span><h4>Meetings &amp; committees</h4><p>General meetings and the managing committee keep the network moving, guided by the rules members adopted at formation.</p></div>
+        <div class="nn"><span class="nnum">03</span><h4>A secretariat that serves all</h4><p>The registered office is recorded in Thane, Maharashtra; launch teams must confirm current contact operations.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="objectives section" id="objectives" aria-labelledby="h-objectives">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Objectives</p>
+          <h2 id="h-objectives">What the association stands for</h2>
+        </div>
+        <div class="rule" aria-hidden="true"></div>
+      </div>
+      <p class="section-lead">The objectives below are drawn from the association's memorandum of association — the purposes its income and property exist to serve.</p>
+
+      <div class="obj-grid" style="margin-top:32px">
+        <div class="obj"><span class="onum" aria-hidden="true">01</span><div><h3>Policy &amp; representation</h3><p>Engage with policy and regulation on behalf of the aggregate and M-sand industry, and support national infrastructure and economic development.</p></div></div>
+        <div class="obj"><span class="onum" aria-hidden="true">02</span><div><h3>Environmental protection</h3><p>Promote environmental protection across extraction, processing and site restoration.</p></div></div>
+        <div class="obj"><span class="onum" aria-hidden="true">03</span><div><h3>Sustainable development</h3><p>Advance sustainable development in the industry — balancing production, land use and the communities that live with quarries.</p></div></div>
+        <div class="obj"><span class="onum" aria-hidden="true">04</span><div><h3>Knowledge &amp; research</h3><p>Exchange technical information, research and best practices across the industry and with allied sectors.</p></div></div>
+        <div class="obj"><span class="onum" aria-hidden="true">05</span><div><h3>Education &amp; training</h3><p>Organise seminars, workshops and training programmes that build capability across the network.</p></div></div>
+        <div class="obj"><span class="onum" aria-hidden="true">06</span><div><h3>Standards &amp; ethics</h3><p>Uphold professional standards, ethics and responsible conduct among members.</p></div></div>
+        <div class="obj"><span class="onum" aria-hidden="true">07</span><div><h3>Technology &amp; innovation</h3><p>Encourage technology, innovation and modernisation in aggregate production and M-sand manufacturing.</p></div></div>
+        <div class="obj"><span class="onum" aria-hidden="true">08</span><div><h3>Data &amp; international ties</h3><p>Maintain and share industry statistics and information among members, and cooperate with international bodies such as GAIN and peer associations.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="membership section" id="membership-categories" aria-labelledby="h-categories" style="background:var(--paper)">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Membership</p>
+          <h2 id="h-categories">Categories, eligibility &amp; rights</h2>
+        </div>
+        <div class="rule" aria-hidden="true"></div>
+      </div>
+      <p class="section-lead">Membership is for eligible legal entities; individuals are generally excluded, with honorary membership as the exception. Each category below reflects the association's rules.</p>
+
+      <div class="cat-detail" style="margin-top:32px">
+        <div class="cd">
+          <div class="cd-head"><span class="cd-code">ORD</span><h3>Ordinary</h3></div>
+          <p class="cd-who">For aggregate and M-sand producer companies.</p>
+          <dl>
+            <dt>Eligibility</dt><dd>Producer companies with crushing capacity of 50,000 metric tonnes per month or more.</dd>
+            <dt>Rights</dt><dd>Participation in general meetings and educational programmes; information and advice from the association.</dd>
+          </dl>
+        </div>
+        <div class="cd">
+          <div class="cd-head"><span class="cd-code">ASS</span><h3>Associate</h3></div>
+          <p class="cd-who">For suppliers, OEMs and service providers allied to the industry.</p>
+          <dl>
+            <dt>Eligibility</dt><dd>Companies supplying equipment, technology or services to aggregate and M-sand producers.</dd>
+            <dt>Rights</dt><dd>Participation in the association's meetings and programmes; information and advice on industry matters.</dd>
+          </dl>
+        </div>
+        <div class="cd">
+          <div class="cd-head"><span class="cd-code">INS</span><h3>Institutional</h3></div>
+          <p class="cd-who">For educational and research institutions.</p>
+          <dl>
+            <dt>Eligibility</dt><dd>Universities, research bodies and training institutions engaged with construction materials and allied fields.</dd>
+            <dt>Rights</dt><dd>Participation in seminars, workshops and training; access to the association's information and advice.</dd>
+          </dl>
+        </div>
+        <div class="cd">
+          <div class="cd-head"><span class="cd-code">HON</span><h3>Honorary</h3></div>
+          <p class="cd-who">An eminent person may be invited by a two-thirds Managing Committee vote.</p>
+          <dl>
+            <dt>Eligibility</dt><dd>Recognised individuals; the exception to the general rule that membership is for companies.</dd>
+            <dt>Rights</dt><dd>Participation in the association's meetings and programmes, as extended by the association.</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="membership-cta">
+        <a class="btn" href="mailto:info@amsma.in?subject=AMSMA%20membership%20application">Review how to apply</a>
+        <a class="btn btn-ghost" href="#membership" data-goto="membership">See the pathway on Landing</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-band">
+    <div class="wrap cta-band-inner">
+      <h2>Find the membership route that fits your organisation</h2>
+      <a class="btn" href="mailto:info@amsma.in?subject=AMSMA%20membership%20application">Review membership</a>
+      <a class="btn btn-ghost" href="#contact" data-goto="contact">Talk to the secretariat</a>
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <span class="brand-mark" aria-hidden="true" style="display:inline-grid">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+            <circle cx="13" cy="13" r="3.4" fill="#F05A2E"/>
+            <path d="M13 1.5v7M13 17.5v7M1.5 13h7M17.5 13h7M4.9 4.9l5 5M16.1 16.1l5 5M21.1 4.9l-5 5M9.9 16.1l-5 5" stroke="#F3EBD9" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <p class="f-blurb">The Aggregate &amp; M sand Manufacturers Association has an area of operation extending across India and objects covering policy, knowledge, standards and responsible practice.</p>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="#view-landing" data-goto="home">Home</a></li>
+          <li><a href="#about" data-goto="about">About</a></li>
+          <li><a href="#our-work" data-goto="our-work">Our work</a></li>
+          <li><a href="#membership" data-goto="membership">Membership</a></li>
+          <li><a href="#events" data-goto="events">Events</a></li>
+          <li><a href="#contact" data-goto="contact">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <address class="f-contact">
+          <span>2C 183, Kalpataru Hills Ph 2,<br>Pokhran Road No 3,<br>Thane 400 610, Maharashtra, India</span>
+          <a href="mailto:info@amsma.in">info@amsma.in</a>
+        </address>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 AMSMA — Aggregate &amp; M sand Manufacturers Association</span>
+      <span>Concept mockup · Formation record: May 2026 · Illustrative media</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var smooth = reduceMotion ? "auto" : "smooth";
+
+  var VIEWS = { landing: "view-landing", about: "view-about" };
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+  var panels = { landing: document.getElementById("view-landing"), about: document.getElementById("view-about") };
+  var menuBtn = document.getElementById("menu-toggle");
+  var masthead = document.getElementById("masthead");
+  var nav = document.getElementById("site-nav");
+
+  function setTab(name){
+    tabs.forEach(function(t){
+      var on = t.getAttribute("data-view-tab") === name;
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      t.tabIndex = on ? 0 : -1;
+    });
+  }
+
+  function activateView(name, scrollToTop){
+    Object.keys(VIEWS).forEach(function(k){
+      var panel = panels[k];
+      var active = k === name;
+      panel.hidden = !active;
+      if (active && scrollToTop){
+        window.scrollTo({top: 0, behavior: smooth});
+      }
+    });
+    setTab(name);
+    closeMenu();
+    document.title = name === "about"
+      ? "AMSMA — About view · National Network concept"
+      : "AMSMA — Landing view · National Network concept";
+  }
+
+  function sectionView(id){
+    var el = document.getElementById(id);
+    return el ? el.closest('[data-view]').getAttribute("data-view") : null;
+  }
+
+  function goTo(id){
+    var view = sectionView(id);
+    if (!view) return;
+    activateView(view, false);
+    history.replaceState(null, "", "#" + id);
+    var target = document.getElementById(id);
+    if (target){
+      requestAnimationFrame(function(){
+        target.scrollIntoView({behavior: smooth, block: "start"});
+      });
+    }
+  }
+
+  function closeMenu(){
+    if (menuBtn){
+      menuBtn.setAttribute("aria-expanded", "false");
+      masthead.classList.remove("nav-open");
+    }
+  }
+
+  function openMenu(){
+    menuBtn.setAttribute("aria-expanded", "true");
+    masthead.classList.add("nav-open");
+    nav.querySelector("a").focus();
+  }
+
+  /* view tabs */
+  tabs.forEach(function(tab, i){
+    tab.addEventListener("click", function(){
+      activateView(tab.getAttribute("data-view-tab"), true);
+      tab.focus();
+    });
+    tab.addEventListener("keydown", function(e){
+      var dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+      if (!dir) return;
+      e.preventDefault();
+      var next = tabs[(i + dir + tabs.length) % tabs.length];
+      next.focus();
+      activateView(next.getAttribute("data-view-tab"), true);
+    });
+  });
+
+  /* nav links + brand + footer: data-goto navigation */
+  document.addEventListener("click", function(e){
+    var link = e.target.closest("[data-goto]");
+    if (!link) return;
+    e.preventDefault();
+    goTo(link.getAttribute("data-goto"));
+  });
+
+  /* mobile menu */
+  if (menuBtn){
+    menuBtn.addEventListener("click", function(){
+      var open = menuBtn.getAttribute("aria-expanded") === "true";
+      if (open) closeMenu(); else openMenu();
+    });
+    document.addEventListener("keydown", function(e){
+      if (e.key === "Escape") closeMenu();
+    });
+    document.addEventListener("click", function(e){
+      if (masthead.classList.contains("nav-open") && !e.target.closest(".masthead")) closeMenu();
+    });
+    window.addEventListener("resize", function(){
+      if (window.innerWidth > 960) closeMenu();
+    });
+  }
+
+  /* demo contact form */
+  var form = document.getElementById("contact-form");
+  if (form){
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      var fb = document.getElementById("form-feedback");
+      if (fb){
+        fb.textContent = "Demo form — thank you. In the live build this enquiry routes to info@amsma.in.";
+        fb.style.color = "#C23610";
+        fb.style.fontWeight = "700";
+      }
+    });
+  }
+
+  /* initial view from hash (deep link) */
+  var initial = location.hash.replace("#", "");
+  if (initial && sectionView(initial)){
+    goTo(initial);
+  }
+})();
+</script>
+</body>
+</html>

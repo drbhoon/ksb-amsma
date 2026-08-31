@@ -1,12 +1,24 @@
-node_modules
-.next
-out
-.env
-.env.local
-.env.*.local
+# Source material and audit copies
+/audit/
+/source-readonly/
+/reference/
+/content-brief.md
+/evidence-notes.md
+/committee-linkedin-research.md
+/*-task.md
+/prioritization-brief.md
+/marketing-profile-research-task.md
+
+# Generated review material
+/validation/
+/presentation/
+/*.zip
+/concept-foundation/_cdp_shot.mjs
+/aggregates-europe-full.png
+/current-site-*.png
+/transcribe_videos.py
+
+# Local tooling
+__pycache__/
+*.pyc
 .DS_Store
-*.log
-.vscode
-next-env.d.ts
-/coverage
-tsconfig.tsbuildinfo
