@@ -1,4 +1,6 @@
 :root{
+  --amsma-quarry-green:#273d33;
+  --amsma-earth-brown:#8e5f30;
   --forest:#18251d;
   --moss:#22352a;
   --ink:#1e2b23;
@@ -125,7 +127,7 @@ img.avatar{display:block;object-fit:cover}
 .site-footer{background:#141f18;color:rgba(242,237,225,.82);padding:2.1rem clamp(1rem,4vw,3rem)}
 .footer-inner{max-width:78rem;margin:auto;display:grid;grid-template-columns:minmax(15rem,1fr) auto auto;gap:2rem;align-items:start}
 .footer-tag{max-width:29rem;margin:.8rem 0 0;font-size:.9rem}
-.footer-logo{display:block;width:12rem;height:auto;background:#fff}
+.footer-mark{display:block;width:4.8rem;height:auto}
 .footer-nav{display:flex;flex-wrap:nowrap;gap:.25rem 1rem}
 .footer-nav a{min-height:44px;display:flex;align-items:center;color:rgba(242,237,225,.82);text-decoration:none;font:700 .64rem/1 var(--sans);letter-spacing:.12em;text-transform:uppercase}
 .footer-nav a:hover{color:var(--clay)}
