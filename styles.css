@@ -106,7 +106,7 @@ h3{font-size:1.25rem}
 .person{min-width:0;border:1px solid var(--line-light);background:var(--chalk);padding:1.25rem}
 .avatar{width:4.4rem;height:4.4rem;border-radius:50%;display:grid;place-items:center;background:var(--forest);color:var(--sand);font:700 1.1rem/1 var(--sans);letter-spacing:.1em;margin-bottom:1rem;transition:transform .2s ease,filter .2s ease,box-shadow .2s ease}
 img.avatar{display:block;object-fit:cover}
-.person:hover .avatar{transform:scale(1.08);filter:brightness(1.1) saturate(1.08);box-shadow:0 0 0 4px var(--clay),0 .65rem 1.3rem rgba(24,37,29,.24)}
+.person:hover .avatar{transform:scale(1.03);filter:brightness(1.03) saturate(1.02);box-shadow:0 0 0 2px var(--sand),0 .35rem .8rem rgba(24,37,29,.14)}
 .person h2{font-size:1.18rem;line-height:1.25;overflow-wrap:anywhere}
 .role{margin:.65rem 0 0;color:var(--clay-deep);font:700 .66rem/1.45 var(--sans);letter-spacing:.11em;text-transform:uppercase}
 .contact-panel{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:2rem}
