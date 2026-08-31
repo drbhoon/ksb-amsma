@@ -30,7 +30,11 @@ p{overflow-wrap:break-word}
 .site-header{position:sticky;top:0;z-index:100;background:rgba(242,237,225,.97);border-bottom:1px solid var(--line-light)}
 .header-inner{max-width:84rem;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.72rem clamp(1rem,4vw,3rem)}
 .brand{display:flex;align-items:center;color:var(--ink);text-decoration:none;line-height:1.08;min-width:0}
-.brand-logo{display:block;width:9.5rem;height:auto}
+.brand-symbol{display:block;width:3.5rem;height:3.35rem;object-fit:contain;flex:0 0 auto}
+.brand-lockup{display:grid;grid-template-columns:auto auto;align-items:end;column-gap:.55rem;margin-left:.65rem;font-family:var(--sans);text-transform:uppercase}
+.brand-word{grid-column:1/-1;font-size:1.55rem;font-weight:800;line-height:.9;letter-spacing:.06em;color:var(--amsma-quarry-green)}
+.brand-name{margin-top:.38rem;font-size:.53rem;font-weight:800;line-height:1.05;letter-spacing:.045em;color:var(--ink)}
+.brand-est{font-size:.48rem;font-weight:800;letter-spacing:.08em;white-space:nowrap;color:var(--ink)}
 .brand-mark{font-weight:700;font-size:1.35rem;letter-spacing:.15em}
 .brand-sub{font:600 .55rem/1.3 var(--sans);letter-spacing:.18em;text-transform:uppercase;opacity:.72;margin-top:.22rem}
 .topnav{display:flex;align-items:center;gap:.15rem}
@@ -151,6 +155,11 @@ img.avatar{display:block;object-fit:cover}
 }
 @media(max-width:600px){
   .brand{width:100%;max-width:100%}
+  .brand-symbol{width:3rem;height:2.9rem}
+  .brand-lockup{margin-left:.5rem;column-gap:.35rem}
+  .brand-word{font-size:1.35rem}
+  .brand-name{font-size:.46rem}
+  .brand-est{font-size:.43rem}
   .brand-sub{font-size:.56rem;letter-spacing:.1em;overflow-wrap:anywhere}
   .topnav{grid-template-columns:repeat(6,minmax(0,1fr))}
   .topnav a{min-width:0;font-size:.66rem;line-height:1.2;letter-spacing:.05em;white-space:normal;overflow-wrap:anywhere}
