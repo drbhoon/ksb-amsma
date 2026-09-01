@@ -22,13 +22,15 @@ export const metadata: Metadata = {
     template: '%s · AMSMA',
   },
   description:
-    "India's national voice for the aggregate industry — advancing knowledge, sustainability, and responsible practice for the infrastructure of tomorrow.",
+    "Knowledge, standards and responsible practice for India's aggregate and M sand sector.",
   metadataBase: new URL(siteUrl()),
   openGraph: {
     type: 'website',
     locale: 'en_IN',
     siteName: 'AMSMA',
+    images: ['/assets/quarry-nesting-habitat-poster.jpg'],
   },
+  icons: { icon: '/assets/brand/AMSMA_QuarryStrata_Option3_Primary.svg' },
   // Off until SITE_INDEXABLE=true. See app/robots.ts for why.
   robots: {
     index: process.env.SITE_INDEXABLE === 'true',

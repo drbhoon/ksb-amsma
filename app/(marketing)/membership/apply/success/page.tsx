@@ -26,7 +26,7 @@ export default function ApplySuccessPage({ searchParams }: Props) {
             You will hear back from us once the committee has completed its review — typically within 7–14 days.
           </p>
         </div>
-        <a href="https://drbhoon.github.io/ksb-amsma/" className="btn-primary">Return to Homepage</a>
+        <a href="/" className="btn-primary">Return to Homepage</a>
       </div>
     </section>
   );

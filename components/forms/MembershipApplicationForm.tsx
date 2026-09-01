@@ -333,7 +333,7 @@ export function MembershipApplicationForm() {
           />
           <span className="text-sm text-stone-700">
             I consent to AMSMA using my application data to assess and manage membership. I understand that AMSMA will retain the data only for its legal, governance, and membership needs. I have read the{' '}
-            <a href="https://drbhoon.github.io/ksb-amsma/privacy/" target="_blank" rel="noopener noreferrer" className="font-semibold text-amber underline underline-offset-2">privacy note</a>.
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-amber underline underline-offset-2">privacy note</a>.
           </span>
         </label>
         <FieldError id="field-agreePrivacy" message={fieldErrors.agreePrivacy} />

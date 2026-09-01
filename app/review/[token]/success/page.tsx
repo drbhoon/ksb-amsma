@@ -25,7 +25,7 @@ export default function ReviewSuccessPage({ searchParams }: Props) {
           The applicant will be notified automatically once the committee reaches a decision
           (2/3 majority for approval, or when approval becomes mathematically impossible).
         </p>
-        <a href="https://drbhoon.github.io/ksb-amsma/" className="btn-primary mt-8 inline-flex">Close</a>
+        <a href="/" className="btn-primary mt-8 inline-flex">Close</a>
       </div>
     </main><Footer /></>
   );

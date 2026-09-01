@@ -26,7 +26,7 @@ export default function PaymentSuccessPage({ searchParams }: Props) {
         <p className="text-sm text-stone-600 mb-8">
           A receipt has been emailed to you. A formal GST invoice will follow separately.
         </p>
-        <a href="https://drbhoon.github.io/ksb-amsma/" className="btn-primary">Return to Homepage</a>
+        <a href="/" className="btn-primary">Return to Homepage</a>
       </div>
     </div>
   );

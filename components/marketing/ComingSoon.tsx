@@ -15,11 +15,11 @@ export function ComingSoon({
   blurb: string;
 }) {
   return (
-    <div className="bg-stone-50">
-      <div className="container-x max-w-3xl py-24 text-center">
-        <div className="text-xs uppercase tracking-[0.15em] text-stone-500 mb-3">{phase}</div>
-        <h1 className="font-display font-bold text-4xl tracking-tight mb-5">{title}</h1>
-        <p className="text-stone-700 leading-relaxed mb-10">{blurb}</p>
+    <div className="ll-section ll-alt min-h-[60vh]">
+      <div className="ll-section-inner max-w-3xl py-16 text-center">
+        <div className="ll-kicker">{phase}</div>
+        <h1 className="ll-heading mb-5">{title}</h1>
+        <p className="leading-relaxed mb-10">{blurb}</p>
         <div className="flex flex-wrap gap-3 justify-center">
           <Link href="/" className="btn-primary">
             Back to home

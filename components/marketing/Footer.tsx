@@ -1,5 +1,3 @@
-const WEBSITE = 'https://drbhoon.github.io/ksb-amsma';
-
 export function Footer() {
   return (
     <footer className="amsma-footer">
@@ -9,7 +7,7 @@ export function Footer() {
           <p className="amsma-footer-tag">Knowledge, standards and responsible practice for the aggregate and M sand sector.</p>
         </div>
         <nav className="amsma-footer-nav" aria-label="Footer navigation">
-          <a href={`${WEBSITE}/`}>Home</a><a href={`${WEBSITE}/about/`}>About</a><a href={`${WEBSITE}/#responsible-extraction`}>Our Work</a><a href={`${WEBSITE}/committee/`}>Committee</a><a href="/membership">Membership</a><a href={`${WEBSITE}/contact/`}>Contact</a><a href={`${WEBSITE}/privacy/`}>Privacy</a>
+          <a href="/">Home</a><a href="/about">About</a><a href="/#responsible-extraction">Our Work</a><a href="/committee">Committee</a><a href="/membership">Membership</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a>
         </nav>
         <div className="amsma-footer-contact"><p><a href="mailto:info@amsma.in">info@amsma.in</a></p><p>Thane, Maharashtra</p></div>
       </div>

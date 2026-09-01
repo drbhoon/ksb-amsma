@@ -1,13 +1,17 @@
-import { ComingSoon } from '@/components/marketing/ComingSoon';
+import Link from 'next/link';
 
-export const metadata = { title: 'About AMSMA' };
+export const metadata = { title: 'About AMSMA', description: 'About the purpose and governance of AMSMA.' };
 
-export default function Page() {
-  return (
-    <ComingSoon
-      title="About AMSMA"
-      phase="Phase 2"
-      blurb="The Association is being registered as a Society under the Societies Registration Act, 1860 (Maharashtra). Full background, mandate and objectives will be published here shortly."
-    />
-  );
+export default function AboutPage() {
+  return <>
+    <header className="ll-page-hero"><div className="ll-page-hero-inner"><p className="ll-eyebrow">About AMSMA</p><h1 className="ll-title">A shared platform for knowledge, responsibility and progress.</h1><p className="ll-lede">The Aggregate &amp; M sand Manufacturers Association serves India&apos;s aggregate and M sand sector. Its purpose connects industry development with education, public benefit and environmental responsibility.</p></div></header>
+    <section className="ll-section"><div className="ll-section-inner ll-content-grid"><div><p className="ll-kicker">Mission</p><h2 className="ll-heading">Why the Association exists.</h2></div><div className="ll-prose"><p>AMSMA is a forum for technical exchange, education, responsible practice and constructive policy engagement. Its governing objects cover research, training, standards, ethics, technology, cooperation and environmental protection.</p><p>The Association uses these objects to guide its programmes, partnerships and representation of the sector.</p></div></div></section>
+    <section className="ll-section ll-dark"><div className="ll-section-inner"><p className="ll-eyebrow">Production in brief</p><h2 className="ll-heading">A connected four-step sequence.</h2><p className="ll-section-intro">Aggregate production moves through extraction, crushing, conveying and screening before the finished material is placed in stockpiles.</p><div className="ll-process-grid"><Step image="/assets/living-process-extract.jpg" number="Step 01" title="Extract">Machinery removes and loads rock.</Step><Step image="/assets/living-process-crush.jpg" number="Step 02" title="Crush">Equipment reduces the rock.</Step><Step image="/assets/living-process-screen.jpg" number="Step 03" title="Convey and screen">Material moves through visible screening stages.</Step><Step image="/assets/process-stockpile.jpg" number="Step 04" title="Stockpile">Finished aggregate is placed in stockpiles.</Step></div></div></section>
+    <section className="ll-section ll-alt"><div className="ll-section-inner ll-content-grid"><div><p className="ll-kicker">Governance</p><h2 className="ll-heading">Member-led and non-profit.</h2></div><div className="ll-prose"><p>The governing records place management and administration with a Managing Committee. They provide for meetings, voting, accounts and audit. The Memorandum directs income and property to the Association&apos;s aims rather than distribution as profit to members.</p><p>The formation resolution dated 26 May 2026 names the Managing Committee members. The Committee page presents the current roster.</p><div className="ll-button-row"><Link className="ll-button ll-button-solid" href="/committee">Meet the Committee</Link></div></div></div></section>
+    <section className="ll-section"><div className="ll-section-inner ll-content-grid"><div><p className="ll-kicker">Contact</p><h2 className="ll-heading">Start with the secretariat.</h2></div><div className="ll-prose"><p>Questions about AMSMA&apos;s purpose, governance, areas of work or membership can be sent to <a href="mailto:info@amsma.in">info@amsma.in</a>.</p><div className="ll-teaser"><h3 className="ll-subheading">Considering membership?</h3><p>Review the categories, eligibility, annual subscriptions and committee-led application process.</p><Link className="ll-button ll-button-solid" href="/membership">Membership</Link></div></div></div></section>
+  </>;
+}
+
+function Step({ image, number, title, children }: { image: string; number: string; title: string; children: React.ReactNode }) {
+  return <article className="ll-step"><img src={image} alt="Aggregate production process" width="1280" height="720" loading="lazy" /><span className="ll-step-num">{number}</span><h3 className="ll-subheading">{title}</h3><p>{children}</p></article>;
 }
