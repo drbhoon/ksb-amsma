@@ -31,6 +31,7 @@ type FormData = {
   seconderName: string;
   seconderEmail: string;
   agreeRules: boolean;
+  agreePrivacy: boolean;
 };
 
 const initialForm: FormData = {
@@ -40,7 +41,7 @@ const initialForm: FormData = {
   signatoryName: '', signatoryDesignation: '', signatoryEmail: '', signatoryPhone: '',
   companyProofUrl: '', companyProofType: '',
   proposerName: '', proposerEmail: '', seconderName: '', seconderEmail: '',
-  agreeRules: false,
+  agreeRules: false, agreePrivacy: false,
 };
 
 export function MembershipApplicationForm() {
@@ -140,7 +141,7 @@ export function MembershipApplicationForm() {
           {TIERS_LIST.map((tier) => (
             <label
               key={tier.id}
-              className={`flex items-start gap-4 p-4 border rounded-lg cursor-pointer transition-all ${
+              className={`flex items-start gap-4 p-4 border cursor-pointer transition-all ${
                 form.tier === tier.id
                   ? 'border-amber bg-amber/5'
                   : 'border-stone-200 hover:border-stone-300 bg-white'
@@ -199,7 +200,7 @@ export function MembershipApplicationForm() {
         </div>
 
         {isOrdinary && (
-          <div className="p-4 bg-amber/5 border border-amber/20 rounded-lg space-y-3">
+          <div className="p-4 bg-amber/5 border border-amber/20 space-y-3">
             <p className="text-sm text-stone-700">
               <strong>Ordinary Members</strong> must have a minimum crushing capacity of <strong>50,000 MT/month</strong>.
               Capacity above 1 lakh MT/month qualifies for the Large tier automatically.
@@ -281,7 +282,7 @@ export function MembershipApplicationForm() {
 
       {/* ==== Proposer & Seconder ==== */}
       <Section title="6. Proposer & Seconder" note="Per Rule 4, applications must be proposed and seconded by existing members. Please name two committee members below.">
-        <div className="p-3 bg-stone-50 border border-stone-100 rounded-md text-xs text-stone-600 mb-2">
+        <div className="p-3 bg-stone-50 border border-stone-100 text-xs text-stone-600 mb-2">
           Current committee members: {COMMITTEE_MEMBERS.map(m => m.name.replace(/^(Prof\. Dr\.|Dr\.|Mr\.|Ms\.) /, '')).join(' · ')}
         </div>
         <div className="grid md:grid-cols-2 gap-4">
@@ -296,7 +297,7 @@ export function MembershipApplicationForm() {
       <Section title="7. Declaration">
         <label
           className={
-            'flex items-start gap-3 p-4 rounded-lg border ' +
+            'flex items-start gap-3 p-4 border ' +
             (fieldErrors.agreeRules ? 'bg-red-50 border-red-400' : 'bg-stone-50 border-stone-200')
           }
         >
@@ -316,6 +317,26 @@ export function MembershipApplicationForm() {
           </span>
         </label>
         <FieldError id="field-agreeRules" message={fieldErrors.agreeRules} />
+        <label
+          className={
+            'flex items-start gap-3 p-4 border ' +
+            (fieldErrors.agreePrivacy ? 'bg-red-50 border-red-400' : 'bg-stone-50 border-stone-200')
+          }
+        >
+          <input
+            type="checkbox"
+            checked={form.agreePrivacy}
+            onChange={(e) => update('agreePrivacy', e.target.checked)}
+            id="field-agreePrivacy"
+            aria-invalid={fieldErrors.agreePrivacy ? true : undefined}
+            className="mt-1"
+          />
+          <span className="text-sm text-stone-700">
+            I consent to AMSMA using my application data to assess and manage membership. I understand that AMSMA will retain the data only for its legal, governance, and membership needs. I have read the{' '}
+            <a href="https://drbhoon.github.io/ksb-amsma/privacy/" target="_blank" rel="noopener noreferrer" className="font-semibold text-amber underline underline-offset-2">privacy note</a>.
+          </span>
+        </label>
+        <FieldError id="field-agreePrivacy" message={fieldErrors.agreePrivacy} />
       </Section>
 
       {(error || Object.keys(fieldErrors).length > 0) && (
@@ -323,7 +344,7 @@ export function MembershipApplicationForm() {
           id="error-summary"
           role="alert"
           tabIndex={-1}
-          className="p-4 bg-red-50 border border-red-300 rounded-lg"
+          className="p-4 bg-red-50 border border-red-300"
         >
           <p className="font-semibold text-red-900">{error || 'Please correct the following:'}</p>
           {Object.keys(fieldErrors).length > 0 && (
@@ -369,7 +390,7 @@ export function MembershipApplicationForm() {
 
 function Section({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 border-t border-stone-300 pt-8 first:border-t-0 first:pt-0">
       <div>
         <h2 className="font-display font-semibold text-xl">{title}</h2>
         {note && <p className="text-sm text-stone-500 mt-1">{note}</p>}
@@ -397,7 +418,7 @@ type InputProps = {
 /** Shared classes so an errored control looks the same everywhere. */
 function controlClass(hasError?: boolean) {
   return (
-    'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ' +
+    'w-full px-3 py-3 border bg-[#fffdf8] focus:outline-none focus:ring-2 ' +
     (hasError
       ? 'border-red-500 bg-red-50 focus:ring-red-400 focus:border-red-500'
       : 'border-stone-300 focus:ring-amber focus:border-amber')

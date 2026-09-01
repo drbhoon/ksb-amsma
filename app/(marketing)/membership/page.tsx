@@ -10,7 +10,7 @@ export default function MembershipPage() {
   return (
     <>
       {/* Header */}
-      <section className="bg-stone-900 text-white py-20">
+      <section className="membership-hero py-20">
         <div className="container-x max-w-4xl">
           <span className="inline-block text-sm font-semibold uppercase tracking-[0.12em] text-amber-light
                            pl-12 relative before:content-[''] before:absolute before:left-0 before:top-1/2
@@ -26,13 +26,13 @@ export default function MembershipPage() {
       </section>
 
       {/* Tiers */}
-      <section className="bg-stone-50 py-20">
+      <section className="membership-surface py-20">
         <div className="container-x">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
             {TIERS_LIST.map((tier) => (
               <div
                 key={tier.id}
-                className="bg-white rounded-xl p-8 border border-black/5 flex flex-col"
+                className="membership-card p-8 flex flex-col"
               >
                 <div className="text-xs text-amber font-semibold uppercase tracking-[0.1em] mb-2">
                   {tier.category}
@@ -72,7 +72,7 @@ export default function MembershipPage() {
       </section>
 
       {/* Process */}
-      <section className="bg-white py-20">
+      <section className="bg-[#fbf8f0] py-20">
         <div className="container-x max-w-4xl">
           <span className="section-eyebrow">How it Works</span>
           <h2 className="section-title mt-4 mb-12">Four steps from application to active membership.</h2>
@@ -103,7 +103,7 @@ export default function MembershipPage() {
 function Step({ num, title, children }: { num: string; title: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-6">
-      <div className="flex-shrink-0 w-12 h-12 bg-amber text-white rounded-full flex items-center justify-center font-display font-bold text-lg">
+      <div className="flex-shrink-0 w-12 h-12 bg-amber text-white flex items-center justify-center font-display font-bold text-lg">
         {num}
       </div>
       <div>

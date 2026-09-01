@@ -41,7 +41,7 @@ export function TestModeCheckout(props: Props) {
 
   return (
     <>
-      <div className="p-4 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-900">
+      <div className="p-4 bg-amber-50 border border-amber-300 text-sm text-amber-900">
         <strong className="block mb-1">Test mode — no payment will be taken</strong>
         Razorpay is not yet connected. This button records the subscription as paid
         so the membership flow can be tested end to end. The Register of Members
@@ -49,7 +49,7 @@ export function TestModeCheckout(props: Props) {
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">{error}</div>
+        <div className="p-4 bg-red-50 border border-red-200 text-sm text-red-800">{error}</div>
       )}
 
       <button

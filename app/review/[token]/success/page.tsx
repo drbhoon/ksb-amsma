@@ -1,4 +1,5 @@
-import Link from 'next/link';
+import { Header } from '@/components/marketing/Header';
+import { Footer } from '@/components/marketing/Footer';
 
 export const metadata = { title: 'Vote Recorded' };
 
@@ -8,9 +9,9 @@ export default function ReviewSuccessPage({ searchParams }: Props) {
   const isApproval = searchParams.d === 'APPROVE';
   const no = searchParams.no || '';
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center py-16">
+    <><Header /><main className="min-h-screen membership-surface flex items-center justify-center py-16">
       <div className="container-x max-w-lg text-center">
-        <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 ${isApproval ? 'bg-emerald-500' : 'bg-red-700'}`}>
+        <div className={`w-16 h-16 flex items-center justify-center mx-auto mb-6 ${isApproval ? 'bg-emerald-700' : 'bg-red-700'}`}>
           <span className="text-white text-3xl">{isApproval ? '✓' : '✕'}</span>
         </div>
         <h1 className="font-display font-bold text-3xl tracking-tight mb-4">
@@ -24,8 +25,8 @@ export default function ReviewSuccessPage({ searchParams }: Props) {
           The applicant will be notified automatically once the committee reaches a decision
           (2/3 majority for approval, or when approval becomes mathematically impossible).
         </p>
-        <Link href="/" className="btn-primary mt-8 inline-flex">Close</Link>
+        <a href="https://drbhoon.github.io/ksb-amsma/" className="btn-primary mt-8 inline-flex">Close</a>
       </div>
-    </div>
+    </main><Footer /></>
   );
 }

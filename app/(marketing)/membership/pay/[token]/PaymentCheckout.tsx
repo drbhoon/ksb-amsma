@@ -68,7 +68,7 @@ export function PaymentCheckout(props: Props) {
           application_no: props.applicationNo,
           organization: props.organizationName,
         },
-        theme: { color: '#d97b30' },
+        theme: { color: '#96501f' },
         handler: async (response: any) => {
           // Verify payment signature server-side
           try {
@@ -110,7 +110,7 @@ export function PaymentCheckout(props: Props) {
   return (
     <>
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">{error}</div>
+        <div className="p-4 bg-red-50 border border-red-200 text-sm text-red-800">{error}</div>
       )}
       <button
         onClick={pay}

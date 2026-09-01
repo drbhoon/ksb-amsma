@@ -21,8 +21,8 @@ const config: Config = {
           950: '#0f1114',
         },
         amber: {
-          DEFAULT: '#d97b30',
-          light:   '#e8a838',
+          DEFAULT: '#96501f',
+          light:   '#d8c9a6',
         },
         terracotta: '#a54a2a',
         sage:       '#6b7d5c',

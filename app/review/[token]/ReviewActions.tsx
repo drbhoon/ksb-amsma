@@ -42,7 +42,7 @@ export function ReviewActions({ token, applicationNo }: { token: string; applica
           rows={3}
           maxLength={500}
           placeholder="Any observations or reasons…"
-          className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber focus:border-amber"
+          className="w-full px-3 py-3 border border-stone-300 bg-[#fffdf8] focus:outline-none focus:ring-2 focus:ring-amber focus:border-amber"
         />
       </label>
       {error && <p className="text-sm text-red-700 mb-3">{error}</p>}

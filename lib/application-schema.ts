@@ -38,6 +38,7 @@ export const FIELD_LABELS: Record<string, string> = {
   seconderName: 'Seconder name',
   seconderEmail: 'Seconder email',
   agreeRules: 'Declaration',
+  agreePrivacy: 'Privacy consent',
 };
 
 /**
@@ -161,6 +162,11 @@ export const applicationSchema = z
     agreeRules: z.literal(true, {
       errorMap: () => ({
         message: 'You must accept the Memorandum and Rules & Regulations to apply.',
+      }),
+    }),
+    agreePrivacy: z.literal(true, {
+      errorMap: () => ({
+        message: 'You must consent to the use and retention of your application data.',
       }),
     }),
   })

@@ -6,9 +6,9 @@ export const metadata = { title: 'Apply for Membership' };
 export default function ApplyPage() {
   return (
     <>
-      <section className="bg-stone-900 text-white py-16">
+      <section className="membership-hero py-16 md:py-20">
         <div className="container-x max-w-4xl">
-          <Link href="/membership" className="text-amber-light text-sm hover:underline">← Back to Membership</Link>
+          <Link href="/membership" className="membership-kicker hover:underline">← Back to Membership</Link>
           <h1 className="font-display font-bold text-3xl md:text-4xl leading-tight tracking-tight mt-4">
             Membership Application
           </h1>
@@ -19,9 +19,9 @@ export default function ApplyPage() {
         </div>
       </section>
 
-      <section className="bg-stone-50 py-16">
+      <section className="membership-surface py-12 md:py-16">
         <div className="container-x max-w-3xl">
-          <div className="bg-white p-8 md:p-10 rounded-xl border border-stone-100 shadow-sm">
+          <div className="membership-card p-5 sm:p-8 md:p-10">
             <MembershipApplicationForm />
           </div>
         </div>

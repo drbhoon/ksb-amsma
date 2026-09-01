@@ -4,6 +4,8 @@ import { MEMBERSHIP_TIERS, formatInr } from '@/config/membership';
 import { APPROVAL_QUORUM, APPROVERS } from '@/config/committee-members';
 import { tallyReviews } from '@/lib/membership';
 import { ReviewActions } from './ReviewActions';
+import { Header } from '@/components/marketing/Header';
+import { Footer } from '@/components/marketing/Footer';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,10 +31,10 @@ export default async function ReviewPage({ params }: Props) {
   const { approvals, rejections, pending } = await tallyReviews(app.id);
 
   return (
-    <div className="min-h-screen bg-stone-50 py-16">
+    <><Header /><main className="min-h-screen membership-surface py-12 md:py-16">
       <div className="container-x max-w-3xl">
         {/* Header card */}
-        <div className="bg-stone-900 text-white rounded-t-xl p-8">
+        <div className="membership-hero p-8">
           <div className="text-xs uppercase tracking-[0.12em] text-amber-light mb-2">
             Managing Committee — Application Review
           </div>
@@ -45,7 +47,7 @@ export default async function ReviewPage({ params }: Props) {
         </div>
 
         {/* Body card */}
-        <div className="bg-white rounded-b-xl p-8 space-y-8">
+        <div className="membership-card border-t-0 p-5 sm:p-8 space-y-8">
           {expired ? (
             <StatusBanner variant="warning">
               This review link expired on {review.tokenExpiresAt.toLocaleDateString('en-IN')}.
@@ -127,7 +129,7 @@ export default async function ReviewPage({ params }: Props) {
           approval of the Managing Committee ({APPROVAL_QUORUM} of {APPROVERS.length} members).
         </p>
       </div>
-    </div>
+    </main><Footer /></>
   );
 }
 
@@ -157,7 +159,7 @@ function TallyCard({ label, count, target, colour }: { label: string; count: num
     stone:   'bg-stone-50 text-stone-700 border-stone-200',
   };
   return (
-    <div className={`border rounded-lg p-4 text-center ${colourMap[colour]}`}>
+    <div className={`border p-4 text-center ${colourMap[colour]}`}>
       <div className="text-xs uppercase tracking-[0.1em] font-semibold">{label}</div>
       <div className="font-display font-bold text-2xl mt-1">{count}<span className="text-sm font-normal opacity-60"> / {target}</span></div>
     </div>
@@ -171,7 +173,7 @@ function StatusBanner({ variant, children }: { variant: 'success' | 'warning' | 
     info:    'bg-stone-50 border-stone-200 text-stone-800',
   };
   return (
-    <div className={`p-4 rounded-lg border ${map[variant]} text-sm`}>
+    <div className={`p-4 border ${map[variant]} text-sm`}>
       {children}
     </div>
   );

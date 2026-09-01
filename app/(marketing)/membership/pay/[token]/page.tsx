@@ -39,10 +39,10 @@ export default async function PaymentPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 py-16">
+    <div className="min-h-screen membership-surface py-12 md:py-16">
       <div className="container-x max-w-2xl">
-        <div className="bg-white rounded-xl overflow-hidden border border-stone-100 shadow-sm">
-          <div className="bg-stone-900 text-white p-8">
+        <div className="membership-card overflow-hidden">
+          <div className="membership-hero p-8">
             <div className="text-xs uppercase tracking-[0.12em] text-amber-light mb-2">Application Approved</div>
             <h1 className="font-display font-bold text-3xl tracking-tight">Complete Payment</h1>
             <p className="text-white/80 mt-2 text-sm">
@@ -59,7 +59,7 @@ export default async function PaymentPage({ params }: Props) {
               <Detail k="PAN" v={app.pan} />
             </div>
 
-            <div className="bg-stone-50 rounded-lg p-6 flex items-baseline justify-between">
+            <div className="bg-[#f2ede1] border border-stone-200 p-6 flex items-baseline justify-between">
               <div>
                 <div className="text-xs uppercase tracking-[0.1em] text-stone-500">Amount Payable</div>
                 <div className="text-sm text-stone-600 mt-1">Annual subscription — {tier.category}</div>
@@ -85,7 +85,7 @@ export default async function PaymentPage({ params }: Props) {
                 amountRupees={tier.annualFeeRupees}
               />
             ) : (
-              <div className="p-4 bg-stone-100 border border-stone-300 rounded-lg text-sm text-stone-700">
+              <div className="p-4 bg-stone-100 border border-stone-300 text-sm text-stone-700">
                 <strong className="block mb-1">Online payment is not yet available</strong>
                 The Association is completing its registration formalities and the
                 payment gateway is not live. The Secretariat will contact you at{' '}
@@ -116,7 +116,7 @@ function Detail({ k, v }: { k: string; v: string }) {
 
 function Status({ heading, body }: { heading: string; body: string }) {
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center py-16">
+    <div className="min-h-screen membership-surface flex items-center justify-center py-16">
       <div className="container-x max-w-lg text-center">
         <h1 className="font-display font-bold text-3xl tracking-tight mb-4">{heading}</h1>
         <p className="text-stone-700">{body}</p>
