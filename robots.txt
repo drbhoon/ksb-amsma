@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://drbhoon.github.io/ksb-amsma/sitemap.xml
