@@ -36,7 +36,7 @@ export default function HomePage() {
 
       <section className="ll-section ll-dark" id="responsible-extraction" aria-labelledby="process-title">
         <div className="ll-section-inner" data-reveal><p className="ll-eyebrow">Responsible extraction</p><h2 id="process-title" className="ll-heading">From quarry face to stockpile.</h2><p className="ll-section-intro">Modern aggregate production follows a connected sequence of extraction, crushing, conveying, screening and stockpiling.</p>
-          <div className="ll-process-grid ll-process-journey">
+          <div className="ll-process-grid">
             <ProcessStep image="/assets/living-process-extract.jpg" alt="Excavator feeding rock into a hopper" number="Step 01" title="Extract">Machinery removes and loads rock at the quarry face.</ProcessStep>
             <ProcessStep image="/assets/living-process-crush.jpg" alt="Angular rocks between heavy metal machine components" number="Step 02" title="Crush">Crushing equipment reduces the extracted rock.</ProcessStep>
             <ProcessStep image="/assets/living-process-screen.jpg" alt="Rocks resting on woven metal screen mesh" number="Step 03" title="Convey and screen">Conveyors move material through visible screening stages.</ProcessStep>

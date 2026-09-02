@@ -1,5 +1,5 @@
 const MEMBERS = [
-  ['ramesh-murlidhar-bhatawdekar.jpg','Dr. Ramesh M. Bhatawdekar','President · Managing Committee member'],
+  ['ramesh-murlidhar-bhatawdekar.jpg','Dr. Ramesh M. Bhatawdekar','President'],
   ['trilok-nath-singh.jpg','Dr. Trilok Nath Singh','Managing Committee member'],
   ['brv-susheel-kumar.jpg','Mr. B.R.V. Susheel Kumar','Managing Committee member'],
   ['karnail-singh-bhoon.jpg','Dr. Karnail Singh Bhoon','Managing Committee member'],
