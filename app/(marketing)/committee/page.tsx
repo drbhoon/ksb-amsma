@@ -1,10 +1,10 @@
 const MEMBERS = [
-  ['ramesh-murlidhar-bhatawdekar.jpg','Dr. Ramesh Murlidhar Bhatawdekar','President · Managing Committee member'],
-  ['trilok-nath-singh.jpg','Prof. Dr. Trilok Nath Singh','Managing Committee member'],
-  ['brv-susheel-kumar.jpg','Mr. Basavaraju Rohini Venkata Susheel Kumar','Managing Committee member'],
+  ['ramesh-murlidhar-bhatawdekar.jpg','Dr. Ramesh M. Bhatawdekar','President · Managing Committee member'],
+  ['trilok-nath-singh.jpg','Dr. Trilok Nath Singh','Managing Committee member'],
+  ['brv-susheel-kumar.jpg','Mr. B.R.V. Susheel Kumar','Managing Committee member'],
   ['karnail-singh-bhoon.jpg','Dr. Karnail Singh Bhoon','Managing Committee member'],
   ['anil-kumar-banchhor.jpg','Mr. Anil Kumar Banchhor','Managing Committee member'],
-  ['rahul-vasant-ralegaonkar.jpg','Mr. Rahul Vasant Ralegaonkar','Managing Committee member'],
+  ['rahul-vasant-ralegaonkar.jpg','Prof. Rahul V. Ralegaonkar','Managing Committee member'],
   ['srikant-annavarapu.jpg','Mr. Srikant Annavarapu','Managing Committee member'],
   ['rudra-mohan-sahu.jpg','Mr. Rudra Mohan Sahu','Managing Committee member'],
 ];

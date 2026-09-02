@@ -44,8 +44,8 @@ const payload = {
   signatoryEmail: 'ravi@deccanagg.test', signatoryPhone: '9876543210',
   companyProofUrl: 'https://drive.google.com/file/d/testproof',
   companyProofType: 'incorporation',
-  proposerName: 'Dr. Karnail Singh Bhoon', proposerEmail: 'ksbhoon@rdcconcrete.com',
-  seconderName: 'Mr. Rudra Mohan Sahu', seconderEmail: 'rmsahu@jagannathstones.com',
+  proposerName: 'Dr. Karnail Singh Bhoon', proposerEmail: 'karnail.singh.bhoon@example.com',
+  seconderName: 'Mr. Rudra Mohan Sahu', seconderEmail: 'rudra.mohan.sahu@example.com',
   agreeRules: true,
 };
 const applyRes = await fetch(`${BASE}/api/membership/apply`, {

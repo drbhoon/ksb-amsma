@@ -44,9 +44,9 @@ const initialForm: FormData = {
   agreeRules: false, agreePrivacy: false,
 };
 
-export function MembershipApplicationForm() {
+export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: MembershipTierId | '' }) {
   const router = useRouter();
-  const [form, setForm] = useState<FormData>(initialForm);
+  const [form, setForm] = useState<FormData>({ ...initialForm, tier: initialTier });
   const [status, setStatus] = useState<'idle' | 'submitting' | 'error'>('idle');
   const [error, setError] = useState('');
   // One message per field, shown inline AND collected into the summary panel.
@@ -63,6 +63,23 @@ export function MembershipApplicationForm() {
       if (!prev[key as string]) return prev;
       const next = { ...prev };
       delete next[key as string];
+      return next;
+    });
+  }
+
+  function selectCommitteeMember(kind: 'proposer' | 'seconder', slug: string) {
+    const member = COMMITTEE_MEMBERS.find((candidate) => candidate.slug === slug);
+    const nameKey = kind === 'proposer' ? 'proposerName' : 'seconderName';
+    const emailKey = kind === 'proposer' ? 'proposerEmail' : 'seconderEmail';
+    setForm((current) => ({
+      ...current,
+      [nameKey]: member?.name ?? '',
+      [emailKey]: member?.email ?? '',
+    }));
+    setFieldErrors((current) => {
+      const next = { ...current };
+      delete next[nameKey];
+      delete next[emailKey];
       return next;
     });
   }
@@ -281,15 +298,24 @@ export function MembershipApplicationForm() {
       </Section>
 
       {/* ==== Proposer & Seconder ==== */}
-      <Section title="6. Proposer & Seconder" note="Per Rule 4, applications must be proposed and seconded by existing members. Please name two committee members below.">
-        <div className="p-3 bg-stone-50 border border-stone-100 text-xs text-stone-600 mb-2">
-          Current committee members: {COMMITTEE_MEMBERS.map(m => m.name.replace(/^(Prof\. Dr\.|Dr\.|Mr\.|Ms\.) /, '')).join(' · ')}
-        </div>
+      <Section title="6. Proposer & Seconder" note="Per Rule 4, applications must be proposed and seconded by two different committee members.">
         <div className="grid md:grid-cols-2 gap-4">
-          <Input label="Proposer name *" value={form.proposerName} onChange={(v) => update('proposerName', v)} name="proposerName" error={fieldErrors.proposerName} required />
-          <Input label="Proposer email *" type="email" value={form.proposerEmail} onChange={(v) => update('proposerEmail', v)} name="proposerEmail" error={fieldErrors.proposerEmail} required />
-          <Input label="Seconder name *" value={form.seconderName} onChange={(v) => update('seconderName', v)} name="seconderName" error={fieldErrors.seconderName} required />
-          <Input label="Seconder email *" type="email" value={form.seconderEmail} onChange={(v) => update('seconderEmail', v)} name="seconderEmail" error={fieldErrors.seconderEmail} required />
+          <CommitteeMemberSelect
+            role="Proposer"
+            email={form.proposerEmail}
+            otherEmail={form.seconderEmail}
+            onChange={(slug) => selectCommitteeMember('proposer', slug)}
+            nameError={fieldErrors.proposerName}
+            emailError={fieldErrors.proposerEmail}
+          />
+          <CommitteeMemberSelect
+            role="Seconder"
+            email={form.seconderEmail}
+            otherEmail={form.proposerEmail}
+            onChange={(slug) => selectCommitteeMember('seconder', slug)}
+            nameError={fieldErrors.seconderName}
+            emailError={fieldErrors.seconderEmail}
+          />
         </div>
       </Section>
 
@@ -506,4 +532,72 @@ function Select({ label, value, onChange, options, required, name, error }: { la
       <FieldError id={id} message={error} />
     </div>
   );
+}
+
+function CommitteeMemberSelect({
+  role,
+  email,
+  otherEmail,
+  onChange,
+  nameError,
+  emailError,
+}: {
+  role: 'Proposer' | 'Seconder';
+  email: string;
+  otherEmail: string;
+  onChange: (slug: string) => void;
+  nameError?: string;
+  emailError?: string;
+}) {
+  const prefix = role.toLowerCase();
+  const selected = COMMITTEE_MEMBERS.find((member) => member.email === email);
+  const nameId = `field-${prefix}Name`;
+  const emailId = `field-${prefix}Email`;
+
+  return (
+    <div className="space-y-4 border border-stone-200 bg-stone-50 p-4">
+      <div>
+        <label htmlFor={nameId} className="block text-sm font-medium text-stone-700 mb-1">{role} name *</label>
+        <select
+          id={nameId}
+          value={selected?.slug ?? ''}
+          onChange={(event) => onChange(event.target.value)}
+          required
+          aria-invalid={nameError ? true : undefined}
+          aria-describedby={nameError ? `${nameId}-error` : undefined}
+          className={controlClass(!!nameError) + ' bg-white'}
+        >
+          <option value="">Select a committee member…</option>
+          {COMMITTEE_MEMBERS.map((member) => (
+            <option key={member.slug} value={member.slug} disabled={member.email === otherEmail}>
+              {member.name}
+            </option>
+          ))}
+        </select>
+        <FieldError id={nameId} message={nameError} />
+      </div>
+      <div>
+        <label htmlFor={emailId} className="block text-sm font-medium text-stone-700 mb-1">Email address</label>
+        <input
+          id={emailId}
+          type="text"
+          value={email ? maskEmail(email) : ''}
+          readOnly
+          tabIndex={-1}
+          placeholder="Auto-populated after selection"
+          aria-invalid={emailError ? true : undefined}
+          aria-describedby={emailError ? `${emailId}-error` : `${emailId}-hint`}
+          className={controlClass(!!emailError) + ' cursor-default bg-stone-100 text-stone-600'}
+        />
+        {!emailError && <p id={`${emailId}-hint`} className="mt-1 text-xs text-stone-500">The address is selected automatically and masked for privacy.</p>}
+        <FieldError id={emailId} message={emailError} />
+      </div>
+    </div>
+  );
+}
+
+function maskEmail(email: string) {
+  const [local, domain] = email.split('@');
+  if (!local || !domain) return '••••••••';
+  return `${local.charAt(0)}${'•'.repeat(Math.max(4, Math.min(local.length - 1, 8)))}@${domain}`;
 }

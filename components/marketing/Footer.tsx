@@ -7,11 +7,11 @@ export function Footer() {
           <p className="amsma-footer-tag">Knowledge, standards and responsible practice for the aggregate and M sand sector.</p>
         </div>
         <nav className="amsma-footer-nav" aria-label="Footer navigation">
-          <a href="/">Home</a><a href="/about">About</a><a href="/#responsible-extraction">Our Work</a><a href="/committee">Committee</a><a href="/membership">Membership</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a>
+          <a href="/">Home</a><a href="/about">About</a><a href="/committee">Committee</a><a href="/membership">Membership</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a>
         </nav>
-        <div className="amsma-footer-contact"><p><a href="mailto:info@amsma.in">info@amsma.in</a></p><p>Thane, Maharashtra</p></div>
+        <div className="amsma-footer-contact"><p>2C 183, Kalpataru Hills Ph2</p><p>Pokhran Road No 3, Thane 400 610</p><p>Maharashtra, India</p><p><a href="mailto:info@amsma.in">info@amsma.in</a></p></div>
       </div>
-      <div className="amsma-footer-legal">Aggregate &amp; M sand Manufacturers Association · India</div>
+      <div className="amsma-footer-legal">© 2026 AMSMA. Registered under Societies Registration Act, 1860.</div>
     </footer>
   );
 }

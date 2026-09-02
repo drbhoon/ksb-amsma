@@ -55,10 +55,10 @@ export async function POST(req: Request) {
     // committee members and cannot vote - the approval quorum is unaffected.
     const missing: Record<string, string> = {};
     if (!proposer && !isTestProposerAllowed(proposerLower)) {
-      missing.proposerEmail = `"${d.proposerEmail}" is not a committee member. Use one of the committee email addresses listed above.`;
+      missing.proposerEmail = 'Select the proposer again from the committee-member dropdown.';
     }
     if (!seconder && !isTestProposerAllowed(seconderLower)) {
-      missing.seconderEmail = `"${d.seconderEmail}" is not a committee member. Use one of the committee email addresses listed above.`;
+      missing.seconderEmail = 'Select the seconder again from the committee-member dropdown.';
     }
     if (!proposer || !seconder) {
       console.warn(
@@ -127,9 +127,9 @@ export async function POST(req: Request) {
           signatoryPhone: d.signatoryPhone,
           companyProofUrl: d.companyProofUrl,
           companyProofType: d.companyProofType,
-          proposerName: d.proposerName,
+          proposerName: proposer?.name ?? d.proposerName,
           proposerEmail: proposerLower,
-          seconderName: d.seconderName,
+          seconderName: seconder?.name ?? d.seconderName,
           seconderEmail: seconderLower,
           annualFeePaise: tier.annualFeePaise,
         },

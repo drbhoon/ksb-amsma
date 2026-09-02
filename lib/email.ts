@@ -118,9 +118,9 @@ function button(href: string, label: string, variant: 'primary' | 'danger' = 'pr
 /**
  * Delivery mode — fail-safe by design.
  *
- * `config/committee-members.ts` holds REAL addresses of real people (IIT Patna,
- * VNIT Nagpur, RDC). A stray test application must never mail them. So outbound
- * mail is OFF unless explicitly switched on:
+ * `config/committee-members.ts` holds the configured committee addresses. These
+ * are temporary dummy addresses until verified addresses are approved. Outbound
+ * mail stays OFF unless it is explicitly switched on:
  *
  *   EMAIL_REDIRECT_TO="a@x.com,b@y.com"  → every message goes to these addresses
  *                                          instead of the real recipient, with the

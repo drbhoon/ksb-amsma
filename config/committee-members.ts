@@ -6,9 +6,8 @@
  *   - app/(marketing)/page.tsx  (homepage committee cards)
  *   - app/(marketing)/committee/page.tsx (committee page, Phase 2)
  *
- * ⚠ IMPORTANT: Update the placeholder emails below with real committee-member
- *   emails BEFORE running `npm run db:seed` in production. Magic-link approval
- *   emails will be sent to whatever is here.
+ * Temporary dummy addresses are used until verified committee addresses are
+ * approved for the live review workflow.
  */
 
 export type CommitteeRole =
@@ -26,7 +25,7 @@ export interface CommitteeMember {
   name: string;
   role: CommitteeRole;
   title: string;                // e.g. "Director, IIT Patna"
-  email: string;                // ⚠ update with real emails
+  email: string;                // temporary dummy email until verified
   canApproveApplications: boolean; // set false to skip a member from approval quorum
 }
 
@@ -34,10 +33,10 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'trilok-nath-singh',
     initials: 'TN',
-    name: 'Prof. Dr. Trilok Nath Singh',
+    name: 'Dr. Trilok Nath Singh',
     role: 'Founder Patron',
     title: 'Director, IIT Patna',
-    email: 'director@iitp.ac.in',                // TODO: verify
+    email: 'trilok.nath.singh@example.com',
     canApproveApplications: true,
   },
   {
@@ -46,7 +45,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Dr. Ramesh M. Bhatawdekar',
     role: 'Founder President',
     title: 'Consultant, Aggregates & Mining',
-    email: 'rbhatawdekar@example.com',           // TODO: verify
+    email: 'ramesh.bhatawdekar@example.com',
     canApproveApplications: true,
   },
   {
@@ -55,7 +54,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Mr. B.R.V. Susheel Kumar',
     role: 'First President',
     title: 'Mines Department, Telangana',
-    email: 'susheelkumar@example.com',           // TODO: verify
+    email: 'brv.susheel.kumar@example.com',
     canApproveApplications: true,
   },
   {
@@ -64,7 +63,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Dr. Karnail Singh Bhoon',
     role: 'Vice President',
     title: 'COTO, RDC Concrete (India) Ltd.',
-    email: 'ksbhoon@rdcconcrete.com',            // TODO: verify
+    email: 'karnail.singh.bhoon@example.com',
     canApproveApplications: true,
   },
   {
@@ -73,7 +72,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Mr. Anil Kumar Banchhor',
     role: 'Founder Member',
     title: 'MD & CEO, RDC Concrete (I) Ltd.',
-    email: 'akbanchhor@rdcconcrete.com',         // TODO: verify
+    email: 'anil.kumar.banchhor@example.com',
     canApproveApplications: true,
   },
   {
@@ -82,7 +81,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Prof. Rahul V. Ralegaonkar',
     role: 'Founder Member',
     title: 'Professor, VNIT Nagpur',
-    email: 'rvralegaonkar@vnit.ac.in',           // TODO: verify
+    email: 'rahul.ralegaonkar@example.com',
     canApproveApplications: true,
   },
   {
@@ -91,7 +90,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Mr. Srikant Annavarapu',
     role: 'Founder Member',
     title: 'MD, Master Geotech Services',
-    email: 'srikant@mastergeotech.com',          // TODO: verify
+    email: 'srikant.annavarapu@example.com',
     canApproveApplications: true,
   },
   {
@@ -100,7 +99,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Mr. Rudra Mohan Sahu',
     role: 'Secretary',
     title: 'Jagannath Stones',
-    email: 'rmsahu@jagannathstones.com',         // TODO: verify
+    email: 'rudra.mohan.sahu@example.com',
     canApproveApplications: true,
   },
 ];

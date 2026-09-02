@@ -25,8 +25,8 @@ const p = {
   signatoryName:'Meera Shah', signatoryDesignation:'Partner',
   signatoryEmail:'meera@konkancons.test', signatoryPhone:'9812345670',
   companyProofUrl:'https://drive.google.com/file/d/proof2', companyProofType:'partnership_deed',
-  proposerName:'Dr. Karnail Singh Bhoon', proposerEmail:'ksbhoon@rdcconcrete.com',
-  seconderName:'Mr. Rudra Mohan Sahu', seconderEmail:'rmsahu@jagannathstones.com',
+  proposerName:'Dr. Karnail Singh Bhoon', proposerEmail:'karnail.singh.bhoon@example.com',
+  seconderName:'Mr. Rudra Mohan Sahu', seconderEmail:'rudra.mohan.sahu@example.com',
   agreeRules:true,
 };
 const r = await fetch(`${BASE}/api/membership/apply`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});

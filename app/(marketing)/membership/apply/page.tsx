@@ -1,9 +1,14 @@
 import Link from 'next/link';
 import { MembershipApplicationForm } from '@/components/forms/MembershipApplicationForm';
+import { MEMBERSHIP_TIERS, type MembershipTierId } from '@/config/membership';
 
 export const metadata = { title: 'Apply for Membership' };
 
-export default function ApplyPage() {
+export default function ApplyPage({ searchParams }: { searchParams: { tier?: string } }) {
+  const initialTier = searchParams.tier && searchParams.tier in MEMBERSHIP_TIERS
+    ? searchParams.tier as MembershipTierId
+    : '';
+
   return (
     <>
       <section className="membership-hero py-16 md:py-20">
@@ -22,7 +27,7 @@ export default function ApplyPage() {
       <section className="membership-surface py-12 md:py-16">
         <div className="container-x max-w-3xl">
           <div className="membership-card p-5 sm:p-8 md:p-10">
-            <MembershipApplicationForm />
+            <MembershipApplicationForm initialTier={initialTier} />
           </div>
         </div>
       </section>

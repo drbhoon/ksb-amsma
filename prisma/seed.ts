@@ -28,10 +28,10 @@ async function main() {
     }
 
     const result = await prisma.committeeMember.upsert({
-      where: { email },
+      where: { slug: m.slug },
       update: {
         name: m.name,
-        slug: m.slug,
+        email,
         role,
         title: m.title,
         canApproveApplications: m.canApproveApplications,
