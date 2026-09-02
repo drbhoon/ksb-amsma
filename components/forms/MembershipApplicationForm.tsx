@@ -44,6 +44,16 @@ const initialForm: FormData = {
   agreeRules: false, agreePrivacy: false,
 };
 
+const FORM_STEPS = ['Category', 'Organisation', 'People', 'Documents', 'Nominations', 'Review'] as const;
+const STEP_FIELDS: Array<Array<keyof FormData>> = [
+  ['tier'],
+  ['organizationName', 'pan', 'gstNumber', 'addressLine', 'city', 'state', 'pincode', 'crushingCapacityMtMonth', 'natureOfBusiness'],
+  ['contactName', 'contactEmail', 'contactPhone', 'signatoryName', 'signatoryDesignation', 'signatoryEmail', 'signatoryPhone'],
+  ['companyProofType', 'companyProofUrl'],
+  ['proposerName', 'proposerEmail', 'seconderName', 'seconderEmail'],
+  ['agreeRules', 'agreePrivacy'],
+];
+
 export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: MembershipTierId | '' }) {
   const router = useRouter();
   const [form, setForm] = useState<FormData>({ ...initialForm, tier: initialTier });
@@ -51,9 +61,38 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
   const [error, setError] = useState('');
   // One message per field, shown inline AND collected into the summary panel.
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [step, setStep] = useState(0);
 
   const selectedTier = form.tier ? MEMBERSHIP_TIERS[form.tier] : null;
   const isOrdinary = selectedTier?.category === 'Ordinary';
+
+  function moveToStep(nextStep: number) {
+    setStep(nextStep);
+    setError('');
+    window.setTimeout(() => {
+      document.getElementById('membership-form-step')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('membership-step-title')?.focus({ preventScroll: true });
+    }, 0);
+  }
+
+  function continueToNextStep() {
+    const check = applicationSchema.safeParse(form);
+    const allErrors = check.success ? {} : toFieldErrors(check.error);
+    const currentFields = new Set(STEP_FIELDS[step]);
+    const currentErrors = Object.fromEntries(
+      Object.entries(allErrors).filter(([field]) => currentFields.has(field as keyof FormData))
+    );
+
+    if (Object.keys(currentErrors).length > 0) {
+      setFieldErrors((existing) => ({ ...existing, ...currentErrors }));
+      setStatus('error');
+      setError('Please complete the highlighted fields before you continue.');
+      focusFirstError(currentErrors);
+      return;
+    }
+
+    moveToStep(Math.min(step + 1, FORM_STEPS.length - 1));
+  }
 
   function update<K extends keyof FormData>(key: K, value: FormData[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -115,7 +154,14 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
           ? 'One field needs attention before you can submit.'
           : `${n} fields need attention before you can submit.`
       );
-      focusFirstError(errs);
+      const firstField = Object.keys(errs)[0] as keyof FormData | undefined;
+      const errorStep = firstField ? STEP_FIELDS.findIndex((fields) => fields.includes(firstField)) : -1;
+      if (errorStep >= 0 && errorStep !== step) {
+        setStep(errorStep);
+        window.setTimeout(() => focusFirstError(errs), 60);
+      } else {
+        focusFirstError(errs);
+      }
       return;
     }
 
@@ -145,9 +191,18 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
   }
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-10">
+    <form onSubmit={submit} noValidate className="space-y-8">
+      <div id="membership-form-step" className="scroll-mt-32 border-b border-stone-200 pb-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div><p className="membership-kicker !text-[#96501f]">Step {step + 1} of {FORM_STEPS.length}</p><h2 id="membership-step-title" tabIndex={-1} className="mt-1 text-2xl font-bold outline-none">{FORM_STEPS[step]}</h2></div>
+          <p className="text-sm text-stone-500">About 6 minutes in total</p>
+        </div>
+        <ol className="mt-5 grid grid-cols-6 gap-1" aria-label="Application progress">
+          {FORM_STEPS.map((label, index) => <li key={label} className="min-w-0"><button type="button" onClick={() => index < step && moveToStep(index)} disabled={index > step} aria-current={index === step ? 'step' : undefined} className={`w-full border-t-4 pt-2 text-left text-[10px] font-bold uppercase tracking-[.08em] ${index <= step ? 'border-[#96501f] text-[#273d33]' : 'border-stone-200 text-stone-400'} ${index < step ? 'cursor-pointer' : 'cursor-default'}`}><span className="block md:hidden">{index + 1}</span><span className="hidden truncate md:block">{label}</span></button></li>)}
+        </ol>
+      </div>
       {/* ==== Category ==== */}
-      <Section title="1. Membership Category" note="Fees and eligibility per Rule 4 of the Rules & Regulations.">
+      {step === 0 && <Section title="Choose a membership category" note="Fees and eligibility per Rule 4 of the Rules & Regulations.">
         {fieldErrors.tier && (
           <p id="field-tier" role="alert" tabIndex={-1} className="flex items-start gap-1.5 text-sm text-red-700">
             <span aria-hidden="true" className="mt-[2px] leading-none">&#9888;</span>
@@ -182,10 +237,10 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
             </label>
           ))}
         </div>
-      </Section>
+      </Section>}
 
       {/* ==== Organisation ==== */}
-      <Section title="2. Organisation Details">
+      {step === 1 && <Section title="Organisation details">
         <Input label="Organisation name *" value={form.organizationName} onChange={(v) => update('organizationName', v)} name="organizationName" error={fieldErrors.organizationName} required />
         <div className="grid md:grid-cols-2 gap-4">
           <Input
@@ -243,10 +298,10 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
             placeholder={selectedTier?.category === 'Associate' ? 'e.g. OEM supplier of crushing equipment' : 'e.g. Civil engineering research institute'}
           />
         )}
-      </Section>
+      </Section>}
 
       {/* ==== Contact ==== */}
-      <Section title="3. Primary Contact">
+      {step === 2 && <div className="space-y-8"><Section title="Primary contact">
         <div className="grid md:grid-cols-2 gap-4">
           <Input label="Contact person name *" value={form.contactName} onChange={(v) => update('contactName', v)} name="contactName" error={fieldErrors.contactName} required />
           <Input label="Contact phone *" type="tel" value={form.contactPhone} onChange={(v) => update('contactPhone', v)} name="contactPhone" error={fieldErrors.contactPhone} required placeholder="+91 98XXXXXXXX" />
@@ -255,17 +310,17 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
       </Section>
 
       {/* ==== Signatory ==== */}
-      <Section title="4. Authorised Signatory" note="The person authorised to represent your organisation at Association meetings.">
+      <Section title="Authorised signatory" note="The person authorised to represent your organisation at Association meetings.">
         <div className="grid md:grid-cols-2 gap-4">
           <Input label="Signatory name *" value={form.signatoryName} onChange={(v) => update('signatoryName', v)} name="signatoryName" error={fieldErrors.signatoryName} required />
           <Input label="Designation *" value={form.signatoryDesignation} onChange={(v) => update('signatoryDesignation', v)} name="signatoryDesignation" error={fieldErrors.signatoryDesignation} required />
           <Input label="Signatory email *" type="email" value={form.signatoryEmail} onChange={(v) => update('signatoryEmail', v)} name="signatoryEmail" error={fieldErrors.signatoryEmail} required />
           <Input label="Signatory phone *" type="tel" value={form.signatoryPhone} onChange={(v) => update('signatoryPhone', v)} name="signatoryPhone" error={fieldErrors.signatoryPhone} required />
         </div>
-      </Section>
+      </Section></div>}
 
       {/* ==== Supporting document ==== */}
-      <Section title="5. Company Proof" note="Please share a link (Google Drive, OneDrive, Dropbox) to one of the following: incorporation certificate, GST certificate, or partnership deed. Native file upload will be added in a future update.">
+      {step === 3 && <Section title="Company proof" note="Share a link from Google Drive, OneDrive or Dropbox to an incorporation certificate, GST certificate or partnership deed.">
         <div className="grid md:grid-cols-3 gap-4">
           <div className="md:col-span-1">
             <Select
@@ -295,10 +350,10 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
             />
           </div>
         </div>
-      </Section>
+      </Section>}
 
       {/* ==== Proposer & Seconder ==== */}
-      <Section title="6. Proposer & Seconder" note="Per Rule 4, applications must be proposed and seconded by two different committee members.">
+      {step === 4 && <Section title="Proposer & Seconder" note="Per Rule 4, applications must be proposed and seconded by two different committee members.">
         <div className="grid md:grid-cols-2 gap-4">
           <CommitteeMemberSelect
             role="Proposer"
@@ -317,10 +372,11 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
             emailError={fieldErrors.seconderEmail}
           />
         </div>
-      </Section>
+      </Section>}
 
       {/* ==== Consent ==== */}
-      <Section title="7. Declaration">
+      {step === 5 && <Section title="Review and declaration" note="Check the application before you confirm and submit it.">
+        <ApplicationReview form={form} selectedTier={selectedTier} onEdit={moveToStep} />
         <label
           className={
             'flex items-start gap-3 p-4 border ' +
@@ -363,7 +419,7 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
           </span>
         </label>
         <FieldError id="field-agreePrivacy" message={fieldErrors.agreePrivacy} />
-      </Section>
+      </Section>}
 
       {(error || Object.keys(fieldErrors).length > 0) && (
         <div
@@ -398,21 +454,33 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row md:items-center gap-4 pt-4">
-        <button type="submit" disabled={status === 'submitting'} className="btn-accent px-8 py-3 disabled:opacity-50">
-          {status === 'submitting' ? 'Submitting…' : 'Submit Application'}
-        </button>
-        {selectedTier && (
-          <p className="text-sm text-stone-600">
-            Fee payable on approval: <strong>{formatInr(selectedTier.annualFeeRupees)}</strong>
-          </p>
-        )}
+      <div className="flex flex-col-reverse gap-3 border-t border-stone-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
+        {step > 0 ? <button type="button" onClick={() => moveToStep(step - 1)} className="btn-ghost border border-stone-300">← Back</button> : <span />}
+        {step < FORM_STEPS.length - 1 ? <button type="button" onClick={continueToNextStep} className="btn-accent px-8 py-3">Continue →</button> : <div className="flex flex-col items-start gap-2 sm:items-end"><button type="submit" disabled={status === 'submitting'} className="btn-accent px-8 py-3 disabled:opacity-50">{status === 'submitting' ? 'Submitting…' : 'Submit Application'}</button>{selectedTier && <p className="text-sm text-stone-600">Fee payable on approval: <strong>{formatInr(selectedTier.annualFeeRupees)}</strong></p>}</div>}
       </div>
     </form>
   );
 }
 
 // ---- Small form primitives ----
+
+function ApplicationReview({ form, selectedTier, onEdit }: { form: FormData; selectedTier: (typeof MEMBERSHIP_TIERS)[MembershipTierId] | null; onEdit: (step: number) => void }) {
+  return <div className="grid gap-4 md:grid-cols-2">
+    <ReviewBlock title="Category" onEdit={() => onEdit(0)}><ReviewRow label="Membership" value={selectedTier ? `${selectedTier.label} · ${formatInr(selectedTier.annualFeeRupees)}/year` : 'Not selected'} /></ReviewBlock>
+    <ReviewBlock title="Organisation" onEdit={() => onEdit(1)}><ReviewRow label="Organisation" value={form.organizationName} /><ReviewRow label="PAN" value={form.pan} /><ReviewRow label="Address" value={[form.addressLine, form.city, form.state, form.pincode].filter(Boolean).join(', ')} />{form.crushingCapacityMtMonth && <ReviewRow label="Capacity" value={`${form.crushingCapacityMtMonth} MT/month`} />}{form.natureOfBusiness && <ReviewRow label="Nature of business" value={form.natureOfBusiness} />}</ReviewBlock>
+    <ReviewBlock title="People" onEdit={() => onEdit(2)}><ReviewRow label="Primary contact" value={`${form.contactName} · ${form.contactEmail} · ${form.contactPhone}`} /><ReviewRow label="Signatory" value={`${form.signatoryName}, ${form.signatoryDesignation} · ${form.signatoryEmail}`} /></ReviewBlock>
+    <ReviewBlock title="Company proof" onEdit={() => onEdit(3)}><ReviewRow label="Document type" value={form.companyProofType.replaceAll('_', ' ')} /><ReviewRow label="Document link" value={form.companyProofUrl} /></ReviewBlock>
+    <ReviewBlock title="Nominations" onEdit={() => onEdit(4)}><ReviewRow label="Proposer" value={`${form.proposerName} · ${maskEmail(form.proposerEmail)}`} /><ReviewRow label="Seconder" value={`${form.seconderName} · ${maskEmail(form.seconderEmail)}`} /></ReviewBlock>
+  </div>;
+}
+
+function ReviewBlock({ title, onEdit, children }: { title: string; onEdit: () => void; children: React.ReactNode }) {
+  return <section className="border border-stone-200 bg-[#fffdf8] p-4"><div className="mb-3 flex items-center justify-between gap-4"><h3 className="font-bold">{title}</h3><button type="button" onClick={onEdit} className="text-xs font-bold uppercase tracking-[.1em] text-[#96501f] underline underline-offset-4">Edit</button></div><dl className="space-y-2">{children}</dl></section>;
+}
+
+function ReviewRow({ label, value }: { label: string; value: string }) {
+  return <div><dt className="text-xs font-semibold uppercase tracking-[.08em] text-stone-500">{label}</dt><dd className="mt-0.5 break-words text-sm text-stone-800">{value || 'Not provided'}</dd></div>;
+}
 
 function Section({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
   return (

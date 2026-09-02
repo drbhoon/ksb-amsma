@@ -11,7 +11,7 @@ export default function ApplyPage({ searchParams }: { searchParams: { tier?: str
 
   return (
     <>
-      <section className="membership-hero py-16 md:py-20">
+      <section className="membership-hero membership-hero-strata py-12 md:py-14">
         <div className="container-x max-w-4xl">
           <Link href="/membership" className="membership-kicker hover:underline">← Back to Membership</Link>
           <h1 className="font-display font-bold text-3xl md:text-4xl leading-tight tracking-tight mt-4">

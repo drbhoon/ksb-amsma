@@ -24,7 +24,7 @@ export function Header() {
             <span className="amsma-brand-est">Est. 2024</span>
           </span>
         </Link>
-        <button type="button" className="amsma-menu-toggle" aria-expanded={open} aria-controls="amsma-navigation" onClick={() => setOpen((value) => !value)}>
+        <button type="button" className="amsma-menu-toggle" aria-label={open ? 'Close main menu' : 'Open main menu'} aria-expanded={open} aria-controls="amsma-navigation" onClick={() => setOpen((value) => !value)}>
           <span>Menu</span><span className="amsma-menu-icon" aria-hidden="true" />
         </button>
         <nav id="amsma-navigation" className={`amsma-nav ${open ? 'is-open' : ''}`} aria-label="Main navigation">

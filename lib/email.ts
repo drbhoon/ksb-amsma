@@ -147,7 +147,7 @@ export function emailMode(): EmailMode {
   return 'off';
 }
 
-async function send(to: string, subject: string, html: string) {
+async function send(to: string, subject: string, html: string, options?: { replyTo?: string }) {
   const mode = emailMode();
 
   if (mode === 'off') {
@@ -181,7 +181,7 @@ async function send(to: string, subject: string, html: string) {
       const info = await transporter.sendMail({
         from,
         to: recipients.join(', '),
-        replyTo: replyToAddress(),
+        replyTo: options?.replyTo || replyToAddress(),
         subject: finalSubject,
         html,
       });
@@ -192,7 +192,7 @@ async function send(to: string, subject: string, html: string) {
     }
 
     const client = getResend()!;
-    const replyTo = replyToAddress();
+    const replyTo = options?.replyTo || replyToAddress();
     const { data, error } = await client.emails.send({
       from,
       to: recipients,
@@ -241,6 +241,32 @@ export async function sendNewsletterWelcome(email: string) {
     'Welcome to the AMSMA monthly briefing'
   );
   return send(email, 'Welcome to the AMSMA monthly briefing', html);
+}
+
+export async function sendContactMessage(params: {
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+}) {
+  const escape = (value: string) => value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+  const destination = process.env.CONTACT_EMAIL || process.env.REPLY_TO || process.env.GMAIL_USER || 'info@amsma.in';
+  const html = wrap(
+    `<h2 style="font-size:22px;margin:0 0 16px;">New website enquiry</h2>
+     <p><strong>Name:</strong> ${escape(params.name)}</p>
+     <p><strong>Email:</strong> ${escape(params.email)}</p>
+     ${params.phone ? `<p><strong>Phone:</strong> ${escape(params.phone)}</p>` : ''}
+     <p><strong>Subject:</strong> ${escape(params.subject)}</p>
+     <p style="margin-top:24px;white-space:pre-wrap;">${escape(params.message)}</p>`,
+    `Website enquiry from ${escape(params.name)}`
+  );
+  return send(destination, `AMSMA website enquiry — ${params.subject}`, html, { replyTo: params.email });
 }
 
 // ============ Phase 3: Membership emails ============
