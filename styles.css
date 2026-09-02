@@ -54,8 +54,10 @@ p{overflow-wrap:break-word}
 main{display:block}
 .hero{position:relative;min-height:min(78svh,44rem);display:flex;align-items:flex-end;overflow:hidden;background:var(--forest);color:var(--chalk)}
 .hero-media,.hero-scrim{position:absolute;inset:0}
+.hero-media{background:url('assets/quarry-nesting-habitat-poster.jpg') center/cover no-repeat}
 .hero-media video,.hero-media img{width:100%;height:100%;object-fit:cover}
-.hero-media video{pointer-events:none}
+.hero-media video{pointer-events:none;opacity:0;transition:opacity .65s ease}
+.hero-media.is-ready video{opacity:1}
 .hero-scrim{z-index:1;background:linear-gradient(90deg,rgba(17,29,21,.86) 0%,rgba(17,29,21,.6) 55%,rgba(17,29,21,.32) 100%)}
 .hero-inner{position:relative;z-index:2;width:min(100%,84rem);margin:0 auto;padding:clamp(5.5rem,12vw,9rem) clamp(1rem,4vw,3rem) clamp(2.8rem,7vw,5rem)}
 .eyebrow{display:flex;align-items:center;gap:.8rem;margin:0 0 1rem;color:var(--clay-deep);font:700 .68rem/1.25 var(--sans);letter-spacing:.2em;text-transform:uppercase}
@@ -68,23 +70,29 @@ h3{font-size:1.25rem}
 .lede{max-width:42rem;margin:1.2rem 0 0;font-size:clamp(1.05rem,1.55vw,1.25rem);line-height:1.6}
 .hero .lede{color:rgba(242,237,225,.9)}
 .btn-row{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.6rem}
-.btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:.8rem 1.25rem;border:1px solid transparent;text-decoration:none;font:700 .69rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase}
+.btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:.8rem 1.25rem;border:1px solid transparent;text-decoration:none;font:700 .69rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;transition:transform .2s ease,box-shadow .2s ease,background-color .2s ease,color .2s ease}
+.btn:hover{transform:translateY(-2px);box-shadow:0 .55rem 1.2rem rgba(24,37,29,.15)}
 .btn-solid{background:var(--clay-deep);color:var(--chalk)}
 .btn-solid:hover{background:var(--forest);color:var(--sand)}
 .btn-ghost{border-color:var(--sand);color:var(--sand)}
 .btn-ghost:hover{background:var(--sand);color:var(--forest)}
-.section{padding:clamp(3rem,6vw,4.5rem) clamp(1rem,4vw,3rem)}
+.section{position:relative;padding:clamp(3rem,6vw,4.5rem) clamp(1rem,4vw,3rem)}
+.section::after{content:"";position:absolute;right:clamp(1rem,4vw,3rem);top:1.15rem;width:3.25rem;height:.35rem;background:linear-gradient(135deg,var(--clay-deep) 0 32%,var(--sand) 32% 66%,var(--forest) 66%);clip-path:polygon(0 100%,18% 0,100% 0,82% 100%);opacity:.68}
 .section-inner{max-width:78rem;margin:auto}
 .dark{background:var(--forest);color:var(--chalk)}
 .alt{background:var(--chalk-2)}
 .section-intro{max-width:42rem;margin:1rem 0 0;font-size:1.04rem}
 .work-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2rem}
 .work-card{position:relative;min-height:20rem;overflow:hidden;background:var(--moss);color:var(--chalk)}
-.work-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.work-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .65s cubic-bezier(.2,.7,.2,1)}
+.work-card{transition:transform .25s ease,box-shadow .25s ease}
+.work-card:hover{transform:translateY(-4px);box-shadow:0 1rem 2rem rgba(24,37,29,.16)}
+.work-card:hover img{transform:scale(1.045)}
 .work-card::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(20,31,24,.94),rgba(20,31,24,.08) 72%)}
 .work-copy{position:absolute;z-index:1;left:0;right:0;bottom:0;padding:1.35rem}
 .work-copy p{margin:.48rem 0 0;color:rgba(242,237,225,.82);font-size:.92rem}
-.process-grid{display:grid;grid-template-columns:repeat(4,1fr);margin-top:2rem;border:1px solid var(--line-dark)}
+.process-grid{position:relative;display:grid;grid-template-columns:repeat(4,1fr);margin-top:2rem;border:1px solid var(--line-dark)}
+.process-journey::before{content:"";position:absolute;z-index:2;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,var(--sand),var(--clay),var(--sand));transform:scaleX(0);transform-origin:left;animation:journey-line 1.4s .25s ease forwards}
 .step{padding:1.15rem;border-right:1px solid var(--line-dark)}
 .step:last-child{border-right:0}
 .step img{width:100%;height:8rem;object-fit:cover;margin-bottom:1rem}
@@ -95,7 +103,9 @@ h3{font-size:1.25rem}
 .habitat-grid img{width:100%;height:min(48vw,25rem);object-fit:cover}
 .habitat-copy p{margin:.9rem 0 0;max-width:39rem}
 .qualifier{margin-top:1.1rem;padding-left:1rem;border-left:3px solid var(--clay);font-style:italic}
-.page-hero{background:var(--forest);color:var(--chalk);padding:clamp(4.5rem,9vw,7rem) clamp(1rem,4vw,3rem)}
+.page-hero{--strata-angle:-8deg;position:relative;isolation:isolate;overflow:hidden;background:var(--forest);color:var(--chalk);padding:clamp(3.25rem,6vw,5rem) clamp(1rem,4vw,3rem)}
+.page-hero::after{content:"";position:absolute;z-index:-1;right:-8%;bottom:-54%;width:min(50rem,72vw);height:118%;background:linear-gradient(135deg,transparent 0 30%,rgba(216,201,166,.15) 30% 41%,transparent 41% 48%,rgba(150,80,31,.28) 48% 61%,transparent 61% 68%,rgba(242,237,225,.08) 68% 79%,transparent 79%);transform:rotate(var(--strata-angle));pointer-events:none}
+.page-hero--about{--strata-angle:-10deg}.page-hero--committee{--strata-angle:7deg}.page-hero--membership{--strata-angle:-4deg}.page-hero--contact{--strata-angle:11deg}.page-hero--privacy{--strata-angle:-14deg}
 .page-hero-inner{max-width:78rem;margin:auto}
 .page-hero .eyebrow{color:var(--sand)}
 .page-hero h1{max-width:18ch}
@@ -116,6 +126,8 @@ h3{font-size:1.25rem}
 .avatar{width:4.4rem;height:4.4rem;border-radius:50%;display:grid;place-items:center;background:var(--forest);color:var(--sand);font:700 1.1rem/1 var(--sans);letter-spacing:.1em;margin-bottom:1rem;transition:transform .2s ease,filter .2s ease,box-shadow .2s ease}
 img.avatar{display:block;object-fit:cover}
 .person:hover .avatar{transform:scale(1.03);filter:brightness(1.03) saturate(1.02);box-shadow:0 0 0 2px var(--sand),0 .35rem .8rem rgba(24,37,29,.14)}
+.person{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.person:hover{transform:translateY(-3px);border-color:rgba(142,95,48,.38);box-shadow:0 .85rem 1.6rem rgba(24,37,29,.1)}
 .person h2{font-size:1.18rem;line-height:1.25;overflow-wrap:anywhere}
 .role{margin:.65rem 0 0;color:var(--clay-deep);font:700 .76rem/1.45 var(--sans);letter-spacing:.09em;text-transform:uppercase}
 .contact-panel{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:2rem}
@@ -143,6 +155,8 @@ img.avatar{display:block;object-fit:cover}
 .benefit-card p{margin:.45rem 0 0}
 .tier-details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:1rem;margin-top:2rem}
 .tier-details{border:1px solid var(--line-light);background:var(--chalk)}
+.tier-details{transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease}
+.tier-details:hover{border-color:rgba(142,95,48,.42);box-shadow:0 .7rem 1.5rem rgba(24,37,29,.08)}
 .tier-details summary{min-height:7rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.5rem;cursor:pointer;list-style:none}
 .tier-details summary::-webkit-details-marker{display:none}
 .tier-details summary>div>span{display:block;margin-bottom:.55rem;color:var(--clay-deep);font:700 .7rem/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase}
@@ -156,20 +170,16 @@ img.avatar{display:block;object-fit:cover}
 .tier-details-body ul{margin:1.1rem 0 0;padding-left:1.2rem}
 .tier-details-body li+li{margin-top:.7rem}
 .tier-details-body li::marker{color:var(--clay-deep)}
-.category-card summary{align-items:flex-start;min-height:24rem}
-.category-card summary>div{display:flex;min-width:0;min-height:21rem;flex:1;flex-direction:column}
+.category-card summary{align-items:flex-start}
+.category-card summary>div{display:flex;min-width:0;flex:1;flex-direction:column}
 .category-card .category-eligibility{margin:.75rem 0 1.4rem}
 .category-card .tier-fee{margin-top:auto}
 .category-card .tier-category{font-size:.73rem}
-.category-card h3{min-height:4.6rem}
-.category-card .category-eligibility{min-height:6rem}
-.category-card .tier-meta{min-height:2rem}
 .category-benefits-label{margin-bottom:.45rem!important;color:var(--clay-deep);font:700 .72rem/1.3 var(--sans);letter-spacing:.12em;text-transform:uppercase}
 .category-apply{margin-top:1.4rem}
 @media (min-width:768px){
   .category-card summary{min-height:17rem}
   .category-card summary>div{min-height:14rem}
-  .category-card h3,.category-card .category-eligibility,.category-card .tier-meta{min-height:0}
 }
 .benefits-note{max-width:58rem;margin:1.4rem 0 0;color:rgba(30,43,35,.7);font-size:.88rem}
 .privacy-note{max-width:52rem;margin:2rem auto 0;padding:1.35rem;border:1px solid var(--line-light);background:var(--chalk)}
@@ -237,6 +247,7 @@ img.avatar{display:block;object-fit:cover}
   .work-grid,.habitat-grid,.content-grid,.contact-panel,.membership-grid,.membership-process,.benefits-grid,.tier-details-grid,.footer-inner,.policy-layout{grid-template-columns:1fr}
   .work-card,.work-card:last-child{grid-column:auto;min-height:18rem}
   .process-grid{grid-template-columns:1fr}
+  .process-journey::before{width:3px;height:100%;transform:scaleY(0);transform-origin:top;animation-name:journey-line-y}
   .step,.step:nth-child(2),.step:nth-child(3){border-right:0;border-bottom:1px solid var(--line-dark)}
   .step:last-child{border-bottom:0}
   .step img{height:10rem}
@@ -246,6 +257,12 @@ img.avatar{display:block;object-fit:cover}
   .policy-summary{position:static}
   .fact-list li{grid-template-columns:1fr;gap:.25rem}
 }
+.reveal-ready [data-reveal]{opacity:0;transform:translateY(1.1rem);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
+.reveal-ready [data-reveal].is-revealed{opacity:1;transform:none}
+.reveal-ready .hero-inner{animation:hero-rise .8s .08s both cubic-bezier(.2,.7,.2,1)}
+@keyframes hero-rise{from{opacity:0;transform:translateY(1.25rem)}to{opacity:1;transform:none}}
+@keyframes journey-line{to{transform:scaleX(1)}}
+@keyframes journey-line-y{to{transform:scaleY(1)}}
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation:none!important;transition:none!important}
