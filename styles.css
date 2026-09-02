@@ -145,7 +145,7 @@ img.avatar{display:block;object-fit:cover}
 .tier-details{border:1px solid var(--line-light);background:var(--chalk)}
 .tier-details summary{min-height:7rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.5rem;cursor:pointer;list-style:none}
 .tier-details summary::-webkit-details-marker{display:none}
-.tier-details summary span{display:block;margin-bottom:.55rem;color:var(--clay-deep);font:700 .7rem/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase}
+.tier-details summary>div>span{display:block;margin-bottom:.55rem;color:var(--clay-deep);font:700 .7rem/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase}
 .tier-details summary h3{font-size:1.45rem}
 .tier-details summary i{position:relative;width:2rem;height:2rem;flex:0 0 auto;border:1px solid var(--line-light);border-radius:50%}
 .tier-details summary i::before,.tier-details summary i::after{content:"";position:absolute;left:50%;top:50%;width:.75rem;height:1px;background:var(--ink);transform:translate(-50%,-50%)}
@@ -156,6 +156,13 @@ img.avatar{display:block;object-fit:cover}
 .tier-details-body ul{margin:1.1rem 0 0;padding-left:1.2rem}
 .tier-details-body li+li{margin-top:.7rem}
 .tier-details-body li::marker{color:var(--clay-deep)}
+.category-card summary{align-items:flex-start;min-height:0}
+.category-card summary>div{min-width:0;flex:1}
+.category-card .category-eligibility{margin:.75rem 0 1.4rem}
+.category-card .tier-fee{margin-top:0}
+.category-card .tier-category{font-size:.73rem}
+.category-benefits-label{margin-bottom:.45rem!important;color:var(--clay-deep);font:700 .72rem/1.3 var(--sans);letter-spacing:.12em;text-transform:uppercase}
+.category-apply{margin-top:1.4rem}
 .benefits-note{max-width:58rem;margin:1.4rem 0 0;color:rgba(30,43,35,.7);font-size:.88rem}
 .privacy-note{max-width:52rem;margin:2rem auto 0;padding:1.35rem;border:1px solid var(--line-light);background:var(--chalk)}
 .privacy-note h3{font-size:1.3rem}
