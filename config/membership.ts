@@ -77,7 +77,9 @@ export const MEMBERSHIP_TIERS: Record<MembershipTierId, MembershipTier> = {
   },
 };
 
-export const TIERS_LIST = Object.values(MEMBERSHIP_TIERS);
+export const TIERS_LIST = Object.values(MEMBERSHIP_TIERS).sort(
+  (first, second) => first.annualFeeRupees - second.annualFeeRupees
+);
 
 /** Format INR for display, e.g. formatInr(50000) → "₹50,000" */
 export function formatInr(rupees: number): string {
