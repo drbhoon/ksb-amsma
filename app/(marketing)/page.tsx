@@ -9,8 +9,8 @@ export default function HomePage() {
         <div className="ll-hero-scrim" />
         <div className="ll-hero-inner">
           <p className="ll-eyebrow">Aggregate &amp; M sand Manufacturers Association</p>
-          <h1 id="home-title" className="ll-title">Responsible quarrying starts with planning, practice and stewardship.</h1>
-          <p className="ll-lede">AMSMA is set up to advance knowledge, standards and environmental responsibility across India&apos;s aggregate and M sand sector.</p>
+          <h1 id="home-title" className="ll-title ll-hero-title"><span>Responsible quarrying.</span><span>Built on knowledge, practice and stewardship.</span></h1>
+          <p className="ll-lede">Planning, technical knowledge and responsible practice guide how AMSMA supports India&apos;s aggregate and M sand sector.</p>
           <div className="ll-button-row"><Link className="ll-button ll-button-solid" href="/membership">Membership</Link><a className="ll-button ll-button-ghost" href="#priorities">Explore our work</a></div>
         </div>
       </section>
@@ -20,9 +20,9 @@ export default function HomePage() {
           <p className="ll-eyebrow">Our work and priorities</p><h2 id="priorities-title" className="ll-heading">What AMSMA advances.</h2>
           <p className="ll-section-intro">The Association&apos;s governing objects connect sector development with public benefit and provide a clear framework for its programmes, partnerships and advocacy.</p>
           <div className="ll-work-grid">
-            <WorkCard image="/assets/living-process-extract.jpg" alt="Excavator feeding rock into a hopper at a quarry" title="Responsible practice">Encourage responsible quarrying, environmental protection and sound professional conduct.</WorkCard>
-            <WorkCard image="/assets/process-conveyor.jpg" alt="Conveyor carrying aggregate" title="Knowledge and standards">Support technical exchange, research, education, quality and ethical practice.</WorkCard>
-            <WorkCard image="/assets/quarry-lagoon.jpg" alt="Water-filled quarry below vegetated rock faces" title="Environmental stewardship">Advance conservation and site-aware management within the Association&apos;s public-benefit purpose.</WorkCard>
+            <WorkCard number="01" image="/assets/living-process-extract.jpg" alt="Excavator feeding rock into a hopper at a quarry" title="Responsible practice">Encourage responsible quarrying, environmental protection and sound professional conduct.</WorkCard>
+            <WorkCard number="02" image="/assets/process-conveyor.jpg" alt="Conveyor carrying aggregate" title="Knowledge and standards">Support technical exchange, research, education, quality and ethical practice.</WorkCard>
+            <WorkCard number="03" image="/assets/quarry-lagoon.jpg" alt="Water-filled quarry below vegetated rock faces" title="Environmental stewardship">Advance conservation and site-aware management within the Association&apos;s public-benefit purpose.</WorkCard>
           </div>
         </div>
       </section>
@@ -52,8 +52,8 @@ export default function HomePage() {
   );
 }
 
-function WorkCard({ image, alt, title, children }: { image: string; alt: string; title: string; children: React.ReactNode }) {
-  return <article className="ll-work-card" data-reveal><img src={image} alt={alt} width="1280" height="720" loading="lazy" /><div className="ll-work-copy"><h3 className="ll-subheading">{title}</h3><p>{children}</p></div></article>;
+function WorkCard({ number, image, alt, title, children }: { number: string; image: string; alt: string; title: string; children: React.ReactNode }) {
+  return <article className="ll-work-card" data-reveal><img src={image} alt={alt} width="1280" height="720" loading="lazy" /><div className="ll-work-copy"><span className="ll-work-number">{number}</span><h3 className="ll-subheading">{title}</h3><p>{children}</p></div></article>;
 }
 
 function ProcessStep({ image, alt, number, title, children }: { image: string; alt: string; number: string; title: string; children: React.ReactNode }) {
