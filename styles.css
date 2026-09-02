@@ -156,7 +156,7 @@ img.avatar{display:block;object-fit:cover}
 .tier-details-body ul{margin:1.1rem 0 0;padding-left:1.2rem}
 .tier-details-body li+li{margin-top:.7rem}
 .tier-details-body li::marker{color:var(--clay-deep)}
-.category-card summary{align-items:flex-start;min-height:0}
+.category-card summary{align-items:flex-start;min-height:17rem}
 .category-card summary>div{min-width:0;flex:1}
 .category-card .category-eligibility{margin:.75rem 0 1.4rem}
 .category-card .tier-fee{margin-top:0}
