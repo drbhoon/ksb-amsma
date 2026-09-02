@@ -8,15 +8,10 @@ export function MotionInit() {
 
   useEffect(() => {
     const root = document.documentElement;
-    const transition = document.querySelector<HTMLElement>('.ll-route-transition');
     const items = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     root.classList.add('reveal-ready');
-    if (!reduced && transition) {
-      transition.classList.remove('is-active');
-      requestAnimationFrame(() => transition.classList.add('is-active'));
-    }
 
     if (reduced || !('IntersectionObserver' in window)) {
       items.forEach((item) => item.classList.add('is-revealed'));
@@ -42,5 +37,5 @@ export function MotionInit() {
     };
   }, [pathname]);
 
-  return <div className="ll-route-transition" aria-hidden="true" />;
+  return null;
 }
