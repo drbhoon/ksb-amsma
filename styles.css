@@ -156,13 +156,21 @@ img.avatar{display:block;object-fit:cover}
 .tier-details-body ul{margin:1.1rem 0 0;padding-left:1.2rem}
 .tier-details-body li+li{margin-top:.7rem}
 .tier-details-body li::marker{color:var(--clay-deep)}
-.category-card summary{align-items:flex-start;min-height:17rem}
-.category-card summary>div{min-width:0;flex:1}
+.category-card summary{align-items:flex-start;min-height:24rem}
+.category-card summary>div{display:flex;min-width:0;min-height:21rem;flex:1;flex-direction:column}
 .category-card .category-eligibility{margin:.75rem 0 1.4rem}
-.category-card .tier-fee{margin-top:0}
+.category-card .tier-fee{margin-top:auto}
 .category-card .tier-category{font-size:.73rem}
+.category-card h3{min-height:4.6rem}
+.category-card .category-eligibility{min-height:6rem}
+.category-card .tier-meta{min-height:2rem}
 .category-benefits-label{margin-bottom:.45rem!important;color:var(--clay-deep);font:700 .72rem/1.3 var(--sans);letter-spacing:.12em;text-transform:uppercase}
 .category-apply{margin-top:1.4rem}
+@media (min-width:768px){
+  .category-card summary{min-height:17rem}
+  .category-card summary>div{min-height:14rem}
+  .category-card h3,.category-card .category-eligibility,.category-card .tier-meta{min-height:0}
+}
 .benefits-note{max-width:58rem;margin:1.4rem 0 0;color:rgba(30,43,35,.7);font-size:.88rem}
 .privacy-note{max-width:52rem;margin:2rem auto 0;padding:1.35rem;border:1px solid var(--line-light);background:var(--chalk)}
 .privacy-note h3{font-size:1.3rem}
