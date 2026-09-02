@@ -133,6 +133,30 @@ img.avatar{display:block;object-fit:cover}
 .tier-meta{margin:.6rem 0 0;color:rgba(30,43,35,.72);font:600 .72rem/1.45 var(--sans)}
 .membership-actions{max-width:46rem;margin:2rem auto 0;text-align:center}
 .membership-actions p{margin:1rem 0 0;font-size:.9rem}
+.benefits-intro{max-width:48rem}
+.benefits-intro>p:last-child{margin:1rem 0 0;font-size:1.08rem}
+.benefits-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;margin-top:2rem;border:1px solid var(--line-light);background:var(--line-light)}
+.benefit-card{display:flex;gap:1rem;padding:2rem;background:var(--chalk)}
+.benefit-card>span{flex:0 0 auto;color:var(--clay-deep);font:700 .72rem/1.5 var(--sans);letter-spacing:.16em}
+.benefit-card h3{font-size:1.55rem}
+.benefit-card h4{margin:1.3rem 0 0;padding-top:1rem;border-top:1px solid var(--line-light);color:var(--clay-deep);font:700 .75rem/1.4 var(--sans);letter-spacing:.08em;text-transform:uppercase}
+.benefit-card p{margin:.45rem 0 0}
+.tier-details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:1rem;margin-top:2rem}
+.tier-details{border:1px solid var(--line-light);background:var(--chalk)}
+.tier-details summary{min-height:7rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.5rem;cursor:pointer;list-style:none}
+.tier-details summary::-webkit-details-marker{display:none}
+.tier-details summary span{display:block;margin-bottom:.55rem;color:var(--clay-deep);font:700 .7rem/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase}
+.tier-details summary h3{font-size:1.45rem}
+.tier-details summary i{position:relative;width:2rem;height:2rem;flex:0 0 auto;border:1px solid var(--line-light);border-radius:50%}
+.tier-details summary i::before,.tier-details summary i::after{content:"";position:absolute;left:50%;top:50%;width:.75rem;height:1px;background:var(--ink);transform:translate(-50%,-50%)}
+.tier-details summary i::after{transform:translate(-50%,-50%) rotate(90deg);transition:transform .2s ease}
+.tier-details[open] summary i::after{transform:translate(-50%,-50%) rotate(0)}
+.tier-details-body{padding:1.25rem 1.5rem 1.5rem;border-top:1px solid var(--line-light)}
+.tier-details-body p{margin:0}
+.tier-details-body ul{margin:1.1rem 0 0;padding-left:1.2rem}
+.tier-details-body li+li{margin-top:.7rem}
+.tier-details-body li::marker{color:var(--clay-deep)}
+.benefits-note{max-width:58rem;margin:1.4rem 0 0;color:rgba(30,43,35,.7);font-size:.88rem}
 .privacy-note{max-width:52rem;margin:2rem auto 0;padding:1.35rem;border:1px solid var(--line-light);background:var(--chalk)}
 .privacy-note h3{font-size:1.3rem}
 .privacy-note p{margin:.7rem 0 0}
@@ -195,7 +219,7 @@ img.avatar{display:block;object-fit:cover}
   .btn{min-width:0;max-width:100%;text-align:center;overflow-wrap:anywhere}
   .hero{min-height:43rem}
   .hero-inner{padding-bottom:6.3rem}
-  .work-grid,.habitat-grid,.content-grid,.contact-panel,.membership-grid,.membership-process,.footer-inner,.policy-layout{grid-template-columns:1fr}
+  .work-grid,.habitat-grid,.content-grid,.contact-panel,.membership-grid,.membership-process,.benefits-grid,.tier-details-grid,.footer-inner,.policy-layout{grid-template-columns:1fr}
   .work-card,.work-card:last-child{grid-column:auto;min-height:18rem}
   .process-grid{grid-template-columns:1fr}
   .step,.step:nth-child(2),.step:nth-child(3){border-right:0;border-bottom:1px solid var(--line-dark)}
