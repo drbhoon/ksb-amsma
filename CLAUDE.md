@@ -189,6 +189,30 @@ enforced again with no code change.
    `AMSMA-M-0001`.
 7. To test rejection instead, reject on 3 links — status flips to `REJECTED`.
 
+## Content sections (Publications / Blog / Events)
+
+Public: `/publications`, `/blog`, `/blog/[slug]`, `/events`.
+Admin:  `/admin` (sign in), then `/admin/publications`, `/admin/blog`, `/admin/events`.
+
+**Uploaded files live in Postgres**, in the `StoredFile` model, and are served
+only through `/api/files/[id]`. Railway containers have an ephemeral filesystem -
+anything written to disk is destroyed on the next deploy, so a PDF an admin
+uploaded would silently vanish. Keeping the bytes in the database survives
+deploys and rides along with any database backup, with no second account to
+manage. Limits: 15 MB per file, PDF/Word/Excel/PowerPoint/PNG/JPEG/WebP only
+(`lib/uploads.ts`). If the Association ever needs a media library rather than
+documents, move the bytes to object storage - only that one route reads them.
+
+**Admin auth is a password plus a signed cookie** (`lib/admin-auth.ts`), not
+NextAuth. The Phase 5 magic-link design needs working email, and a login that
+cannot deliver its own link is not a login. Set `ADMIN_PASSWORD_HASH` (scrypt,
+via `node scripts/hash-admin-password.mjs`) and `SESSION_SECRET`. Sessions last
+8 hours; changing `SESSION_SECRET` signs everyone out. Swapping in magic links
+later means changing `isAdmin()` and nothing else.
+
+Every mutating action re-checks the session itself rather than trusting the page
+that rendered the form - server actions are callable directly.
+
 ## Directory layout
 
 ```

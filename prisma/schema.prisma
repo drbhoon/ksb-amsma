@@ -49,20 +49,20 @@ enum MembershipTier {
 }
 
 enum ApplicationStatus {
-  SUBMITTED           // Just received, review invites being sent
-  UNDER_REVIEW        // Emails sent, awaiting committee votes
-  APPROVED            // Reached 6/8 approvals → payment link sent
-  REJECTED            // Reached 3/8 rejections OR explicitly rejected
-  PAYMENT_PENDING     // Approved, awaiting payment (same as APPROVED but clearer)
-  ACTIVE              // Paid, member is active
-  EXPIRED             // Approved but payment window elapsed
+  SUBMITTED // Just received, review invites being sent
+  UNDER_REVIEW // Emails sent, awaiting committee votes
+  APPROVED // Reached 6/8 approvals → payment link sent
+  REJECTED // Reached 3/8 rejections OR explicitly rejected
+  PAYMENT_PENDING // Approved, awaiting payment (same as APPROVED but clearer)
+  ACTIVE // Paid, member is active
+  EXPIRED // Approved but payment window elapsed
 }
 
 model MembershipApplication {
-  id             String            @id @default(cuid())
-  applicationNo  String            @unique  // Human-friendly, e.g. AMSMA-2026-0001
-  tier           MembershipTier
-  status         ApplicationStatus @default(SUBMITTED)
+  id            String            @id @default(cuid())
+  applicationNo String            @unique // Human-friendly, e.g. AMSMA-2026-0001
+  tier          MembershipTier
+  status        ApplicationStatus @default(SUBMITTED)
 
   // Applicant / organisation
   organizationName String
@@ -77,8 +77,8 @@ model MembershipApplication {
   gstNumber        String?
 
   // Category-specific
-  crushingCapacityMtMonth Int?     // Ordinary only
-  natureOfBusiness        String?  // Associate / Institutional descriptor
+  crushingCapacityMtMonth Int? // Ordinary only
+  natureOfBusiness        String? // Associate / Institutional descriptor
 
   // Signatory (per Rules — authorized representative)
   signatoryName        String
@@ -87,30 +87,30 @@ model MembershipApplication {
   signatoryPhone       String
 
   // Supporting docs (Phase 3: cloud storage URL; Phase 5: R2 upload)
-  companyProofUrl String?
+  companyProofUrl  String?
   companyProofType String? // 'incorporation' | 'gst_cert' | 'partnership_deed'
 
   // Proposer & Seconder (existing members — required per Q2)
-  proposerName    String
-  proposerEmail   String
-  seconderName    String
-  seconderEmail   String
+  proposerName  String
+  proposerEmail String
+  seconderName  String
+  seconderEmail String
 
   // Fees
-  annualFeePaise Int
+  annualFeePaise  Int
   amountPaidPaise Int?
 
   // Payment
-  paymentToken       String?   @unique  // For /pay/[token] URL
-  razorpayOrderId    String?
-  razorpayPaymentId  String?
-  paidAt             DateTime?
-  paymentLinkSentAt  DateTime?
-  paymentExpiresAt   DateTime?
+  paymentToken      String?   @unique // For /pay/[token] URL
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  paidAt            DateTime?
+  paymentLinkSentAt DateTime?
+  paymentExpiresAt  DateTime?
 
   // Decision tracking
-  submittedAt   DateTime  @default(now())
-  decidedAt     DateTime?
+  submittedAt     DateTime  @default(now())
+  decidedAt       DateTime?
   rejectionReason String?
 
   reviews ApplicationReview[]
@@ -134,13 +134,13 @@ model ApplicationReview {
   committeeMember   CommitteeMember       @relation(fields: [committeeMemberId], references: [id], onDelete: Cascade)
 
   // Magic-link auth
-  token         String    @unique
+  token          String   @unique
   tokenExpiresAt DateTime
 
-  decision      ReviewDecision @default(PENDING)
-  comment       String?
-  decidedAt     DateTime?
-  emailSentAt   DateTime?
+  decision    ReviewDecision @default(PENDING)
+  comment     String?
+  decidedAt   DateTime?
+  emailSentAt DateTime?
 
   createdAt DateTime @default(now())
 
@@ -160,23 +160,23 @@ enum MemberStatus {
 }
 
 model Member {
-  id                       String         @id @default(cuid())
-  memberNo                 String         @unique  // AMSMA-M-0001
-  applicationId            String         @unique  // FK to originating application
-  tier                     MembershipTier
-  organizationName         String
-  contactName              String
-  email                    String         @unique
-  phone                    String
-  address                  String
-  city                     String
-  state                    String
-  pan                      String
-  gstNumber                String?
-  crushingCapacityMtMonth  Int?
+  id                      String         @id @default(cuid())
+  memberNo                String         @unique // AMSMA-M-0001
+  applicationId           String         @unique // FK to originating application
+  tier                    MembershipTier
+  organizationName        String
+  contactName             String
+  email                   String         @unique
+  phone                   String
+  address                 String
+  city                    String
+  state                   String
+  pan                     String
+  gstNumber               String?
+  crushingCapacityMtMonth Int?
 
-  admittedAt DateTime  @default(now())
-  expiresAt  DateTime  // 12 months from admission
+  admittedAt DateTime     @default(now())
+  expiresAt  DateTime // 12 months from admission
   status     MemberStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
@@ -190,17 +190,22 @@ model Member {
 // ============================================================
 
 model Event {
-  id            String              @id @default(cuid())
-  slug          String              @unique
+  id            String   @id @default(cuid())
+  slug          String   @unique
   title         String
-  description   String              @db.Text
+  description   String   @db.Text
   location      String
   startDate     DateTime
   endDate       DateTime
   capacity      Int?
   priceInPaise  Int?
-  isPublic      Boolean             @default(true)
+  isPublic      Boolean  @default(true)
   coverImageUrl String?
+
+  // Optional circular / agenda / notice attached to the event
+  attachmentId String?
+  attachment   StoredFile? @relation("EventAttachment", fields: [attachmentId], references: [id])
+
   registrations EventRegistration[]
 
   createdAt DateTime @default(now())
@@ -216,9 +221,9 @@ enum RegistrationStatus {
 }
 
 model EventRegistration {
-  id           String             @id @default(cuid())
+  id           String  @id @default(cuid())
   eventId      String
-  event        Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event        Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
   name         String
   email        String
   phone        String?
@@ -238,22 +243,87 @@ model EventRegistration {
 // CONTENT (Phase 5 — placeholder)
 // ============================================================
 
+enum PublicationCategory {
+  ARTICLE
+  REGULATION
+  GOVT_LETTER
+  CIRCULAR
+  PRESENTATION
+  OTHER
+}
+
 model Publication {
-  id            String   @id @default(cuid())
-  title         String
-  description   String?  @db.Text
-  category      String
-  fileUrl       String
-  fileSizeBytes Int
-  pageCount     Int?
-  publishedAt   DateTime
-  isPublic      Boolean  @default(true)
+  id          String              @id @default(cuid())
+  title       String
+  description String?             @db.Text
+  category    PublicationCategory @default(OTHER)
+
+  fileId String
+  file   StoredFile @relation("PublicationFile", fields: [fileId], references: [id], onDelete: Restrict)
+
+  publishedAt   DateTime @default(now())
+  isPublished   Boolean  @default(true)
   downloadCount Int      @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([category, publishedAt])
+  @@index([isPublished, publishedAt])
+}
+
+// ============================================================
+// BLOG
+// ============================================================
+
+model BlogPost {
+  id      String  @id @default(cuid())
+  slug    String  @unique
+  title   String
+  excerpt String? @db.Text
+  body    String  @db.Text
+  author  String?
+
+  coverImageId String?
+  coverImage   StoredFile? @relation("BlogCover", fields: [coverImageId], references: [id])
+
+  publishedAt DateTime @default(now())
+  isPublished Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isPublished, publishedAt])
+}
+
+// ============================================================
+// UPLOADED FILES
+// ============================================================
+
+/// Uploaded documents live in Postgres rather than on disk.
+///
+/// Railway containers have an ephemeral filesystem: anything written to disk is
+/// destroyed on the next deploy or restart, so a PDF uploaded by an admin would
+/// silently disappear. Storing the bytes in the database keeps them across
+/// deploys and inside whatever backup covers the database, with no second
+/// account or set of credentials to manage.
+///
+/// The tradeoff is that this suits documents, not media libraries. If the
+/// Association ever publishes video or hundreds of megabytes of scans, move the
+/// bytes to object storage - the rest of the code only touches this model
+/// through /api/files/[id], so that swap stays contained.
+model StoredFile {
+  id         String   @id @default(cuid())
+  filename   String
+  mimeType   String
+  sizeBytes  Int
+  data       Bytes
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+
+  publications     Publication[] @relation("PublicationFile")
+  blogCovers       BlogPost[]    @relation("BlogCover")
+  eventAttachments Event[]       @relation("EventAttachment")
 }
 
 model GalleryImage {

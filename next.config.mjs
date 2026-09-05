@@ -11,7 +11,7 @@ const nextConfig = {
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: '10mb', // allow larger uploads for admin
+      bodySizeLimit: '20mb', // must exceed MAX_UPLOAD_BYTES in lib/uploads.ts
     },
   },
 };
