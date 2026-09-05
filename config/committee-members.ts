@@ -33,7 +33,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'trilok-nath-singh',
     initials: 'TN',
-    name: 'Dr. Trilok Nath Singh',
+    name: 'Prof. Dr. T N Singh',
     role: 'Founder Patron',
     title: 'Director, IIT Patna',
     email: 'trilok.nath.singh@example.com',
@@ -42,7 +42,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'ramesh-bhatawdekar',
     initials: 'RB',
-    name: 'Dr. Ramesh M. Bhatawdekar',
+    name: 'Dr. Ramesh Bhatawdekar',
     role: 'Founder President',
     title: 'Consultant, Aggregates & Mining',
     email: 'ramesh.bhatawdekar@example.com',
@@ -51,7 +51,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'susheel-kumar',
     initials: 'BK',
-    name: 'Mr. B.R.V. Susheel Kumar',
+    name: 'Mr. BRV Susheel Kumar',
     role: 'First President',
     title: 'Mines Department, Telangana',
     email: 'brv.susheel.kumar@example.com',
@@ -60,7 +60,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'karnail-singh-bhoon',
     initials: 'KB',
-    name: 'Dr. Karnail Singh Bhoon',
+    name: 'Dr. K S Bhoon',
     role: 'Vice President',
     title: 'COTO, RDC Concrete (India) Ltd.',
     email: 'karnail.singh.bhoon@example.com',
@@ -69,7 +69,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'anil-kumar-banchhor',
     initials: 'AB',
-    name: 'Mr. Anil Kumar Banchhor',
+    name: 'Mr. Anil Banchhor',
     role: 'Founder Member',
     title: 'MD & CEO, RDC Concrete (I) Ltd.',
     email: 'anil.kumar.banchhor@example.com',
@@ -78,7 +78,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'rahul-ralegaonkar',
     initials: 'RR',
-    name: 'Prof. Rahul V. Ralegaonkar',
+    name: 'Rahul Ralegaonkar',
     role: 'Founder Member',
     title: 'Professor, VNIT Nagpur',
     email: 'rahul.ralegaonkar@example.com',
@@ -87,7 +87,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'srikant-annavarapu',
     initials: 'SA',
-    name: 'Mr. Srikant Annavarapu',
+    name: 'Srikant Annavarapu',
     role: 'Founder Member',
     title: 'MD, Master Geotech Services',
     email: 'srikant.annavarapu@example.com',

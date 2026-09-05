@@ -1,12 +1,12 @@
 const MEMBERS = [
-  ['ramesh-murlidhar-bhatawdekar.jpg','Dr. Ramesh M. Bhatawdekar','President'],
-  ['trilok-nath-singh.jpg','Dr. Trilok Nath Singh','Managing Committee member'],
-  ['brv-susheel-kumar.jpg','Mr. B.R.V. Susheel Kumar','Managing Committee member'],
-  ['karnail-singh-bhoon.jpg','Dr. Karnail Singh Bhoon','Managing Committee member'],
-  ['anil-kumar-banchhor.jpg','Mr. Anil Kumar Banchhor','Managing Committee member'],
-  ['rahul-vasant-ralegaonkar.jpg','Prof. Rahul V. Ralegaonkar','Managing Committee member'],
-  ['srikant-annavarapu.jpg','Mr. Srikant Annavarapu','Managing Committee member'],
-  ['rudra-mohan-sahu.jpg','Mr. Rudra Mohan Sahu','Managing Committee member'],
+  ['trilok-nath-singh.jpg','Prof. Dr. T N Singh','Founder Patron'],
+  ['ramesh-murlidhar-bhatawdekar.jpg','Dr. Ramesh Bhatawdekar','Founder President'],
+  ['brv-susheel-kumar.jpg','Mr. BRV Susheel Kumar','Founder Member (First President)'],
+  ['karnail-singh-bhoon.jpg','Dr. K S Bhoon','Vice President'],
+  ['anil-kumar-banchhor.jpg','Mr. Anil Banchhor','Founder Member'],
+  ['rahul-vasant-ralegaonkar.jpg','Rahul Ralegaonkar','Founder Member'],
+  ['srikant-annavarapu.jpg','Srikant Annavarapu','Founder Member'],
+  ['rudra-mohan-sahu.jpg','Mr. Rudra Mohan Sahu','Secretary'],
 ];
 
 export const metadata = { title: 'Managing Committee', description: 'Meet the Managing Committee that guides AMSMA.' };
