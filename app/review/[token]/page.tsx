@@ -8,6 +8,7 @@ import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Footer';
 import { getCurrentPortalUser } from '@/lib/portal-auth';
 import { recordAudit } from '@/lib/audit';
+import { LogoutButton } from '@/components/portal/LogoutButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,13 +25,18 @@ export default async function ReviewPage({ params }: Props) {
   });
 
   if (!review) notFound();
+  const loginPath = review.committeeMember.portalUser?.role === 'ADMIN' ? '/portal/admin/login' : '/portal/committee/login';
+  const reviewPath = `/review/${token}`;
   const user = await getCurrentPortalUser();
   if (!user) {
-    const loginPath = review.committeeMember.portalUser?.role === 'ADMIN' ? '/portal/admin/login' : '/portal/committee/login';
-    redirect(`${loginPath}?next=${encodeURIComponent(`/review/${token}`)}`);
+    redirect(`${loginPath}?next=${encodeURIComponent(reviewPath)}`);
   }
-  if (user.isTest !== review.application.isTest) notFound();
-  if ((user.isTest || user.role !== 'ADMIN') && user.committeeMemberId !== review.committeeMemberId) notFound();
+  const wrongWorkflow = user.isTest !== review.application.isTest;
+  const wrongReviewer = (user.isTest || user.role !== 'ADMIN') && user.committeeMemberId !== review.committeeMemberId;
+  if (wrongWorkflow || wrongReviewer) {
+    const switchPath = `${loginPath}?next=${encodeURIComponent(reviewPath)}`;
+    return <ReviewerAccountMismatch reviewerName={review.committeeMember.name} switchPath={switchPath} />;
+  }
   await recordAudit({ applicationId: review.applicationId, actorUserId: user.id, event: 'APPLICATION_REVIEW_VIEWED' });
 
   const now = new Date();
@@ -189,5 +195,31 @@ function StatusBanner({ variant, children }: { variant: 'success' | 'warning' | 
     <div className={`p-4 border ${map[variant]} text-sm`}>
       {children}
     </div>
+  );
+}
+
+function ReviewerAccountMismatch({ reviewerName, switchPath }: { reviewerName: string; switchPath: string }) {
+  return (
+    <><Header /><main className="membership-surface min-h-[70vh] py-14 md:py-20">
+      <div className="container-x max-w-lg">
+        <p className="membership-kicker !text-[#96501f]">Secure review</p>
+        <h1 className="mt-2 text-3xl font-bold">Use the assigned reviewer account</h1>
+        <div className="membership-card mt-7 p-6 sm:p-8">
+          <p className="leading-relaxed text-stone-700">
+            This review is assigned to <strong>{reviewerName}</strong>. Another reviewer is currently signed in on this browser.
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-stone-600">
+            Sign out, then request a code for the assigned email address.
+          </p>
+          <div className="mt-6">
+            <LogoutButton
+              nextPath={switchPath}
+              label={`Continue as ${reviewerName}`}
+              className="btn-primary w-full justify-center"
+            />
+          </div>
+        </div>
+      </div>
+    </main><Footer /></>
   );
 }

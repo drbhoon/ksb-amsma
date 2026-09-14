@@ -37,7 +37,6 @@ export default async function PortalTestPage() {
           <div>
             <p className="membership-kicker !text-[#96501f]">Test approval portal</p>
             <h1 className="mt-2 text-3xl font-bold">Welcome, {user.name}</h1>
-            <p className="mt-2 text-stone-600">Only isolated test applications appear here.</p>
           </div>
           <LogoutButton />
         </div>

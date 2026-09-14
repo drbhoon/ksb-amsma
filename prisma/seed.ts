@@ -87,9 +87,9 @@ async function main() {
     .filter(Boolean);
   if (testAdminEmail && testReviewerEmails.length === 2) {
     const testDefinitions = [
-      { slug: 'test-proposer', name: 'Test Proposer', email: testReviewerEmails[0] },
-      { slug: 'test-seconder', name: 'Test Seconder', email: testReviewerEmails[1] },
-      { slug: 'test-committee-member', name: 'Test Committee Member', email: testAdminEmail },
+      { slug: 'test-proposer', name: 'Rachel Green', email: testReviewerEmails[0] },
+      { slug: 'test-seconder', name: 'Chunsikali', email: testReviewerEmails[1] },
+      { slug: 'test-committee-member', name: 'Esha Bhoon', email: testAdminEmail },
     ];
     const testMembers = [];
     for (const definition of testDefinitions) {
@@ -115,8 +115,8 @@ async function main() {
 
     await prisma.portalUser.upsert({
       where: { email: testAdminEmail },
-      update: { name: 'Test Admin', role: 'ADMIN', active: true, isTest: true, committeeMemberId: testMembers[2].id },
-      create: { email: testAdminEmail, name: 'Test Admin', role: 'ADMIN', active: true, isTest: true, committeeMemberId: testMembers[2].id },
+      update: { name: testMembers[2].name, role: 'ADMIN', active: true, isTest: true, committeeMemberId: testMembers[2].id },
+      create: { email: testAdminEmail, name: testMembers[2].name, role: 'ADMIN', active: true, isTest: true, committeeMemberId: testMembers[2].id },
     });
     for (const [index, email] of testReviewerEmails.entries()) {
       await prisma.portalUser.upsert({
@@ -170,6 +170,16 @@ async function main() {
             phase: 'SPONSOR',
             decision: 'PENDING',
           })),
+        });
+      } else {
+        testApplication = await prisma.membershipApplication.update({
+          where: { id: testApplication.id },
+          data: {
+            proposerName: testMembers[0].name,
+            proposerEmail: testMembers[0].email,
+            seconderName: testMembers[1].name,
+            seconderEmail: testMembers[1].email,
+          },
         });
       }
 

@@ -7,7 +7,7 @@ import { advanceAfterReview, pauseExpiredCommitteeReviews } from '@/lib/approval
 
 const schema = z.object({
   decision: z.enum(['APPROVE', 'REJECT']),
-  comment: z.string().max(500).optional(),
+  comment: z.string().trim().min(1, 'A comment is required.').max(500),
 });
 
 type Ctx = { params: Promise<{ token: string }> };
@@ -23,10 +23,6 @@ export async function POST(req: Request, { params }: Ctx) {
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.errors[0]?.message }, { status: 400 });
     }
-    if (parsed.data.decision === 'REJECT' && !parsed.data.comment?.trim()) {
-      return NextResponse.json({ error: 'A reason is required when rejecting an application.' }, { status: 400 });
-    }
-
     await pauseExpiredCommitteeReviews();
     const review = await prisma.applicationReview.findUnique({
       where: { token },
@@ -54,7 +50,7 @@ export async function POST(req: Request, { params }: Ctx) {
       where: { id: review.id, decision: 'PENDING' },
       data: {
         decision: parsed.data.decision,
-        comment: parsed.data.comment?.trim() || null,
+        comment: parsed.data.comment,
         decidedAt: new Date(),
       },
     });

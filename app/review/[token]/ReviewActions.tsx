@@ -3,15 +3,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export function ReviewActions({ token, applicationNo, phase }: { token: string; applicationNo: string; phase: 'SPONSOR' | 'COMMITTEE' }) {
+export function ReviewActions({ token, applicationNo }: { token: string; applicationNo: string; phase: 'SPONSOR' | 'COMMITTEE' }) {
   const router = useRouter();
   const [comment, setComment] = useState('');
   const [pending, setPending] = useState<'APPROVE' | 'REJECT' | null>(null);
   const [error, setError] = useState('');
 
   async function vote(decision: 'APPROVE' | 'REJECT') {
-    if (decision === 'REJECT' && !comment.trim()) {
-      setError('Please provide a brief reason when rejecting an application.');
+    if (!comment.trim()) {
+      setError('Please add a comment before you approve or reject this application.');
       return;
     }
     setPending(decision);
@@ -20,7 +20,7 @@ export function ReviewActions({ token, applicationNo, phase }: { token: string; 
       const res = await fetch(`/api/review/${token}/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ decision, comment: comment.trim() || undefined }),
+        body: JSON.stringify({ decision, comment: comment.trim() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Vote failed');
@@ -33,33 +33,34 @@ export function ReviewActions({ token, applicationNo, phase }: { token: string; 
 
   return (
     <div className="pt-4 border-t border-stone-100">
-      <h2 className="font-display font-semibold text-lg mb-4">{phase === 'SPONSOR' ? 'Your endorsement' : 'Your vote'}</h2>
+      <h2 className="font-display font-semibold text-lg mb-4">Your decision</h2>
       <label className="block mb-4">
-        <span className="text-sm font-medium text-stone-700 mb-1 block">Comment (optional for approval, required for rejection)</span>
+        <span className="text-sm font-medium text-stone-700 mb-1 block">Comment (required)</span>
         <textarea
+          required
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={3}
           maxLength={500}
-          placeholder="Any observations or reasons…"
+          placeholder="Add the reason for your decision…"
           className="w-full px-3 py-3 border border-stone-300 bg-[#fffdf8] focus:outline-none focus:ring-2 focus:ring-amber focus:border-amber"
         />
       </label>
       {error && <p className="text-sm text-red-700 mb-3">{error}</p>}
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <button
           onClick={() => vote('APPROVE')}
           disabled={pending !== null}
-          className="btn bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 px-8"
+          className="btn w-full justify-center bg-[#315b46] px-4 text-white hover:bg-[#274a39] disabled:opacity-50"
         >
-          {pending === 'APPROVE' ? 'Recording…' : phase === 'SPONSOR' ? '✓ Endorse application' : '✓ Approve application'}
+          {pending === 'APPROVE' ? 'Recording…' : 'Approve'}
         </button>
         <button
           onClick={() => vote('REJECT')}
           disabled={pending !== null}
-          className="btn bg-red-700 text-white hover:bg-red-800 disabled:opacity-50 px-8"
+          className="btn w-full justify-center bg-[#8a463d] px-4 text-white hover:bg-[#733830] disabled:opacity-50"
         >
-          {pending === 'REJECT' ? 'Recording…' : phase === 'SPONSOR' ? '✕ Do not endorse' : '✕ Reject application'}
+          {pending === 'REJECT' ? 'Recording…' : 'Reject'}
         </button>
       </div>
     </div>
