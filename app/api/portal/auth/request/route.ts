@@ -7,6 +7,7 @@ import { recordAudit } from '@/lib/audit';
 const schema = z.object({
   email: z.string().email().max(254),
   next: z.string().optional(),
+  portalType: z.enum(['ADMIN', 'COMMITTEE']),
 });
 
 const GENERIC_MESSAGE = 'If this email is approved, a sign-in code has been sent.';
@@ -23,12 +24,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
   }
 
-  const challenge = await createPortalLoginChallenge(parsed.data.email, parsed.data.next);
+  const challenge = await createPortalLoginChallenge(parsed.data.email, parsed.data.next, parsed.data.portalType);
   if (challenge) {
     await sendPortalLogin({
       email: challenge.user.email,
       code: challenge.code,
-      token: challenge.token,
+      role: challenge.user.role,
       expiresAt: challenge.expiresAt,
     });
     await recordAudit({ actorUserId: challenge.user.id, event: 'EMAIL_LOGIN_REQUESTED' });

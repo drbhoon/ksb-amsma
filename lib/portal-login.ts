@@ -28,10 +28,14 @@ export function normalizePortalEmail(value: string): string {
   return value.toLowerCase().trim();
 }
 
-export async function createPortalLoginChallenge(emailValue: string, nextValue?: string) {
+export async function createPortalLoginChallenge(
+  emailValue: string,
+  nextValue: string | undefined,
+  requiredRole: 'ADMIN' | 'COMMITTEE'
+) {
   const email = normalizePortalEmail(emailValue);
   const user = await prisma.portalUser.findUnique({ where: { email } });
-  if (!user?.active) return null;
+  if (!user?.active || user.role !== requiredRole) return null;
 
   const windowStart = new Date(Date.now() - CHALLENGE_MINUTES * 60 * 1000);
   const recentRequests = await prisma.portalLoginChallenge.count({
@@ -86,21 +90,6 @@ export async function consumePortalLoginCode(emailValue: string, code: string) {
     return null;
   }
 
-  const claimed = await prisma.portalLoginChallenge.updateMany({
-    where: { id: challenge.id, consumedAt: null },
-    data: { consumedAt: new Date() },
-  });
-  return claimed.count === 1 ? challenge : null;
-}
-
-export async function consumePortalLoginToken(token: string) {
-  const challenge = await prisma.portalLoginChallenge.findUnique({
-    where: { tokenHash: digest(token) },
-    include: { user: true },
-  });
-  if (!challenge || challenge.consumedAt || challenge.expiresAt <= new Date() || !challenge.user.active) {
-    return null;
-  }
   const claimed = await prisma.portalLoginChallenge.updateMany({
     where: { id: challenge.id, consumedAt: null },
     data: { consumedAt: new Date() },

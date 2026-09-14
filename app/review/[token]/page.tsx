@@ -16,7 +16,7 @@ type Props = { params: Promise<{ token: string }> };
 export default async function ReviewPage({ params }: Props) {
   const { token } = await params;
   const user = await getCurrentPortalUser();
-  if (!user) redirect(`/portal/login?next=${encodeURIComponent(`/review/${token}`)}`);
+  if (!user) redirect(`/portal/committee/login?next=${encodeURIComponent(`/review/${token}`)}`);
   const review = await prisma.applicationReview.findUnique({
     where: { token },
     include: {

@@ -21,7 +21,7 @@ const statusLabel: Record<string, string> = {
 
 export default async function CommitteePortalPage() {
   const user = await getCurrentPortalUser();
-  if (!user) redirect('/portal/login?next=/portal');
+  if (!user) redirect('/portal/committee/login?next=/portal');
   if (user.isTest) redirect('/portal/test');
   if (user.role === 'ADMIN') redirect('/portal/admin');
   if (!user.committeeMemberId) {

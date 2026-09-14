@@ -89,11 +89,18 @@ function wrap(bodyHtml: string, previewText = ''): string {
         <table role="presentation" width="560" cellpadding="0" cellspacing="0"
                style="background:#ffffff;border-radius:8px;overflow:hidden;
                       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1d24;">
-          <tr><td style="padding:32px 40px 24px;border-bottom:3px solid #d97b30;">
-            <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;">AMSMA</div>
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:#6b7280;margin-top:4px;">
-              Aggregate &amp; M sand Manufacturers Association
-            </div>
+          <tr><td style="padding:24px 40px;border-bottom:3px solid #8e5f30;">
+            <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+              <td style="padding-right:14px;vertical-align:middle;">
+                <img src="${SITE}/assets/brand/amsma-email-mark.png" width="56" height="53" alt="AMSMA" style="display:block;border:0;">
+              </td>
+              <td style="vertical-align:middle;">
+                <div style="font-size:24px;font-weight:800;letter-spacing:0.04em;color:#273d33;">AMSMA</div>
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:#6b7280;margin-top:3px;">
+                  Aggregate &amp; M-Sand<br>Manufacturers Association
+                </div>
+              </td>
+            </tr></table>
           </td></tr>
           <tr><td style="padding:32px 40px;line-height:1.6;font-size:15px;">${bodyHtml}</td></tr>
           <tr><td style="padding:24px 40px;background:#faf9f6;border-top:1px solid #eee;
@@ -255,18 +262,18 @@ export async function sendTestEmail(to: string) {
 export async function sendPortalLogin(params: {
   email: string;
   code: string;
-  token: string;
+  role: 'ADMIN' | 'COMMITTEE';
   expiresAt: Date;
 }) {
-  const loginUrl = `${SITE}/portal/login?token=${encodeURIComponent(params.token)}`;
+  const loginUrl = params.role === 'ADMIN' ? `${SITE}/portal/admin/login` : `${SITE}/portal/committee/login`;
   const html = wrap(
     `<h2 style="font-size:20px;margin:0 0 16px;">Sign in to the AMSMA portal</h2>
      <p>Use this one-time code:</p>
      <p style="font-size:30px;font-weight:800;letter-spacing:0.18em;margin:20px 0;">${params.code}</p>
-     <p>Or use the secure sign-in link:</p>
-     <p style="margin:24px 0;">${button(loginUrl, 'Sign in securely')}</p>
+     <p style="margin:24px 0;">${button(loginUrl, `Open ${params.role === 'ADMIN' ? 'Admin' : 'Committee'} Login`)}</p>
+     <p>Enter the six-digit code on the login page. Opening the page does not sign you in.</p>
      <p style="color:#6b7280;font-size:13px;">
-       The code and link expire at
+       The code expires at
        <strong>${params.expiresAt.toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Kolkata' })} IST</strong>
        and can be used only once. If you did not request this message, ignore it.
      </p>`,

@@ -33,7 +33,7 @@ export default async function DevLinksPage({ searchParams }: Props) {
   const expected = process.env.DEV_ACCESS_KEY;
   if (!expected || query.key !== expected) notFound();
   const user = await getCurrentPortalUser();
-  if (!user) redirect(`/portal/login?next=${encodeURIComponent(`/dev/links?key=${query.key}`)}`);
+  if (!user) redirect(`/portal/admin/login?next=${encodeURIComponent(`/dev/links?key=${query.key}`)}`);
   if (user.role !== 'ADMIN') notFound();
 
   const site = siteUrl();

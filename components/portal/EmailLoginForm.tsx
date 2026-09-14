@@ -2,32 +2,13 @@
 
 import { FormEvent, useState } from 'react';
 
-export function EmailLoginForm({ nextPath, initialToken }: { nextPath: string; initialToken?: string }) {
+export function EmailLoginForm({ nextPath, portalType }: { nextPath: string; portalType: 'ADMIN' | 'COMMITTEE' }) {
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [codeRequested, setCodeRequested] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-
-  async function verifyToken(event: FormEvent) {
-    event.preventDefault();
-    if (!initialToken) return;
-    setBusy(true);
-    setError('');
-    const response = await fetch('/api/portal/auth/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: initialToken }),
-    });
-    const data = await response.json();
-    setBusy(false);
-    if (!response.ok) {
-      setError(data.error || 'The sign-in link could not be verified.');
-      return;
-    }
-    window.location.assign(data.next);
-  }
 
   async function requestCode(event?: FormEvent) {
     event?.preventDefault();
@@ -36,7 +17,7 @@ export function EmailLoginForm({ nextPath, initialToken }: { nextPath: string; i
     const response = await fetch('/api/portal/auth/request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, next: nextPath }),
+      body: JSON.stringify({ email, next: nextPath, portalType }),
     });
     const data = await response.json();
     setBusy(false);
@@ -64,18 +45,6 @@ export function EmailLoginForm({ nextPath, initialToken }: { nextPath: string; i
       return;
     }
     window.location.assign(data.next);
-  }
-
-  if (initialToken) {
-    return (
-      <form onSubmit={verifyToken} className="space-y-5">
-        <p className="text-sm text-stone-600">Confirm that you want to use this one-time link to open the AMSMA portal.</p>
-        {error && <p role="alert" className="border border-red-300 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
-        <button type="submit" disabled={busy} className="btn-primary w-full justify-center disabled:cursor-wait disabled:opacity-60">
-          {busy ? 'Checking…' : 'Continue secure sign-in'}
-        </button>
-      </form>
-    );
   }
 
   if (!codeRequested) {
