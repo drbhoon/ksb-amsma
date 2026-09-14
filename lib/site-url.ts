@@ -16,8 +16,8 @@
  * add the scheme when it is missing and drop any trailing slash.
  */
 export function siteUrl(): string {
-  const raw = (process.env.NEXT_PUBLIC_SITE_URL || 'https://amsma.in').trim();
-  if (!raw) return 'https://amsma.in';
+  const raw = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.amsma.in').trim();
+  if (!raw) return 'https://www.amsma.in';
   const withScheme = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
   return withScheme.replace(/\/+$/, '');
 }
