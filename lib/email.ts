@@ -455,7 +455,7 @@ export async function sendApprovalNotification(params: {
      </p>`,
     `AMSMA membership approved: ${params.applicationNo}`
   );
-  return send(params.applicantEmail, `AMSMA membership approved — payment link inside`, html);
+  return send(params.applicantEmail, `AMSMA Membership Approved`, html);
 }
 
 export async function sendRejectionNotification(params: {
