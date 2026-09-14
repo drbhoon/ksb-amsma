@@ -71,10 +71,33 @@ async function main() {
   const adminName = process.env.PORTAL_ADMIN_NAME || 'AMSMA Administrator';
   await prisma.portalUser.upsert({
     where: { email: adminEmail },
-    update: { name: adminName, role: 'ADMIN', active: true },
-    create: { email: adminEmail, name: adminName, role: 'ADMIN' },
+    update: { name: adminName, role: 'ADMIN', active: true, isTest: false },
+    create: { email: adminEmail, name: adminName, role: 'ADMIN', isTest: false },
   });
   console.log(`  ✓ Admin login: ${adminEmail}`);
+
+  const testAdminEmail = (process.env.PORTAL_TEST_ADMIN_EMAIL || '').toLowerCase().trim();
+  if (testAdminEmail) {
+    await prisma.portalUser.upsert({
+      where: { email: testAdminEmail },
+      update: { name: 'Test Admin', role: 'ADMIN', active: true, isTest: true, committeeMemberId: null },
+      create: { email: testAdminEmail, name: 'Test Admin', role: 'ADMIN', active: true, isTest: true },
+    });
+    console.log('  ✓ Test admin login created');
+  }
+
+  const testReviewerEmails = (process.env.PORTAL_TEST_REVIEWER_EMAILS || '')
+    .split(',')
+    .map((value) => value.toLowerCase().trim())
+    .filter(Boolean);
+  for (const [index, email] of testReviewerEmails.entries()) {
+    await prisma.portalUser.upsert({
+      where: { email },
+      update: { name: `Test Reviewer ${index + 1}`, role: 'COMMITTEE', active: true, isTest: true, committeeMemberId: null },
+      create: { email, name: `Test Reviewer ${index + 1}`, role: 'COMMITTEE', active: true, isTest: true },
+    });
+  }
+  if (testReviewerEmails.length > 0) console.log(`  ✓ ${testReviewerEmails.length} test reviewer logins created`);
   console.log('  Portal access uses one-time email codes for approved addresses only.');
 }
 

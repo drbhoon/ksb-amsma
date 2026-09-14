@@ -9,7 +9,7 @@ export const metadata = { title: 'Committee and Admin Login' };
 export default async function PortalLoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string; token?: string }> }) {
   const query = await searchParams;
   const user = await getCurrentPortalUser();
-  if (user) redirect(user.role === 'ADMIN' ? '/portal/admin' : '/portal');
+  if (user) redirect(user.isTest ? '/portal/test' : user.role === 'ADMIN' ? '/portal/admin' : '/portal');
   const nextPath = safePortalReturnPath(query.next);
   return (
     <><Header /><main className="membership-surface min-h-[70vh] py-14 md:py-20">

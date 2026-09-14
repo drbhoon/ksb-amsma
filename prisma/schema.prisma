@@ -191,6 +191,7 @@ model PortalUser {
   passwordHash      String? // Legacy field; email code login does not use passwords
   role              PortalRole
   active            Boolean                 @default(true)
+  isTest            Boolean                 @default(false)
   committeeMemberId String?                 @unique
   committeeMember   CommitteeMember?        @relation(fields: [committeeMemberId], references: [id], onDelete: SetNull)
   sessions          PortalSession[]

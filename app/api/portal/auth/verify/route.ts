@@ -10,7 +10,8 @@ const codeSchema = z.object({
 });
 const tokenSchema = z.object({ token: z.string().min(32).max(500) });
 
-function destination(role: 'ADMIN' | 'COMMITTEE', returnPath: string): string {
+function destination(role: 'ADMIN' | 'COMMITTEE', returnPath: string, isTest: boolean): string {
+  if (isTest) return '/portal/test';
   if (returnPath && returnPath !== '/portal') return returnPath;
   return role === 'ADMIN' ? '/portal/admin' : '/portal';
 }
@@ -35,6 +36,6 @@ export async function POST(request: Request) {
   await recordAudit({ actorUserId: challenge.userId, event: tokenRequest.success ? 'EMAIL_LINK_LOGIN' : 'EMAIL_CODE_LOGIN' });
   return NextResponse.json({
     success: true,
-    next: destination(challenge.user.role, challenge.returnPath),
+    next: destination(challenge.user.role, challenge.returnPath, challenge.user.isTest),
   });
 }

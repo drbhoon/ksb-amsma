@@ -131,6 +131,10 @@ function escapeHtml(value: string): string {
  * include two temporary placeholders until verified addresses are approved. Outbound
  * mail stays OFF unless it is explicitly switched on:
  *
+ *   EMAIL_TEST_ALLOWLIST="a@x.com,b@y.com" → messages can go only to these
+ *                                          test addresses. All other recipients
+ *                                          are blocked. This is the safest mode
+ *                                          for portal sign-in testing.
  *   EMAIL_REDIRECT_TO="a@x.com,b@y.com"  → every message goes to these addresses
  *                                          instead of the real recipient, with the
  *                                          intended recipient shown in the subject.
@@ -139,9 +143,16 @@ function escapeHtml(value: string): string {
  *                                          Production only.
  *   neither                              → nothing is sent; each attempt is logged.
  *
- * If both are set, EMAIL_REDIRECT_TO wins — the safer of the two.
+ * EMAIL_TEST_ALLOWLIST has first priority. EMAIL_REDIRECT_TO has second priority.
  */
-type EmailMode = 'redirect' | 'live' | 'off';
+type EmailMode = 'allowlist' | 'redirect' | 'live' | 'off';
+
+function testAllowlist(): string[] {
+  return (process.env.EMAIL_TEST_ALLOWLIST || '')
+    .split(',')
+    .map((s) => s.toLowerCase().trim())
+    .filter(Boolean);
+}
 
 function redirectTargets(): string[] {
   return (process.env.EMAIL_REDIRECT_TO || '')
@@ -151,6 +162,7 @@ function redirectTargets(): string[] {
 }
 
 export function emailMode(): EmailMode {
+  if (testAllowlist().length > 0) return 'allowlist';
   if (redirectTargets().length > 0) return 'redirect';
   if (process.env.EMAIL_LIVE === 'true') return 'live';
   return 'off';
@@ -163,9 +175,14 @@ async function send(to: string, subject: string, html: string, options?: { reply
     console.warn(
       `[email] BLOCKED (mode=off) -> "${to}" - ${subject}
 ` +
-        '        Set EMAIL_REDIRECT_TO to test, or EMAIL_LIVE=true for real delivery.'
+        '        Set EMAIL_TEST_ALLOWLIST to test, or EMAIL_LIVE=true for real delivery.'
     );
     return { skipped: true, reason: 'mode-off' as const };
+  }
+
+  if (mode === 'allowlist' && !testAllowlist().includes(to.toLowerCase().trim())) {
+    console.warn(`[email] BLOCKED (not in test allowlist) -> "${to}" - ${subject}`);
+    return { skipped: true, reason: 'not-test-allowlisted' as const };
   }
 
   const provider = emailProvider();
@@ -181,7 +198,7 @@ async function send(to: string, subject: string, html: string, options?: { reply
   // In redirect mode the true recipient is preserved in the subject so testers
   // can tell which committee member's magic link they are looking at.
   const recipients = mode === 'redirect' ? redirectTargets() : [to];
-  const finalSubject = mode === 'redirect' ? `[-> ${to}] ${subject}` : subject;
+  const finalSubject = mode === 'allowlist' ? `[TEST] ${subject}` : mode === 'redirect' ? `[-> ${to}] ${subject}` : subject;
   const from = fromAddress();
 
   try {
