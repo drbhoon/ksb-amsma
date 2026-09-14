@@ -24,7 +24,7 @@ export function Header() {
           <span className="amsma-brand-lockup">
             <span className="amsma-brand-word">AMSMA</span>
             <span className="amsma-brand-name">Aggregate &amp; M-Sand<br />Manufacturers Association</span>
-            <span className="amsma-brand-est">Est. 2024</span>
+            <span className="amsma-brand-est">Est. 2026</span>
           </span>
         </Link>
         <button type="button" className="amsma-menu-toggle" aria-label={open ? 'Close main menu' : 'Open main menu'} aria-expanded={open} aria-controls="amsma-navigation" onClick={() => setOpen((value) => !value)}>
