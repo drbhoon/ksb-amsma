@@ -18,6 +18,15 @@ import {
   sendReviewInvitation,
 } from './email';
 
+const TEST_APPROVAL_QUORUM = 3;
+const TEST_REJECTION_THRESHOLD = 1;
+
+function approvalThresholds(isTest: boolean) {
+  return isTest
+    ? { quorum: TEST_APPROVAL_QUORUM, rejectionThreshold: TEST_REJECTION_THRESHOLD }
+    : { quorum: APPROVAL_QUORUM, rejectionThreshold: REJECTION_THRESHOLD };
+}
+
 export async function advanceAfterReview(applicationId: string, actorUserId: string) {
   const application = await prisma.membershipApplication.findUnique({
     where: { id: applicationId },
@@ -61,7 +70,7 @@ export async function advanceAfterReview(applicationId: string, actorUserId: str
     if (sponsorReviews.length === 2 && sponsorReviews.every((review) => review.decision === 'APPROVE')) {
       const deadline = committeeReviewExpiryFromNow();
       const approvers = await prisma.committeeMember.findMany({
-        where: { canApproveApplications: true },
+        where: { canApproveApplications: true, isTest: application.isTest },
       });
       const existingReviewerIds = new Set(sponsorReviews.map((review) => review.committeeMemberId));
       const remaining = approvers.filter((member) => !existingReviewerIds.has(member.id));
@@ -136,9 +145,10 @@ export async function advanceAfterReview(applicationId: string, actorUserId: str
 
   if (application.status === 'COMMITTEE_REVIEW') {
     const { approvals, rejections } = await tallyReviews(applicationId);
+    const thresholds = approvalThresholds(application.isTest);
     let result: 'APPROVED' | 'REJECTED' | null = null;
-    if (approvals >= APPROVAL_QUORUM) result = 'APPROVED';
-    else if (rejections >= REJECTION_THRESHOLD) result = 'REJECTED';
+    if (approvals >= thresholds.quorum) result = 'APPROVED';
+    else if (rejections >= thresholds.rejectionThreshold) result = 'REJECTED';
     if (!result) return { status: 'COMMITTEE_REVIEW' as const, approvals, rejections };
 
     const claimed = await prisma.membershipApplication.updateMany({
@@ -150,9 +160,9 @@ export async function advanceAfterReview(applicationId: string, actorUserId: str
       applicationId,
       actorUserId,
       event: 'COMMITTEE_RESULT_REACHED',
-      details: { result, approvals, rejections, quorum: APPROVAL_QUORUM },
+      details: { result, approvals, rejections, quorum: thresholds.quorum, isTest: application.isTest },
     });
-    await notifyAdmins(application.applicationNo, application.organizationName, result, approvals, rejections);
+    await notifyAdmins(application.applicationNo, application.organizationName, result, approvals, rejections, application.isTest);
     return { status: 'ADMIN_REVIEW' as const, result, approvals, rejections };
   }
 
@@ -164,9 +174,10 @@ async function notifyAdmins(
   organizationName: string,
   result: 'APPROVED' | 'REJECTED' | 'NO_QUORUM',
   approvals: number,
-  rejections: number
+  rejections: number,
+  isTest: boolean
 ) {
-  const admins = await prisma.portalUser.findMany({ where: { role: 'ADMIN', active: true } });
+  const admins = await prisma.portalUser.findMany({ where: { role: 'ADMIN', active: true, isTest } });
   await Promise.allSettled(
     admins.map((admin) =>
       sendAdminDecisionRequest({
@@ -205,7 +216,8 @@ export async function pauseExpiredCommitteeReviews() {
       application.organizationName,
       'NO_QUORUM',
       tally.approvals,
-      tally.rejections
+      tally.rejections,
+      application.isTest
     );
   }
   return paused;
@@ -362,7 +374,7 @@ export async function confirmCommitteeResult(
     });
   }
 
-  const committee = await prisma.committeeMember.findMany();
+  const committee = await prisma.committeeMember.findMany({ where: { isTest: application.isTest } });
   await Promise.allSettled(
     committee.map((member) =>
       sendCommitteeFinalNotice({

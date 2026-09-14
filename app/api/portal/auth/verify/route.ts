@@ -10,7 +10,7 @@ const codeSchema = z.object({
 });
 
 function destination(role: 'ADMIN' | 'COMMITTEE', returnPath: string, isTest: boolean): string {
-  if (isTest) return '/portal/test';
+  if (isTest) return returnPath.startsWith('/review/') ? returnPath : '/portal/test';
   if (returnPath && returnPath !== '/portal') return returnPath;
   return role === 'ADMIN' ? '/portal/admin' : '/portal';
 }

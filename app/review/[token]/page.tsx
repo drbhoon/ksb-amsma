@@ -15,18 +15,22 @@ type Props = { params: Promise<{ token: string }> };
 
 export default async function ReviewPage({ params }: Props) {
   const { token } = await params;
-  const user = await getCurrentPortalUser();
-  if (!user) redirect(`/portal/committee/login?next=${encodeURIComponent(`/review/${token}`)}`);
   const review = await prisma.applicationReview.findUnique({
     where: { token },
     include: {
-      committeeMember: true,
+      committeeMember: { include: { portalUser: true } },
       application: true,
     },
   });
 
   if (!review) notFound();
-  if (user.role !== 'ADMIN' && user.committeeMemberId !== review.committeeMemberId) notFound();
+  const user = await getCurrentPortalUser();
+  if (!user) {
+    const loginPath = review.committeeMember.portalUser?.role === 'ADMIN' ? '/portal/admin/login' : '/portal/committee/login';
+    redirect(`${loginPath}?next=${encodeURIComponent(`/review/${token}`)}`);
+  }
+  if (user.isTest !== review.application.isTest) notFound();
+  if ((user.isTest || user.role !== 'ADMIN') && user.committeeMemberId !== review.committeeMemberId) notFound();
   await recordAudit({ applicationId: review.applicationId, actorUserId: user.id, event: 'APPLICATION_REVIEW_VIEWED' });
 
   const now = new Date();
@@ -34,6 +38,8 @@ export default async function ReviewPage({ params }: Props) {
   const alreadyDecided = review.decision !== 'PENDING';
   const app = review.application;
   const tier = MEMBERSHIP_TIERS[app.tier];
+  const approvalTarget = app.isTest ? 3 : APPROVAL_QUORUM;
+  const reviewerTarget = app.isTest ? 3 : APPROVERS.length;
 
   const { approvals, rejections, pending } = await tallyReviews(app.id);
 
@@ -82,9 +88,9 @@ export default async function ReviewPage({ params }: Props) {
 
           {(alreadyDecided || user.role === 'ADMIN') && (
             <div className="grid grid-cols-3 gap-3 pt-2">
-              <TallyCard label="Approvals" count={approvals} target={APPROVAL_QUORUM} colour="success" />
-              <TallyCard label="Rejections" count={rejections} target={APPROVERS.length - APPROVAL_QUORUM + 1} colour="danger" />
-              <TallyCard label="Pending" count={pending} target={APPROVERS.length} colour="stone" />
+              <TallyCard label="Approvals" count={approvals} target={approvalTarget} colour="success" />
+              <TallyCard label="Rejections" count={rejections} target={reviewerTarget - approvalTarget + 1} colour="danger" />
+              <TallyCard label="Pending" count={pending} target={reviewerTarget} colour="stone" />
             </div>
           )}
 
@@ -125,7 +131,7 @@ export default async function ReviewPage({ params }: Props) {
           </div>
 
           {/* Vote actions */}
-          {!expired && !alreadyDecided && user.role === 'COMMITTEE' &&
+          {!expired && !alreadyDecided && (user.role === 'COMMITTEE' || user.isTest) &&
             ((review.phase === 'SPONSOR' && app.status === 'SPONSOR_REVIEW') ||
              (review.phase === 'COMMITTEE' && app.status === 'COMMITTEE_REVIEW')) && (
             <ReviewActions token={token} applicationNo={app.applicationNo} phase={review.phase} />
@@ -133,7 +139,7 @@ export default async function ReviewPage({ params }: Props) {
         </div>
 
         <p className="text-xs text-stone-500 mt-6 text-center">
-          The current review quorum is {APPROVAL_QUORUM} of {APPROVERS.length} eligible committee members.
+          The current review quorum is {approvalTarget} of {reviewerTarget} eligible committee members{app.isTest ? ' for this test application' : ''}.
         </p>
       </div>
     </main><Footer /></>

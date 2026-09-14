@@ -49,10 +49,10 @@ export async function POST(req: Request) {
       prisma.committeeMember.findUnique({ where: { slug: d.seconderSlug }, include: { portalUser: true } }),
     ]);
     const missing: Record<string, string> = {};
-    if (!proposer?.canApproveApplications || !proposer.portalUser?.active) {
+    if (!proposer?.canApproveApplications || proposer.isTest || !proposer.portalUser?.active) {
       missing.proposerSlug = 'Select the proposer again from the committee-member dropdown.';
     }
-    if (!seconder?.canApproveApplications || !seconder.portalUser?.active) {
+    if (!seconder?.canApproveApplications || seconder.isTest || !seconder.portalUser?.active) {
       missing.seconderSlug = 'Select the seconder again from the committee-member dropdown.';
     }
     if (d.proposerSlug === d.seconderSlug) {

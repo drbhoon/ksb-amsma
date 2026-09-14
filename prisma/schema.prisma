@@ -32,10 +32,13 @@ model CommitteeMember {
   role                   CommitteeRole
   title                  String
   canApproveApplications Boolean       @default(true)
+  isTest                 Boolean       @default(false)
   createdAt              DateTime      @default(now())
 
   reviews    ApplicationReview[]
   portalUser PortalUser?
+
+  @@index([isTest, canApproveApplications])
 }
 
 // ============================================================
@@ -75,6 +78,7 @@ model MembershipApplication {
   applicationNo String            @unique // Human-friendly, e.g. AMSMA-2026-0001
   tier          MembershipTier
   status        ApplicationStatus @default(SUBMITTED)
+  isTest        Boolean           @default(false)
 
   // Applicant / organisation
   organizationName String
@@ -138,6 +142,7 @@ model MembershipApplication {
   @@index([status])
   @@index([tier])
   @@index([contactEmail])
+  @@index([isTest, status])
 }
 
 enum ReviewDecision {

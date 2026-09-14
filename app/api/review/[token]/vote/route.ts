@@ -16,7 +16,7 @@ export async function POST(req: Request, { params }: Ctx) {
   try {
     const { token } = await params;
     const user = await getCurrentPortalUser();
-    if (!user || user.role !== 'COMMITTEE' || !user.committeeMemberId) {
+    if (!user || (user.role !== 'COMMITTEE' && !user.isTest) || !user.committeeMemberId) {
       return NextResponse.json({ error: 'Please sign in with the assigned committee account.' }, { status: 401 });
     }
     const parsed = schema.safeParse(await req.json());
@@ -33,6 +33,9 @@ export async function POST(req: Request, { params }: Ctx) {
       include: { application: true },
     });
     if (!review) return NextResponse.json({ error: 'Invalid review link.' }, { status: 404 });
+    if (user.isTest !== review.application.isTest) {
+      return NextResponse.json({ error: 'This account cannot access this application.' }, { status: 403 });
+    }
     if (review.committeeMemberId !== user.committeeMemberId) {
       return NextResponse.json({ error: 'This review is assigned to another committee member.' }, { status: 403 });
     }

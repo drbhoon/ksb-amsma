@@ -1,5 +1,7 @@
 import { PrismaClient, CommitteeRole } from '@prisma/client';
 import { COMMITTEE_MEMBERS } from '../config/committee-members';
+import { generateToken } from '../lib/tokens';
+import { sendReviewInvitation } from '../lib/email';
 
 const prisma = new PrismaClient();
 
@@ -35,6 +37,7 @@ async function main() {
         role,
         title: m.title,
         canApproveApplications: m.canApproveApplications,
+        isTest: false,
       },
       create: {
         slug: m.slug,
@@ -43,6 +46,7 @@ async function main() {
         role,
         title: m.title,
         canApproveApplications: m.canApproveApplications,
+        isTest: false,
       },
     });
 
@@ -77,27 +81,128 @@ async function main() {
   console.log(`  ✓ Admin login: ${adminEmail}`);
 
   const testAdminEmail = (process.env.PORTAL_TEST_ADMIN_EMAIL || '').toLowerCase().trim();
-  if (testAdminEmail) {
-    await prisma.portalUser.upsert({
-      where: { email: testAdminEmail },
-      update: { name: 'Test Admin', role: 'ADMIN', active: true, isTest: true, committeeMemberId: null },
-      create: { email: testAdminEmail, name: 'Test Admin', role: 'ADMIN', active: true, isTest: true },
-    });
-    console.log('  ✓ Test admin login created');
-  }
-
   const testReviewerEmails = (process.env.PORTAL_TEST_REVIEWER_EMAILS || '')
     .split(',')
     .map((value) => value.toLowerCase().trim())
     .filter(Boolean);
-  for (const [index, email] of testReviewerEmails.entries()) {
+  if (testAdminEmail && testReviewerEmails.length === 2) {
+    const testDefinitions = [
+      { slug: 'test-proposer', name: 'Test Proposer', email: testReviewerEmails[0] },
+      { slug: 'test-seconder', name: 'Test Seconder', email: testReviewerEmails[1] },
+      { slug: 'test-committee-member', name: 'Test Committee Member', email: testAdminEmail },
+    ];
+    const testMembers = [];
+    for (const definition of testDefinitions) {
+      testMembers.push(await prisma.committeeMember.upsert({
+        where: { slug: definition.slug },
+        update: {
+          name: definition.name,
+          email: definition.email,
+          role: 'FOUNDER_MEMBER',
+          title: 'Test account',
+          canApproveApplications: true,
+          isTest: true,
+        },
+        create: {
+          ...definition,
+          role: 'FOUNDER_MEMBER',
+          title: 'Test account',
+          canApproveApplications: true,
+          isTest: true,
+        },
+      }));
+    }
+
     await prisma.portalUser.upsert({
-      where: { email },
-      update: { name: `Test Reviewer ${index + 1}`, role: 'COMMITTEE', active: true, isTest: true, committeeMemberId: null },
-      create: { email, name: `Test Reviewer ${index + 1}`, role: 'COMMITTEE', active: true, isTest: true },
+      where: { email: testAdminEmail },
+      update: { name: 'Test Admin', role: 'ADMIN', active: true, isTest: true, committeeMemberId: testMembers[2].id },
+      create: { email: testAdminEmail, name: 'Test Admin', role: 'ADMIN', active: true, isTest: true, committeeMemberId: testMembers[2].id },
     });
+    for (const [index, email] of testReviewerEmails.entries()) {
+      await prisma.portalUser.upsert({
+        where: { email },
+        update: { name: testDefinitions[index].name, role: 'COMMITTEE', active: true, isTest: true, committeeMemberId: testMembers[index].id },
+        create: { email, name: testDefinitions[index].name, role: 'COMMITTEE', active: true, isTest: true, committeeMemberId: testMembers[index].id },
+      });
+    }
+    console.log('  ✓ Test proposer, seconder, committee member and admin logins created');
+
+    if (process.env.PORTAL_TEST_WORKFLOW_ENABLED === 'true') {
+      const sponsorDeadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      let testApplication = await prisma.membershipApplication.findUnique({
+        where: { applicationNo: 'TEST-AMSMA-2026-0001' },
+      });
+      if (!testApplication) {
+        testApplication = await prisma.membershipApplication.create({
+          data: {
+            applicationNo: 'TEST-AMSMA-2026-0001',
+            tier: 'ORDINARY_REGULAR',
+            status: 'SPONSOR_REVIEW',
+            isTest: true,
+            organizationName: 'Test Aggregate Industries Pvt. Ltd.',
+            contactName: 'Test Applicant',
+            contactEmail: 'dummy-applicant@example.invalid',
+            contactPhone: '9999999999',
+            addressLine: 'Test address',
+            city: 'Test City',
+            state: 'Maharashtra',
+            pincode: '400001',
+            pan: 'AAAAA0000A',
+            natureOfBusiness: 'Test membership workflow',
+            signatoryName: 'Test Signatory',
+            signatoryDesignation: 'Authorised Signatory',
+            signatoryEmail: 'dummy-signatory@example.invalid',
+            signatoryPhone: '9999999999',
+            proposerName: testMembers[0].name,
+            proposerEmail: testMembers[0].email,
+            seconderName: testMembers[1].name,
+            seconderEmail: testMembers[1].email,
+            annualFeePaise: 2500000,
+            sponsorReviewDeadlineAt: sponsorDeadline,
+          },
+        });
+        await prisma.applicationReview.createMany({
+          data: testMembers.slice(0, 2).map((member) => ({
+            applicationId: testApplication!.id,
+            committeeMemberId: member.id,
+            token: generateToken(),
+            tokenExpiresAt: sponsorDeadline,
+            phase: 'SPONSOR',
+            decision: 'PENDING',
+          })),
+        });
+      }
+
+      const pendingNotices = await prisma.applicationReview.findMany({
+        where: {
+          applicationId: testApplication.id,
+          phase: 'SPONSOR',
+          decision: 'PENDING',
+          emailSentAt: null,
+        },
+        include: { committeeMember: true },
+      });
+      for (const review of pendingNotices) {
+        const result = await sendReviewInvitation({
+          committeeMemberEmail: review.committeeMember.email,
+          committeeMemberName: review.committeeMember.name,
+          applicationNo: testApplication.applicationNo,
+          organizationName: testApplication.organizationName,
+          tierLabel: 'Ordinary Member',
+          contactName: testApplication.contactName,
+          reviewToken: review.token,
+          phase: 'SPONSOR',
+          deadline: review.tokenExpiresAt,
+        });
+        if ('success' in result && result.success) {
+          await prisma.applicationReview.update({ where: { id: review.id }, data: { emailSentAt: new Date() } });
+        }
+      }
+      console.log(`  ✓ Test application ready: ${testApplication.applicationNo}`);
+    }
+  } else if (testAdminEmail || testReviewerEmails.length > 0) {
+    console.warn('  ⚠ Test workflow needs one admin email and exactly two reviewer emails.');
   }
-  if (testReviewerEmails.length > 0) console.log(`  ✓ ${testReviewerEmails.length} test reviewer logins created`);
   console.log('  Portal access uses one-time email codes for approved addresses only.');
 }
 

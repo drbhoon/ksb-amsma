@@ -13,6 +13,7 @@ export default async function AdminPage() {
   const user = await getCurrentPortalUser();
   if (!user) redirect('/portal/admin/login?next=/portal/admin');
   if (user.role !== 'ADMIN') redirect('/portal');
+  if (user.isTest) redirect('/portal/test');
   await pauseExpiredCommitteeReviews();
   const applications = await prisma.membershipApplication.findMany({
     include: { reviews: { include: { committeeMember: true }, orderBy: { createdAt: 'asc' } } },
