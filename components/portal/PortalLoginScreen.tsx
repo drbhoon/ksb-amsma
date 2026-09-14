@@ -6,9 +6,11 @@ import { EmailLoginForm } from '@/components/portal/EmailLoginForm';
 export function PortalLoginScreen({
   portalType,
   nextPath,
+  assignedReview,
 }: {
   portalType: 'ADMIN' | 'COMMITTEE';
   nextPath: string;
+  assignedReview?: { reviewToken: string; reviewerName: string; maskedEmail: string } | null;
 }) {
   const admin = portalType === 'ADMIN';
   return (
@@ -17,10 +19,12 @@ export function PortalLoginScreen({
         <p className="membership-kicker !text-[#96501f]">Secure access</p>
         <h1 className="mt-2 text-3xl font-bold">{admin ? 'Admin Login' : 'Committee Login'}</h1>
         <p className="mt-3 mb-8 text-stone-600">
-          Use the {admin ? 'admin' : 'committee'} email address approved by the AMSMA Secretariat. We will send a six-digit code. No password is required.
+          {assignedReview
+            ? 'Confirm the assigned account below. We will send a six-digit code. No password is required.'
+            : `Use the ${admin ? 'admin' : 'committee'} email address approved by the AMSMA Secretariat. We will send a six-digit code. No password is required.`}
         </p>
         <div className="membership-card p-6 sm:p-8">
-          <EmailLoginForm nextPath={nextPath} portalType={portalType} />
+          <EmailLoginForm nextPath={nextPath} portalType={portalType} assignedReview={assignedReview} />
           <p className="mt-5 text-xs leading-relaxed text-stone-500">The code expires after 15 minutes and can be used only once.</p>
         </div>
         <Link href="/portal/login" className="mt-6 inline-block text-sm font-semibold text-[#96501f] hover:underline">Choose another portal</Link>

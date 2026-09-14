@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { consumePortalLoginCode } from '@/lib/portal-login';
+import { consumePortalLoginCode, consumePortalLoginCodeWithToken } from '@/lib/portal-login';
 import { createPortalSession } from '@/lib/portal-auth';
 import { recordAudit } from '@/lib/audit';
 
 const codeSchema = z.object({
-  email: z.string().email().max(254),
+  email: z.string().email().max(254).optional(),
+  challengeToken: z.string().min(20).max(200).optional(),
   code: z.string().regex(/^\d{6}$/),
-});
+}).refine((value) => Boolean(value.email) !== Boolean(value.challengeToken));
 
 function destination(role: 'ADMIN' | 'COMMITTEE', returnPath: string, isTest: boolean): string {
   if (isTest) return returnPath.startsWith('/review/') ? returnPath : '/portal/test';
@@ -21,7 +22,9 @@ export async function POST(request: Request) {
   if (!codeRequest.success) {
     return NextResponse.json({ error: 'Enter the six-digit code from the email.' }, { status: 400 });
   }
-  const challenge = await consumePortalLoginCode(codeRequest.data.email, codeRequest.data.code);
+  const challenge = codeRequest.data.challengeToken
+    ? await consumePortalLoginCodeWithToken(codeRequest.data.challengeToken, codeRequest.data.code)
+    : await consumePortalLoginCode(codeRequest.data.email!, codeRequest.data.code);
   if (!challenge) {
     return NextResponse.json({ error: 'This sign-in code is incorrect or has expired.' }, { status: 401 });
   }

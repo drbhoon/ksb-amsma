@@ -28,14 +28,18 @@ export function normalizePortalEmail(value: string): string {
   return value.toLowerCase().trim();
 }
 
-export async function createPortalLoginChallenge(
-  emailValue: string,
-  nextValue: string | undefined,
-  requiredRole: 'ADMIN' | 'COMMITTEE'
+function maskEmail(email: string): string {
+  const [local, domain] = email.split('@');
+  if (!local || !domain) return 'your approved email address';
+  return `${local.slice(0, 1)}***@${domain}`;
+}
+
+async function createChallengeForUser(
+  user: { id: string; email: string; name: string; role: 'ADMIN' | 'COMMITTEE'; isTest: boolean; active: boolean },
+  nextValue: string | undefined
 ) {
-  const email = normalizePortalEmail(emailValue);
-  const user = await prisma.portalUser.findUnique({ where: { email } });
-  if (!user?.active || user.role !== requiredRole) return null;
+  if (!user.active) return null;
+  const email = normalizePortalEmail(user.email);
 
   const windowStart = new Date(Date.now() - CHALLENGE_MINUTES * 60 * 1000);
   const recentRequests = await prisma.portalLoginChallenge.count({
@@ -68,6 +72,58 @@ export async function createPortalLoginChallenge(
   return { user, code, token, expiresAt };
 }
 
+export async function createPortalLoginChallenge(
+  emailValue: string,
+  nextValue: string | undefined,
+  requiredRole: 'ADMIN' | 'COMMITTEE'
+) {
+  const email = normalizePortalEmail(emailValue);
+  const user = await prisma.portalUser.findUnique({ where: { email } });
+  if (!user?.active || user.role !== requiredRole) return null;
+
+  return createChallengeForUser(user, nextValue);
+}
+
+export async function getReviewLoginIdentity(
+  nextValue: string | undefined,
+  requiredRole: 'ADMIN' | 'COMMITTEE'
+) {
+  const returnPath = safePortalReturnPath(nextValue);
+  const match = returnPath.match(/^\/review\/([A-Za-z0-9_-]+)$/);
+  if (!match) return null;
+
+  const review = await prisma.applicationReview.findUnique({
+    where: { token: match[1] },
+    include: { committeeMember: { include: { portalUser: true } } },
+  });
+  if (!review) return null;
+  const user = review.committeeMember.portalUser;
+  if (!user?.active || user.role !== requiredRole) return null;
+
+  return {
+    reviewToken: match[1],
+    reviewerName: review.committeeMember.name,
+    maskedEmail: maskEmail(user.email),
+  };
+}
+
+export async function createPortalLoginChallengeForReview(
+  reviewToken: string,
+  requiredRole: 'ADMIN' | 'COMMITTEE'
+) {
+  const identity = await getReviewLoginIdentity(`/review/${reviewToken}`, requiredRole);
+  if (!identity) return null;
+
+  const review = await prisma.applicationReview.findUnique({
+    where: { token: reviewToken },
+    include: { committeeMember: { include: { portalUser: true } } },
+  });
+  const user = review?.committeeMember.portalUser;
+  if (!user) return null;
+
+  return createChallengeForUser(user, `/review/${reviewToken}`);
+}
+
 export async function consumePortalLoginCode(emailValue: string, code: string) {
   const email = normalizePortalEmail(emailValue);
   const challenge = await prisma.portalLoginChallenge.findFirst({
@@ -81,6 +137,34 @@ export async function consumePortalLoginCode(emailValue: string, code: string) {
     orderBy: { createdAt: 'desc' },
   });
   if (!challenge || !challenge.user.active) return null;
+
+  if (!secureEqual(challenge.codeHash, digest(code))) {
+    await prisma.portalLoginChallenge.update({
+      where: { id: challenge.id },
+      data: { attempts: { increment: 1 } },
+    });
+    return null;
+  }
+
+  const claimed = await prisma.portalLoginChallenge.updateMany({
+    where: { id: challenge.id, consumedAt: null },
+    data: { consumedAt: new Date() },
+  });
+  return claimed.count === 1 ? challenge : null;
+}
+
+export async function consumePortalLoginCodeWithToken(token: string, code: string) {
+  const challenge = await prisma.portalLoginChallenge.findUnique({
+    where: { tokenHash: digest(token) },
+    include: { user: true },
+  });
+  if (
+    !challenge ||
+    !challenge.user.active ||
+    challenge.consumedAt ||
+    challenge.expiresAt <= new Date() ||
+    challenge.attempts >= MAX_CODE_ATTEMPTS
+  ) return null;
 
   if (!secureEqual(challenge.codeHash, digest(code))) {
     await prisma.portalLoginChallenge.update({
