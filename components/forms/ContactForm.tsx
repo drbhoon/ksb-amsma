@@ -49,7 +49,7 @@ export function ContactForm() {
       </div>
       <Field label="Message *"><textarea className={control} required minLength={20} rows={6} value={form.message} onChange={(e) => update('message', e.target.value)} /></Field>
       <div className="hidden" aria-hidden="true"><label>Website<input tabIndex={-1} autoComplete="off" value={form.website} onChange={(e) => update('website', e.target.value)} /></label></div>
-      <label className="flex items-start gap-3 text-sm"><input className="mt-1" type="checkbox" required checked={form.consent} onChange={(e) => update('consent', e.target.checked)} /><span>I consent to AMSMA using these details to reply to my enquiry. Read the <a className="underline underline-offset-2" href="/privacy" target="_blank" rel="noreferrer">privacy notice</a>.</span></label>
+      <label className="flex items-start gap-3 text-sm"><input className="mt-0.5 h-5 w-5 shrink-0" type="checkbox" required checked={form.consent} onChange={(e) => update('consent', e.target.checked)} /><span>I consent to AMSMA using these details to reply to my enquiry. Read the <a className="underline underline-offset-2" href="/privacy" target="_blank" rel="noreferrer">privacy notice</a>.</span></label>
       <div className="flex flex-wrap items-center gap-4"><button className="ll-button ll-button-solid" type="submit" disabled={status === 'sending'}>{status === 'sending' ? 'Sending…' : 'Send Message'}</button>{message && <p className={`text-sm ${status === 'error' ? 'text-red-700' : 'text-[#273d33]'}`} role="status">{message}</p>}</div>
     </form>
   );

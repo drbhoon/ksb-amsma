@@ -11,7 +11,7 @@
 .ll-hero-inner>.ll-lede { animation-delay:210ms; }
 .ll-hero-inner>.ll-button-row { animation-delay:300ms; }
 @keyframes ll-hero-rise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
-.ll-eyebrow { display: flex; align-items: center; gap: .8rem; margin: 0 0 1rem; color: var(--amsma-clay-deep); font: 700 .68rem/1.25 var(--font-inter),Inter,system-ui,sans-serif; letter-spacing: .2em; text-transform: uppercase; }
+.ll-eyebrow { display: flex; align-items: center; gap: .8rem; margin: 0 0 1rem; color: var(--amsma-clay-deep); font: 700 .75rem/1.25 var(--font-inter),Inter,system-ui,sans-serif; letter-spacing: .16em; text-transform: uppercase; }
 .ll-hero .ll-eyebrow, .ll-dark .ll-eyebrow, .ll-page-hero .ll-eyebrow { color: var(--amsma-sand); }
 .ll-eyebrow::after { content: ''; width: min(9rem,22vw); height: 1px; background: currentColor; opacity: .5; }
 .ll-title, .ll-heading, .ll-subheading { margin: 0; font-weight: 700; line-height: 1.06; }
@@ -24,7 +24,7 @@
 .ll-lede { max-width: 42rem; margin: 1.2rem 0 0; font-size: clamp(1.05rem,1.55vw,1.25rem); line-height: 1.6; }
 .ll-hero .ll-lede { color: rgba(242,237,225,.9); }
 .ll-button-row { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 1.6rem; }
-.ll-button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: .8rem 1.25rem; border: 1px solid transparent; text-decoration: none; font: 700 .69rem/1 var(--font-inter),Inter,system-ui,sans-serif; letter-spacing: .14em; text-transform: uppercase; transition:transform .2s ease,background-color .2s ease,color .2s ease,box-shadow .2s ease; }
+.ll-button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: .8rem 1.25rem; border: 1px solid transparent; text-decoration: none; font: 700 .75rem/1.15 var(--font-inter),Inter,system-ui,sans-serif; letter-spacing: .12em; text-transform: uppercase; transition:transform .2s ease,background-color .2s ease,color .2s ease,box-shadow .2s ease; }
 .ll-button:hover { transform:translateY(-2px); box-shadow:0 .5rem 1.2rem rgba(24,37,29,.14); }
 .ll-button-solid { background: var(--amsma-clay-deep); color: var(--amsma-chalk); }
 .ll-button-solid:hover { background: var(--amsma-forest); color: var(--amsma-sand); }
@@ -53,7 +53,7 @@
 .ll-work-copy p { margin: .48rem 0 0; color: rgba(242,237,225,.82); font-size: .92rem; }
 .ll-content-grid { display: grid; grid-template-columns: .85fr 1.15fr; gap: clamp(2rem,7vw,6rem); align-items: start; }
 .ll-prose p { margin: 0 0 1rem; }
-.ll-kicker { font: 700 .67rem/1.2 var(--font-inter),Inter,system-ui,sans-serif; letter-spacing: .18em; text-transform: uppercase; color: var(--amsma-clay-deep); margin: 0 0 .8rem; }
+.ll-kicker { font: 700 .75rem/1.2 var(--font-inter),Inter,system-ui,sans-serif; letter-spacing: .15em; text-transform: uppercase; color: var(--amsma-clay-deep); margin: 0 0 .8rem; }
 .ll-process-grid { display: grid; grid-template-columns: repeat(4,1fr); margin-top: 2rem; border: 1px solid rgba(242,237,225,.17); }
 .ll-step { padding: 1.15rem; border-right: 1px solid rgba(242,237,225,.17); }
 .ll-step:last-child { border-right: 0; }

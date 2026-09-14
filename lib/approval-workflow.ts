@@ -162,7 +162,7 @@ export async function advanceAfterReview(applicationId: string, actorUserId: str
       event: 'COMMITTEE_RESULT_REACHED',
       details: { result, approvals, rejections, quorum: thresholds.quorum, isTest: application.isTest },
     });
-    await notifyAdmins(application.applicationNo, application.organizationName, result, approvals, rejections, application.isTest);
+    await notifyAdmins(application.applicationNo, application.organizationName, result, approvals, rejections);
     return { status: 'ADMIN_REVIEW' as const, result, approvals, rejections };
   }
 
@@ -174,10 +174,11 @@ async function notifyAdmins(
   organizationName: string,
   result: 'APPROVED' | 'REJECTED' | 'NO_QUORUM',
   approvals: number,
-  rejections: number,
-  isTest: boolean
+  rejections: number
 ) {
-  const admins = await prisma.portalUser.findMany({ where: { role: 'ADMIN', active: true, isTest } });
+  // The same approved Secretariat admin handles real and isolated test flows.
+  // Test isolation applies to committee reviewers, not to the admin account.
+  const admins = await prisma.portalUser.findMany({ where: { role: 'ADMIN', active: true } });
   await Promise.allSettled(
     admins.map((admin) =>
       sendAdminDecisionRequest({
@@ -216,8 +217,7 @@ export async function pauseExpiredCommitteeReviews() {
       application.organizationName,
       'NO_QUORUM',
       tally.approvals,
-      tally.rejections,
-      application.isTest
+      tally.rejections
     );
   }
   return paused;

@@ -192,7 +192,7 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
           <p className="text-sm text-stone-500">About 6 minutes in total</p>
         </div>
         <ol className="mt-5 grid grid-cols-6 gap-1" aria-label="Application progress">
-          {FORM_STEPS.map((label, index) => <li key={label} className="min-w-0"><button type="button" onClick={() => index < step && moveToStep(index)} disabled={index > step} aria-current={index === step ? 'step' : undefined} className={`w-full border-t-4 pt-2 text-left text-[10px] font-bold uppercase tracking-[.08em] ${index <= step ? 'border-[#96501f] text-[#273d33]' : 'border-stone-200 text-stone-400'} ${index < step ? 'cursor-pointer' : 'cursor-default'}`}><span className="block md:hidden">{index + 1}</span><span className="hidden truncate md:block">{label}</span></button></li>)}
+          {FORM_STEPS.map((label, index) => <li key={label} className="min-w-0"><button type="button" onClick={() => index < step && moveToStep(index)} disabled={index > step} aria-current={index === step ? 'step' : undefined} className={`min-h-11 w-full border-t-4 pt-2 text-left text-xs font-bold uppercase tracking-[.06em] ${index <= step ? 'border-[#96501f] text-[#273d33]' : 'border-stone-200 text-stone-400'} ${index < step ? 'cursor-pointer' : 'cursor-default'}`}><span className="block md:hidden">{index + 1}</span><span className="hidden truncate md:block">{label}</span></button></li>)}
         </ol>
       </div>
       {/* ==== Category ==== */}
@@ -219,10 +219,10 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
                 value={tier.id}
                 checked={form.tier === tier.id}
                 onChange={(e) => update('tier', e.target.value as MembershipTierId)}
-                className="mt-1"
+                className="mt-1 h-5 w-5 shrink-0"
               />
               <div className="flex-1">
-                <div className="flex items-baseline justify-between">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                   <div className="font-semibold">{tier.label}</div>
                   <div className="font-display font-bold text-lg">{formatInr(tier.annualFeeRupees)}<span className="text-xs font-normal text-stone-500">/yr</span></div>
                 </div>

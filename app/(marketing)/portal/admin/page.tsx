@@ -41,7 +41,7 @@ export default async function AdminPage() {
                     <p className="mt-1 text-sm text-stone-600">{application.applicationNo} · Submitted {application.submittedAt.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata' })} IST</p>
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                    <Tally label="Approve" value={`${approvals}/${APPROVAL_QUORUM}`} />
+                    <Tally label="Approve" value={`${approvals}/${application.isTest ? 3 : APPROVAL_QUORUM}`} />
                     <Tally label="Reject" value={String(rejections)} />
                     <Tally label="Pending" value={String(application.reviews.length - approvals - rejections)} />
                   </div>

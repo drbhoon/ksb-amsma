@@ -16,7 +16,68 @@ const roleMap: Record<string, CommitteeRole> = {
   'Founder Member':    'FOUNDER_MEMBER',
 };
 
+// These application numbers belong to earlier manual test rounds. They are
+// listed explicitly so a one-time reset cannot remove a future real record by
+// using a broad text rule.
+const LEGACY_TEST_APPLICATION_NOS = [
+  'AMSMA-2026-0001',
+  'AMSMA-2026-0002',
+  'AMSMA-2026-0003',
+  'TEST-AMSMA-2026-0001',
+];
+
+async function resetPreviousTestDataOnce() {
+  const resetId = (process.env.PORTAL_TEST_RESET_ID || '').trim();
+  if (!resetId || process.env.PORTAL_TEST_WORKFLOW_ENABLED !== 'true') return;
+
+  const resetEvent = `TEST_DATA_RESET:${resetId}`;
+  const alreadyReset = await prisma.auditEvent.findFirst({ where: { event: resetEvent }, select: { id: true } });
+  if (alreadyReset) {
+    console.log(`✓ Test reset ${resetId} was already applied.`);
+    return;
+  }
+
+  const applications = await prisma.membershipApplication.findMany({
+    where: {
+      OR: [
+        { isTest: true },
+        { applicationNo: { in: LEGACY_TEST_APPLICATION_NOS } },
+      ],
+    },
+    select: { id: true, applicationNo: true },
+  });
+  const applicationIds = applications.map((application) => application.id);
+  const testUsers = await prisma.portalUser.findMany({ where: { isTest: true }, select: { id: true } });
+  const testUserIds = testUsers.map((user) => user.id);
+
+  await prisma.$transaction([
+    prisma.member.deleteMany({ where: { applicationId: { in: applicationIds } } }),
+    prisma.auditEvent.deleteMany({
+      where: {
+        OR: [
+          { applicationId: { in: applicationIds } },
+          { actorUserId: { in: testUserIds } },
+        ],
+      },
+    }),
+    // Application reviews are removed by the MembershipApplication cascade.
+    prisma.membershipApplication.deleteMany({ where: { id: { in: applicationIds } } }),
+    // Login challenges and sessions are removed by the PortalUser cascade.
+    prisma.portalUser.deleteMany({ where: { id: { in: testUserIds } } }),
+    prisma.committeeMember.deleteMany({ where: { isTest: true } }),
+  ]);
+
+  await prisma.auditEvent.create({
+    data: {
+      event: resetEvent,
+      details: { removedApplications: applications.map((application) => application.applicationNo) },
+    },
+  });
+  console.log(`✓ Removed ${applications.length} previous test applications and all linked test access data.`);
+}
+
 async function main() {
+  await resetPreviousTestDataOnce();
   console.log('🌱 Seeding committee members...\n');
 
   for (const m of COMMITTEE_MEMBERS) {
@@ -53,9 +114,9 @@ async function main() {
     console.log(`  ✓ ${result.name.padEnd(38)} <${result.email}>`);
   }
 
-  const total = await prisma.committeeMember.count();
+  const total = await prisma.committeeMember.count({ where: { isTest: false } });
   const eligible = await prisma.committeeMember.count({
-    where: { canApproveApplications: true },
+    where: { canApproveApplications: true, isTest: false },
   });
 
   console.log(`\n✓ Committee: ${total} members (${eligible} eligible to approve applications)`);
@@ -73,6 +134,10 @@ async function main() {
   }
   const adminEmail = (process.env.PORTAL_ADMIN_EMAIL || 'admin@amsma.in').toLowerCase().trim();
   const adminName = process.env.PORTAL_ADMIN_NAME || 'AMSMA Administrator';
+  await prisma.portalUser.updateMany({
+    where: { role: 'ADMIN', email: { not: adminEmail } },
+    data: { active: false },
+  });
   await prisma.portalUser.upsert({
     where: { email: adminEmail },
     update: { name: adminName, role: 'ADMIN', active: true, isTest: false },
@@ -80,16 +145,15 @@ async function main() {
   });
   console.log(`  ✓ Admin login: ${adminEmail}`);
 
-  const testAdminEmail = (process.env.PORTAL_TEST_ADMIN_EMAIL || '').toLowerCase().trim();
   const testReviewerEmails = (process.env.PORTAL_TEST_REVIEWER_EMAILS || '')
     .split(',')
     .map((value) => value.toLowerCase().trim())
     .filter(Boolean);
-  if (testAdminEmail && testReviewerEmails.length === 2) {
+  if (testReviewerEmails.length === 3) {
     const testDefinitions = [
-      { slug: 'test-proposer', name: 'Rachel Green', email: testReviewerEmails[0] },
-      { slug: 'test-seconder', name: 'Chunsikali', email: testReviewerEmails[1] },
-      { slug: 'test-committee-member', name: 'Esha Bhoon', email: testAdminEmail },
+      { slug: 'test-proposer', name: 'Esha Bhoon', email: testReviewerEmails[0] },
+      { slug: 'test-seconder', name: 'K. S. Bhoon', email: testReviewerEmails[1] },
+      { slug: 'test-committee-member', name: 'Chunsikali', email: testReviewerEmails[2] },
     ];
     const testMembers = [];
     for (const definition of testDefinitions) {
@@ -113,11 +177,6 @@ async function main() {
       }));
     }
 
-    await prisma.portalUser.upsert({
-      where: { email: testAdminEmail },
-      update: { name: testMembers[2].name, role: 'ADMIN', active: true, isTest: true, committeeMemberId: testMembers[2].id },
-      create: { email: testAdminEmail, name: testMembers[2].name, role: 'ADMIN', active: true, isTest: true, committeeMemberId: testMembers[2].id },
-    });
     for (const [index, email] of testReviewerEmails.entries()) {
       await prisma.portalUser.upsert({
         where: { email },
@@ -125,7 +184,7 @@ async function main() {
         create: { email, name: testDefinitions[index].name, role: 'COMMITTEE', active: true, isTest: true, committeeMemberId: testMembers[index].id },
       });
     }
-    console.log('  ✓ Test proposer, seconder, committee member and admin logins created');
+    console.log('  ✓ Three isolated test committee logins created');
 
     if (process.env.PORTAL_TEST_WORKFLOW_ENABLED === 'true') {
       const sponsorDeadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -210,8 +269,8 @@ async function main() {
       }
       console.log(`  ✓ Test application ready: ${testApplication.applicationNo}`);
     }
-  } else if (testAdminEmail || testReviewerEmails.length > 0) {
-    console.warn('  ⚠ Test workflow needs one admin email and exactly two reviewer emails.');
+  } else if (testReviewerEmails.length > 0) {
+    console.warn('  ⚠ Test workflow needs exactly three reviewer email addresses.');
   }
   console.log('  Portal access uses one-time email codes for approved addresses only.');
 }

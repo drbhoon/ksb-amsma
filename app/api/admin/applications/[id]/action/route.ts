@@ -13,7 +13,7 @@ export async function POST(request: Request, { params }: Ctx) {
     const user = await getCurrentPortalUser();
     if (!user || user.role !== 'ADMIN') return NextResponse.json({ error: 'Admin access is required.' }, { status: 403 });
     const application = await prisma.membershipApplication.findUnique({ where: { id }, select: { isTest: true } });
-    if (!application || application.isTest !== user.isTest) {
+    if (!application) {
       return NextResponse.json({ error: 'This account cannot access this application.' }, { status: 403 });
     }
     const parsed = schema.safeParse(await request.json());

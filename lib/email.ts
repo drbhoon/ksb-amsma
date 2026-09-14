@@ -134,8 +134,7 @@ function escapeHtml(value: string): string {
 /**
  * Delivery mode — fail-safe by design.
  *
- * `config/committee-members.ts` holds the configured committee addresses. These
- * include two temporary placeholders until verified addresses are approved. Outbound
+ * `config/committee-members.ts` holds the approved committee addresses. Outbound
  * mail stays OFF unless it is explicitly switched on:
  *
  *   EMAIL_TEST_ALLOWLIST="a@x.com,b@y.com" → messages can go only to these

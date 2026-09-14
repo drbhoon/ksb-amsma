@@ -31,8 +31,8 @@ export default async function ReviewPage({ params }: Props) {
   if (!user) {
     redirect(`${loginPath}?next=${encodeURIComponent(reviewPath)}`);
   }
-  const wrongWorkflow = user.isTest !== review.application.isTest;
-  const wrongReviewer = (user.isTest || user.role !== 'ADMIN') && user.committeeMemberId !== review.committeeMemberId;
+  const wrongWorkflow = user.role !== 'ADMIN' && user.isTest !== review.application.isTest;
+  const wrongReviewer = user.role !== 'ADMIN' && user.committeeMemberId !== review.committeeMemberId;
   if (wrongWorkflow || wrongReviewer) {
     const switchPath = `${loginPath}?next=${encodeURIComponent(reviewPath)}`;
     return <ReviewerAccountMismatch reviewerName={review.committeeMember.name} switchPath={switchPath} />;

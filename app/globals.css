@@ -64,7 +64,7 @@
 .amsma-nav a:hover { color: var(--amsma-clay-deep); }
 .amsma-nav .amsma-nav-cta { padding: .85rem 1.15rem; color: white; background: var(--amsma-clay-deep); }
 .amsma-nav .amsma-nav-cta:hover { color: white; background: var(--amsma-green); }
-.amsma-menu-toggle { display: none; align-items: center; gap: .65rem; color: var(--amsma-green); font-size: .8rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.amsma-menu-toggle { display: none; min-width:44px; min-height:44px; align-items: center; justify-content:center; gap: .65rem; color: var(--amsma-green); font-size: .8rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 .amsma-menu-icon, .amsma-menu-icon::before, .amsma-menu-icon::after { display: block; width: 22px; height: 2px; background: currentColor; content: ''; }
 .amsma-menu-icon { position: relative; }
 .amsma-menu-icon::before { position: absolute; top: -6px; }
