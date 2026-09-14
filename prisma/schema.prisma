@@ -34,7 +34,8 @@ model CommitteeMember {
   canApproveApplications Boolean       @default(true)
   createdAt              DateTime      @default(now())
 
-  reviews ApplicationReview[]
+  reviews    ApplicationReview[]
+  portalUser PortalUser?
 }
 
 // ============================================================
@@ -49,20 +50,31 @@ enum MembershipTier {
 }
 
 enum ApplicationStatus {
-  SUBMITTED           // Just received, review invites being sent
-  UNDER_REVIEW        // Emails sent, awaiting committee votes
-  APPROVED            // Reached 6/8 approvals → payment link sent
-  REJECTED            // Reached 3/8 rejections OR explicitly rejected
-  PAYMENT_PENDING     // Approved, awaiting payment (same as APPROVED but clearer)
-  ACTIVE              // Paid, member is active
-  EXPIRED             // Approved but payment window elapsed
+  SUBMITTED // Just received, review invites being sent
+  SPONSOR_REVIEW // Awaiting proposer and seconder endorsement
+  COMMITTEE_REVIEW // Sponsor stage complete; 48-hour committee vote is open
+  PAUSED_NO_QUORUM // Committee window ended without a decision; admin may extend
+  ADMIN_REVIEW // Committee reached a result; admin must confirm and release it
+  UNDER_REVIEW // Legacy value retained for existing applications
+  APPROVED // Legacy approval state
+  REJECTED // Confirmed rejection
+  PAYMENT_PENDING // Approved, awaiting payment (same as APPROVED but clearer)
+  ACTIVE // Paid, member is active
+  EXPIRED // Approved but payment window elapsed
+}
+
+enum CommitteeResult {
+  PENDING
+  APPROVED
+  REJECTED
+  NO_QUORUM
 }
 
 model MembershipApplication {
-  id             String            @id @default(cuid())
-  applicationNo  String            @unique  // Human-friendly, e.g. AMSMA-2026-0001
-  tier           MembershipTier
-  status         ApplicationStatus @default(SUBMITTED)
+  id            String            @id @default(cuid())
+  applicationNo String            @unique // Human-friendly, e.g. AMSMA-2026-0001
+  tier          MembershipTier
+  status        ApplicationStatus @default(SUBMITTED)
 
   // Applicant / organisation
   organizationName String
@@ -77,8 +89,8 @@ model MembershipApplication {
   gstNumber        String?
 
   // Category-specific
-  crushingCapacityMtMonth Int?     // Ordinary only
-  natureOfBusiness        String?  // Associate / Institutional descriptor
+  crushingCapacityMtMonth Int? // Ordinary only
+  natureOfBusiness        String? // Associate / Institutional descriptor
 
   // Signatory (per Rules — authorized representative)
   signatoryName        String
@@ -87,31 +99,39 @@ model MembershipApplication {
   signatoryPhone       String
 
   // Supporting docs (Phase 3: cloud storage URL; Phase 5: R2 upload)
-  companyProofUrl String?
+  companyProofUrl  String?
   companyProofType String? // 'incorporation' | 'gst_cert' | 'partnership_deed'
 
   // Proposer & Seconder (existing members — required per Q2)
-  proposerName    String
-  proposerEmail   String
-  seconderName    String
-  seconderEmail   String
+  proposerName  String
+  proposerEmail String
+  seconderName  String
+  seconderEmail String
 
   // Fees
-  annualFeePaise Int
+  annualFeePaise  Int
   amountPaidPaise Int?
 
   // Payment
-  paymentToken       String?   @unique  // For /pay/[token] URL
-  razorpayOrderId    String?
-  razorpayPaymentId  String?
-  paidAt             DateTime?
-  paymentLinkSentAt  DateTime?
-  paymentExpiresAt   DateTime?
+  paymentToken      String?   @unique // For /pay/[token] URL
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  paidAt            DateTime?
+  paymentLinkSentAt DateTime?
+  paymentExpiresAt  DateTime?
 
   // Decision tracking
-  submittedAt   DateTime  @default(now())
-  decidedAt     DateTime?
-  rejectionReason String?
+  submittedAt               DateTime        @default(now())
+  sponsorReviewDeadlineAt   DateTime?
+  committeeReviewStartedAt  DateTime?
+  committeeReviewDeadlineAt DateTime?
+  committeeResult           CommitteeResult @default(PENDING)
+  decidedAt                 DateTime?
+  rejectionReason           String?
+  adminConfirmedAt          DateTime?
+  adminConfirmedById        String?
+  adminConfirmedBy          PortalUser?     @relation("AdminDecisions", fields: [adminConfirmedById], references: [id], onDelete: SetNull)
+  adminNote                 String?
 
   reviews ApplicationReview[]
 
@@ -126,6 +146,11 @@ enum ReviewDecision {
   REJECT
 }
 
+enum ReviewPhase {
+  SPONSOR
+  COMMITTEE
+}
+
 model ApplicationReview {
   id                String                @id @default(cuid())
   applicationId     String
@@ -133,20 +158,74 @@ model ApplicationReview {
   committeeMemberId String
   committeeMember   CommitteeMember       @relation(fields: [committeeMemberId], references: [id], onDelete: Cascade)
 
-  // Magic-link auth
-  token         String    @unique
+  // The token identifies the assigned review. Portal login is still required.
+  token          String   @unique
   tokenExpiresAt DateTime
 
-  decision      ReviewDecision @default(PENDING)
-  comment       String?
-  decidedAt     DateTime?
-  emailSentAt   DateTime?
+  phase       ReviewPhase    @default(COMMITTEE)
+  decision    ReviewDecision @default(PENDING)
+  comment     String?
+  decidedAt   DateTime?
+  emailSentAt DateTime?
 
   createdAt DateTime @default(now())
 
   @@unique([applicationId, committeeMemberId])
   @@index([token])
   @@index([applicationId, decision])
+}
+
+// ============================================================
+// ACCESS-CONTROLLED COMMITTEE AND ADMIN PORTAL
+// ============================================================
+
+enum PortalRole {
+  COMMITTEE
+  ADMIN
+}
+
+model PortalUser {
+  id                String                  @id @default(cuid())
+  email             String                  @unique
+  name              String
+  passwordHash      String?          // Test-only fallback; Google OAuth is used in production
+  role              PortalRole
+  active            Boolean                 @default(true)
+  committeeMemberId String?                 @unique
+  committeeMember   CommitteeMember?        @relation(fields: [committeeMemberId], references: [id], onDelete: SetNull)
+  sessions          PortalSession[]
+  adminDecisions    MembershipApplication[] @relation("AdminDecisions")
+  auditEvents       AuditEvent[]
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  lastLoginAt       DateTime?
+
+  @@index([role, active])
+}
+
+model PortalSession {
+  id        String     @id @default(cuid())
+  tokenHash String     @unique
+  userId    String
+  user      PortalUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime   @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AuditEvent {
+  id            String      @id @default(cuid())
+  applicationId String?
+  actorUserId   String?
+  actorUser     PortalUser? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  event         String
+  details       Json?
+  createdAt     DateTime    @default(now())
+
+  @@index([applicationId, createdAt])
+  @@index([actorUserId, createdAt])
 }
 
 // ============================================================
@@ -160,23 +239,23 @@ enum MemberStatus {
 }
 
 model Member {
-  id                       String         @id @default(cuid())
-  memberNo                 String         @unique  // AMSMA-M-0001
-  applicationId            String         @unique  // FK to originating application
-  tier                     MembershipTier
-  organizationName         String
-  contactName              String
-  email                    String         @unique
-  phone                    String
-  address                  String
-  city                     String
-  state                    String
-  pan                      String
-  gstNumber                String?
-  crushingCapacityMtMonth  Int?
+  id                      String         @id @default(cuid())
+  memberNo                String         @unique // AMSMA-M-0001
+  applicationId           String         @unique // FK to originating application
+  tier                    MembershipTier
+  organizationName        String
+  contactName             String
+  email                   String         @unique
+  phone                   String
+  address                 String
+  city                    String
+  state                   String
+  pan                     String
+  gstNumber               String?
+  crushingCapacityMtMonth Int?
 
-  admittedAt DateTime  @default(now())
-  expiresAt  DateTime  // 12 months from admission
+  admittedAt DateTime     @default(now())
+  expiresAt  DateTime // 12 months from admission
   status     MemberStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
@@ -216,9 +295,9 @@ enum RegistrationStatus {
 }
 
 model EventRegistration {
-  id           String             @id @default(cuid())
+  id           String  @id @default(cuid())
   eventId      String
-  event        Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event        Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
   name         String
   email        String
   phone        String?

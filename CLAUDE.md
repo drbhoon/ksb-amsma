@@ -26,11 +26,11 @@ or informally "Vijay".
 
 ## Stack
 
-- Next.js 14 (App Router) + TypeScript + Tailwind
+- Next.js 16 (App Router) + React 19 + TypeScript + Tailwind
 - Prisma + Postgres (Railway-provisioned)
 - Razorpay (raw REST client, no SDK) for annual subscription payments
 - Resend for transactional email (lazy-init, tolerates missing key at build time)
-- Deferred to Phase 5: NextAuth v5 magic-link admin, Cloudflare R2 for file uploads
+- Deferred to a later phase: Cloudflare R2 file uploads and the member directory
 
 ## Phase status
 
@@ -38,9 +38,9 @@ or informally "Vijay".
 |-------|-------|--------|
 | 1 | Scaffold, design system, homepage, newsletter | ✅ Done |
 | 2 | Static content pages (About / Committee / Objectives) | 🔜 "Coming soon" placeholders now exist for all 10 nav routes; real content pending |
-| 3 | Membership: application → magic-link committee review → Razorpay → Register of Members | ✅ Done |
+| 3 | Membership: sponsor review → committee vote → admin confirmation → payment | ✅ Done |
 | 4 | Events with paid registration | ⏳ Schema stubs exist |
-| 5 | Admin panel (NextAuth), R2 file uploads, member directory | ⏳ |
+| 5 | Committee and admin access control for membership | ✅ Done |
 | 6 | Docker + migrate to rdc.ai | ⏳ |
 
 ## Non-negotiable business rules
@@ -49,10 +49,10 @@ These come from Schedule C of the AMSMA Rules & Regulations and must not drift:
 
 - **Fees & tier eligibility** live in `config/membership.ts` — do not modify
   without a Managing Committee resolution passed by 2/3 majority.
-- **Approval quorum:** 2/3 majority (6 of 8 committee members) for new admissions.
-- **Rejection threshold:** 3/8 rejections mathematically blocks approval → auto-rejected.
+- **Interim approval quorum:** 5 of 8 committee members. This is pending final governance confirmation.
+- **Rejection threshold:** 4 of 8 rejections mathematically block five approvals.
 - **Payment window after approval:** 14 days.
-- **Proposer & Seconder:** both required, both must exist as `CommitteeMember` rows.
+- **Proposer & Seconder:** both required, both must have active committee portal accounts. Their endorsements count toward quorum.
 - **Individuals eligible for `ASSOCIATE` tier only** — never Ordinary.
 - **Ordinary tier minimum:** 50,000 MT/month crushing capacity.
 - **Ordinary tier split:** ≥1L MT/month → `ORDINARY_LARGE` (₹50k/yr, weight 2);
@@ -71,7 +71,7 @@ concurrent applications.
 ## Configuration files — edit before production
 
 - **`config/committee-members.ts`** — the 8 founding committee members. These are
-  **real addresses of real people**, several unverified (marked `TODO: verify`).
+  working addresses recovered from `main`. Two entries still use `example.com` placeholders. Confirm all addresses before live email delivery.
   They are safe during testing only because outbound mail is gated behind
   `EMAIL_REDIRECT_TO` / `EMAIL_LIVE` (see "Email is fail-safe by design").
   Verify every address before setting `EMAIL_LIVE=true`.
@@ -162,27 +162,14 @@ To check delivery without submitting an application:
 `/api/dev/test-email?key=<DEV_ACCESS_KEY>&to=<address>` - in redirect mode it can
 only reach the `EMAIL_REDIRECT_TO` addresses whatever `to` says.
 
-### Rule 4 override (TEMPORARY)
-
-`TEST_PROPOSER_EMAILS` accepts extra addresses as Proposer/Seconder so testers
-can apply from their own mailbox. Currently `ksbhoon@rdc.in,drbhoon@gmail.com`.
-
-These are deliberately **not** `CommitteeMember` rows. Adding them there would
-raise the approver count to 10 and move the two-thirds quorum from 6 to 7,
-silently breaking Schedule C. As an allowlist they affect the proposer check
-only; they receive no review invitation and cannot vote.
-
-The override announces itself in the boot log and as a red banner on
-`/dev/links`. **Unset the variable before the site goes public** — Rule 4 is then
-enforced again with no code change.
-
 ### Test walkthrough
 
 1. Open `/dev/links?key=…` — confirm "Committee seeded 8 / 8". If it shows 0, the
    seed did not run and no application can be submitted.
 2. Copy any two committee emails from that page.
 3. Submit at `/membership/apply` using those two as Proposer and Seconder.
-4. Reload `/dev/links?key=…` — the application appears with 8 pending review links.
+4. Sign in as each selected sponsor. After both endorse, six more committee reviews are created.
+5. Reach five total approvals. Sign in as the admin and confirm the recorded result.
 5. Open 6 review links, approve each. On the 6th the status flips to
    `PAYMENT_PENDING` and a payment link appears on the console.
 6. Open the payment link → "Record as paid (test mode)" → `Member` row created as
@@ -200,7 +187,7 @@ app/
 │   │   ├── apply/            application form
 │   │   └── pay/[token]/      Razorpay checkout page
 │   └── {about,committee,objectives}/  Phase 2 placeholders
-├── review/[token]/           magic-link committee review (standalone)
+├── review/[token]/           Google OAuth-protected committee review
 ├── api/
 │   ├── membership/apply/     POST — create application, send review invites
 │   ├── review/[token]/vote/  POST — record committee vote, transition status
@@ -226,7 +213,7 @@ prisma/
 
 - **File uploads deferred:** applicants paste Google Drive URLs for company proof.
   Phase 5 replaces this with native R2 upload.
-- **No admin panel yet:** Phase 5. Currently committee acts via magic-link email
+- **Admin panel exists:** Google OAuth allowlist, committee dashboard, and admin confirmation dashboard
   only, and there's no UI to view all applications, resend invites, or manually
   override a decision. Manageable at expected volume; will become painful past
   ~30 applications.

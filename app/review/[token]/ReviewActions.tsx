@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export function ReviewActions({ token, applicationNo }: { token: string; applicationNo: string }) {
+export function ReviewActions({ token, applicationNo, phase }: { token: string; applicationNo: string; phase: 'SPONSOR' | 'COMMITTEE' }) {
   const router = useRouter();
   const [comment, setComment] = useState('');
   const [pending, setPending] = useState<'APPROVE' | 'REJECT' | null>(null);
@@ -33,7 +33,7 @@ export function ReviewActions({ token, applicationNo }: { token: string; applica
 
   return (
     <div className="pt-4 border-t border-stone-100">
-      <h2 className="font-display font-semibold text-lg mb-4">Your Vote</h2>
+      <h2 className="font-display font-semibold text-lg mb-4">{phase === 'SPONSOR' ? 'Your endorsement' : 'Your vote'}</h2>
       <label className="block mb-4">
         <span className="text-sm font-medium text-stone-700 mb-1 block">Comment (optional for approval, required for rejection)</span>
         <textarea
@@ -52,14 +52,14 @@ export function ReviewActions({ token, applicationNo }: { token: string; applica
           disabled={pending !== null}
           className="btn bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 px-8"
         >
-          {pending === 'APPROVE' ? 'Recording…' : '✓ Approve Application'}
+          {pending === 'APPROVE' ? 'Recording…' : phase === 'SPONSOR' ? '✓ Endorse application' : '✓ Approve application'}
         </button>
         <button
           onClick={() => vote('REJECT')}
           disabled={pending !== null}
           className="btn bg-red-700 text-white hover:bg-red-800 disabled:opacity-50 px-8"
         >
-          {pending === 'REJECT' ? 'Recording…' : '✕ Reject Application'}
+          {pending === 'REJECT' ? 'Recording…' : phase === 'SPONSOR' ? '✕ Do not endorse' : '✕ Reject application'}
         </button>
       </div>
     </div>

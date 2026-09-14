@@ -115,11 +115,20 @@ function button(href: string, label: string, variant: 'primary' | 'danger' = 'pr
           font-size:14px;">${label}</a>`;
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
 /**
  * Delivery mode — fail-safe by design.
  *
  * `config/committee-members.ts` holds the configured committee addresses. These
- * are temporary dummy addresses until verified addresses are approved. Outbound
+ * include two temporary placeholders until verified addresses are approved. Outbound
  * mail stays OFF unless it is explicitly switched on:
  *
  *   EMAIL_REDIRECT_TO="a@x.com,b@y.com"  → every message goes to these addresses
@@ -279,27 +288,31 @@ export async function sendReviewInvitation(params: {
   tierLabel: string;
   contactName: string;
   reviewToken: string;
+  phase: 'SPONSOR' | 'COMMITTEE';
+  deadline: Date;
 }) {
   const reviewUrl = `${SITE}/review/${params.reviewToken}`;
+  const sponsorStage = params.phase === 'SPONSOR';
   const html = wrap(
-    `<h2 style="font-size:20px;margin:0 0 16px;">New membership application for your review</h2>
-     <p>Dear ${params.committeeMemberName},</p>
-     <p>A new membership application has been submitted and requires your review:</p>
+    `<h2 style="font-size:20px;margin:0 0 16px;">${sponsorStage ? 'Sponsor endorsement requested' : 'Committee vote requested'}</h2>
+     <p>Dear ${escapeHtml(params.committeeMemberName)},</p>
+     <p>${sponsorStage
+       ? 'You were selected as the proposer or seconder for this application. Please confirm whether you endorse it.'
+       : 'The proposer and seconder have endorsed this application. It now requires a Managing Committee vote.'}</p>
      <table style="width:100%;margin:20px 0;background:#faf9f6;border-radius:6px;padding:16px;">
        <tr><td style="padding:6px 12px;color:#6b7280;font-size:13px;">Application No.</td>
            <td style="padding:6px 12px;font-weight:600;">${params.applicationNo}</td></tr>
        <tr><td style="padding:6px 12px;color:#6b7280;font-size:13px;">Organisation</td>
-           <td style="padding:6px 12px;font-weight:600;">${params.organizationName}</td></tr>
+           <td style="padding:6px 12px;font-weight:600;">${escapeHtml(params.organizationName)}</td></tr>
        <tr><td style="padding:6px 12px;color:#6b7280;font-size:13px;">Category</td>
            <td style="padding:6px 12px;">${params.tierLabel}</td></tr>
        <tr><td style="padding:6px 12px;color:#6b7280;font-size:13px;">Contact person</td>
-           <td style="padding:6px 12px;">${params.contactName}</td></tr>
+           <td style="padding:6px 12px;">${escapeHtml(params.contactName)}</td></tr>
      </table>
-     <p style="margin:24px 0;">${button(reviewUrl, 'Review application')}</p>
+     <p style="margin:24px 0;">${button(reviewUrl, sponsorStage ? 'Review endorsement' : 'Review and vote')}</p>
      <p style="color:#6b7280;font-size:13px;">
-       Per Rule 4 of the Association&apos;s Rules &amp; Regulations, admission of new
-       members requires the approval of the Managing Committee. Your review link is
-       valid for 14 days and can only be used once.
+       You must sign in with your assigned committee account. This review is open until
+       <strong>${params.deadline.toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Kolkata' })} IST</strong>.
      </p>`,
     `New application ${params.applicationNo} for review`
   );
@@ -308,6 +321,65 @@ export async function sendReviewInvitation(params: {
     `[AMSMA Review] ${params.applicationNo} — ${params.organizationName}`,
     html
   );
+}
+
+export async function sendCommitteeStageNotice(params: {
+  committeeMemberEmail: string;
+  committeeMemberName: string;
+  applicationNo: string;
+  organizationName: string;
+  deadline: Date;
+}) {
+  const html = wrap(
+    `<h2 style="font-size:20px;margin:0 0 16px;">Committee review has started</h2>
+     <p>Dear ${escapeHtml(params.committeeMemberName)},</p>
+     <p>Your sponsor endorsement for <strong>${escapeHtml(params.organizationName)}</strong>
+        (${params.applicationNo}) has been recorded and counts toward the committee quorum.</p>
+     <p>The remaining committee members now have until
+        <strong>${params.deadline.toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Kolkata' })} IST</strong>
+        to vote.</p>`,
+    `Committee review started for ${params.applicationNo}`
+  );
+  return send(params.committeeMemberEmail, `[AMSMA Review] Committee stage started — ${params.applicationNo}`, html);
+}
+
+export async function sendAdminDecisionRequest(params: {
+  adminEmail: string;
+  adminName: string;
+  applicationNo: string;
+  organizationName: string;
+  result: 'APPROVED' | 'REJECTED' | 'NO_QUORUM';
+  approvals: number;
+  rejections: number;
+}) {
+  const html = wrap(
+    `<h2 style="font-size:20px;margin:0 0 16px;">Application needs admin action</h2>
+     <p>Dear ${escapeHtml(params.adminName)},</p>
+     <p>The committee review for <strong>${escapeHtml(params.organizationName)}</strong>
+        (${params.applicationNo}) has reached this result: <strong>${params.result.replace('_', ' ')}</strong>.</p>
+     <p>Approvals: <strong>${params.approvals}</strong><br>Rejections: <strong>${params.rejections}</strong></p>
+     <p style="margin:24px 0;">${button(`${SITE}/admin`, 'Open admin dashboard')}</p>`,
+    `Admin action required for ${params.applicationNo}`
+  );
+  return send(params.adminEmail, `[AMSMA Admin] Action required — ${params.applicationNo}`, html);
+}
+
+export async function sendCommitteeFinalNotice(params: {
+  committeeMemberEmail: string;
+  committeeMemberName: string;
+  applicationNo: string;
+  organizationName: string;
+  result: 'APPROVED' | 'REJECTED';
+}) {
+  const html = wrap(
+    `<h2 style="font-size:20px;margin:0 0 16px;">Membership application decision</h2>
+     <p>Dear ${escapeHtml(params.committeeMemberName)},</p>
+     <p>The admin has confirmed the Managing Committee result for
+        <strong>${escapeHtml(params.organizationName)}</strong> (${params.applicationNo}).</p>
+     <p>Final result: <strong>${params.result}</strong>.</p>`,
+    `Final decision for ${params.applicationNo}`
+  );
+  return send(params.committeeMemberEmail, `[AMSMA Decision] ${params.applicationNo} — ${params.result}`, html);
 }
 
 export async function sendApprovalNotification(params: {
@@ -322,9 +394,9 @@ export async function sendApprovalNotification(params: {
   const payUrl = `${SITE}/membership/pay/${params.paymentToken}`;
   const html = wrap(
     `<h2 style="font-size:20px;margin:0 0 16px;">Your membership application has been approved</h2>
-     <p>Dear ${params.contactName},</p>
+     <p>Dear ${escapeHtml(params.contactName)},</p>
      <p>We are pleased to inform you that the Managing Committee has approved the
-        membership application of <strong>${params.organizationName}</strong>
+        membership application of <strong>${escapeHtml(params.organizationName)}</strong>
         (Application No. ${params.applicationNo}).</p>
      <p>To activate your membership, please complete the annual subscription payment
         of <strong>₹${params.amountRupees.toLocaleString('en-IN')}</strong>:</p>
@@ -348,12 +420,12 @@ export async function sendRejectionNotification(params: {
 }) {
   const html = wrap(
     `<h2 style="font-size:20px;margin:0 0 16px;">Regarding your membership application</h2>
-     <p>Dear ${params.contactName},</p>
+     <p>Dear ${escapeHtml(params.contactName)},</p>
      <p>Thank you for your interest in the Aggregate &amp; M sand Manufacturers Association.</p>
      <p>After careful review, the Managing Committee has been unable to accept the
-        membership application of <strong>${params.organizationName}</strong>
+        membership application of <strong>${escapeHtml(params.organizationName)}</strong>
         (Application No. ${params.applicationNo}) at this time.</p>
-     ${params.reason ? `<p><strong>Reasons noted:</strong> ${params.reason}</p>` : ''}
+     ${params.reason ? `<p><strong>Reasons noted:</strong> ${escapeHtml(params.reason)}</p>` : ''}
      <p>You are welcome to reapply in future. For any queries, please write to
         <a href="mailto:secretary@amsma.in" style="color:#d97b30;">secretary@amsma.in</a>.</p>
      <p style="color:#6b7280;font-size:13px;margin-top:32px;">— The AMSMA Secretariat</p>`,
@@ -373,8 +445,8 @@ export async function sendPaymentReceipt(params: {
 }) {
   const html = wrap(
     `<h2 style="font-size:20px;margin:0 0 16px;">Welcome to AMSMA — payment received</h2>
-     <p>Dear ${params.contactName},</p>
-     <p><strong>${params.organizationName}</strong> is now a member of the
+     <p>Dear ${escapeHtml(params.contactName)},</p>
+     <p><strong>${escapeHtml(params.organizationName)}</strong> is now a member of the
         Aggregate &amp; M sand Manufacturers Association.</p>
      <table style="width:100%;margin:20px 0;background:#faf9f6;border-radius:6px;padding:16px;">
        <tr><td style="padding:6px 12px;color:#6b7280;font-size:13px;">Member No.</td>
@@ -403,17 +475,18 @@ export async function sendApplicationConfirmation(params: {
 }) {
   const html = wrap(
     `<h2 style="font-size:20px;margin:0 0 16px;">Application received</h2>
-     <p>Dear ${params.contactName},</p>
+     <p>Dear ${escapeHtml(params.contactName)},</p>
      <p>Thank you for submitting a membership application for
-        <strong>${params.organizationName}</strong>.</p>
+        <strong>${escapeHtml(params.organizationName)}</strong>.</p>
      <table style="width:100%;margin:20px 0;background:#faf9f6;border-radius:6px;padding:16px;">
        <tr><td style="padding:6px 12px;color:#6b7280;font-size:13px;">Application No.</td>
            <td style="padding:6px 12px;font-weight:600;">${params.applicationNo}</td></tr>
        <tr><td style="padding:6px 12px;color:#6b7280;font-size:13px;">Category</td>
            <td style="padding:6px 12px;">${params.tierLabel}</td></tr>
      </table>
-     <p>Your application is now being reviewed by the Managing Committee. As per the
-        Association&apos;s Rules, approval requires a two-thirds majority of the committee.</p>
+     <p>Your proposer and seconder will review the application first. After both endorse it,
+        the 48-hour Managing Committee review will start. The current interim quorum is five
+        approvals from eight eligible members.</p>
      <p>We will notify you as soon as a decision has been reached. If approved, you
         will receive a payment link to activate your membership.</p>`,
     `Application ${params.applicationNo} received`

@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { MEMBERSHIP_TIERS, formatInr } from '@/config/membership';
 import { APPROVAL_QUORUM, APPROVERS } from '@/config/committee-members';
@@ -6,14 +6,19 @@ import { tallyReviews } from '@/lib/membership';
 import { ReviewActions } from './ReviewActions';
 import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Footer';
+import { getCurrentPortalUser } from '@/lib/portal-auth';
+import { recordAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-type Props = { params: { token: string } };
+type Props = { params: Promise<{ token: string }> };
 
 export default async function ReviewPage({ params }: Props) {
+  const { token } = await params;
+  const user = await getCurrentPortalUser();
+  if (!user) redirect(`/portal/login?next=${encodeURIComponent(`/review/${token}`)}`);
   const review = await prisma.applicationReview.findUnique({
-    where: { token: params.token },
+    where: { token },
     include: {
       committeeMember: true,
       application: true,
@@ -21,6 +26,8 @@ export default async function ReviewPage({ params }: Props) {
   });
 
   if (!review) notFound();
+  if (user.role !== 'ADMIN' && user.committeeMemberId !== review.committeeMemberId) notFound();
+  await recordAudit({ applicationId: review.applicationId, actorUserId: user.id, event: 'APPLICATION_REVIEW_VIEWED' });
 
   const now = new Date();
   const expired = review.tokenExpiresAt < now;
@@ -36,7 +43,7 @@ export default async function ReviewPage({ params }: Props) {
         {/* Header card */}
         <div className="membership-hero p-8">
           <div className="text-xs uppercase tracking-[0.12em] text-amber-light mb-2">
-            Managing Committee — Application Review
+            {review.phase === 'SPONSOR' ? 'Sponsor endorsement' : 'Managing Committee review'}
           </div>
           <h1 className="font-display font-bold text-3xl mb-2 tracking-tight">
             {app.applicationNo}
@@ -59,6 +66,10 @@ export default async function ReviewPage({ params }: Props) {
               <strong>{review.decision === 'APPROVE' ? 'APPROVED' : 'REJECTED'}</strong>
               {review.decidedAt && ` on ${review.decidedAt.toLocaleDateString('en-IN')}`}.
             </StatusBanner>
+          ) : app.status === 'ADMIN_REVIEW' ? (
+            <StatusBanner variant="info">The committee reached a result. Admin confirmation is pending.</StatusBanner>
+          ) : app.status === 'PAUSED_NO_QUORUM' ? (
+            <StatusBanner variant="warning">The 48-hour review ended without quorum. The application is paused.</StatusBanner>
           ) : app.status === 'PAYMENT_PENDING' || app.status === 'ACTIVE' ? (
             <StatusBanner variant="info">
               This application has already reached the required approval quorum and is being processed.
@@ -69,12 +80,13 @@ export default async function ReviewPage({ params }: Props) {
             </StatusBanner>
           ) : null}
 
-          {/* Live tally */}
-          <div className="grid grid-cols-3 gap-3 pt-2">
-            <TallyCard label="Approvals" count={approvals} target={APPROVAL_QUORUM} colour="success" />
-            <TallyCard label="Rejections" count={rejections} target={APPROVERS.length - APPROVAL_QUORUM + 1} colour="danger" />
-            <TallyCard label="Pending" count={pending} target={APPROVERS.length} colour="stone" />
-          </div>
+          {(alreadyDecided || user.role === 'ADMIN') && (
+            <div className="grid grid-cols-3 gap-3 pt-2">
+              <TallyCard label="Approvals" count={approvals} target={APPROVAL_QUORUM} colour="success" />
+              <TallyCard label="Rejections" count={rejections} target={APPROVERS.length - APPROVAL_QUORUM + 1} colour="danger" />
+              <TallyCard label="Pending" count={pending} target={APPROVERS.length} colour="stone" />
+            </div>
+          )}
 
           {/* Applicant details */}
           <div>
@@ -82,51 +94,46 @@ export default async function ReviewPage({ params }: Props) {
             <DetailRow k="Organisation" v={app.organizationName} />
             <DetailRow k="Category" v={tier.label} />
             <DetailRow k="Annual fee" v={formatInr(tier.annualFeeRupees)} />
-            <DetailRow k="Contact person" v={`${app.contactName} · ${app.contactEmail} · ${app.contactPhone}`} />
-            <DetailRow k="PAN" v={app.pan} />
+            <DetailRow k="Contact person" v={user.role === 'ADMIN' ? `${app.contactName} · ${app.contactEmail} · ${app.contactPhone}` : app.contactName} />
+            <DetailRow k="PAN" v={user.role === 'ADMIN' ? app.pan : `${app.pan.slice(0, 3)}••••${app.pan.slice(-3)}`} />
             {app.gstNumber && <DetailRow k="GST" v={app.gstNumber} />}
             {app.crushingCapacityMtMonth != null && (
               <DetailRow k="Crushing capacity" v={`${app.crushingCapacityMtMonth.toLocaleString('en-IN')} MT/month`} />
             )}
             {app.natureOfBusiness && <DetailRow k="Nature of business" v={app.natureOfBusiness} />}
-            <DetailRow k="Address" v={`${app.addressLine}, ${app.city}, ${app.state} – ${app.pincode}`} />
+            <DetailRow k="Address" v={user.role === 'ADMIN' ? `${app.addressLine}, ${app.city}, ${app.state} – ${app.pincode}` : `${app.city}, ${app.state}`} />
           </div>
 
           <div>
             <SectionTitle>Authorised Signatory</SectionTitle>
             <DetailRow k="Name" v={`${app.signatoryName} (${app.signatoryDesignation})`} />
-            <DetailRow k="Contact" v={`${app.signatoryEmail} · ${app.signatoryPhone}`} />
+            {user.role === 'ADMIN' && <DetailRow k="Contact" v={`${app.signatoryEmail} · ${app.signatoryPhone}`} />}
           </div>
 
           <div>
             <SectionTitle>Supporting Document</SectionTitle>
             <DetailRow k="Type" v={app.companyProofType?.replace('_', ' ') || '—'} />
-            <DetailRow
-              k="URL"
-              v={
-                <a href={app.companyProofUrl || '#'} target="_blank" rel="noopener noreferrer"
-                   className="text-amber hover:underline break-all">
-                  {app.companyProofUrl}
-                </a>
-              }
-            />
+            {user.role === 'ADMIN'
+              ? <DetailRow k="URL" v={<a href={app.companyProofUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-amber hover:underline break-all">{app.companyProofUrl}</a>} />
+              : <DetailRow k="Access" v="The admin verifies the full supporting document." />}
           </div>
 
           <div>
             <SectionTitle>Proposer &amp; Seconder</SectionTitle>
-            <DetailRow k="Proposer" v={`${app.proposerName} — ${app.proposerEmail}`} />
-            <DetailRow k="Seconder" v={`${app.seconderName} — ${app.seconderEmail}`} />
+            <DetailRow k="Proposer" v={app.proposerName} />
+            <DetailRow k="Seconder" v={app.seconderName} />
           </div>
 
           {/* Vote actions */}
-          {!expired && !alreadyDecided && app.status === 'UNDER_REVIEW' && (
-            <ReviewActions token={params.token} applicationNo={app.applicationNo} />
+          {!expired && !alreadyDecided && user.role === 'COMMITTEE' &&
+            ((review.phase === 'SPONSOR' && app.status === 'SPONSOR_REVIEW') ||
+             (review.phase === 'COMMITTEE' && app.status === 'COMMITTEE_REVIEW')) && (
+            <ReviewActions token={token} applicationNo={app.applicationNo} phase={review.phase} />
           )}
         </div>
 
         <p className="text-xs text-stone-500 mt-6 text-center">
-          Per Rule 4 of the Rules &amp; Regulations, admission requires a two-thirds majority
-          approval of the Managing Committee ({APPROVAL_QUORUM} of {APPROVERS.length} members).
+          The current review quorum is {APPROVAL_QUORUM} of {APPROVERS.length} eligible committee members.
         </p>
       </div>
     </main><Footer /></>

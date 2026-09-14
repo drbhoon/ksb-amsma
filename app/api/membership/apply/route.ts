@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { MEMBERSHIP_TIERS } from '@/config/membership';
 import {
@@ -8,7 +7,7 @@ import {
 } from '@/lib/membership';
 import { generateToken } from '@/lib/tokens';
 import { applicationSchema, toFieldErrors } from '@/lib/application-schema';
-import { isTestProposerAllowed } from '@/lib/test-overrides';
+import { recordAudit } from '@/lib/audit';
 import {
   sendReviewInvitation,
   sendApplicationConfirmation,
@@ -43,27 +42,21 @@ export async function POST(req: Request) {
       ? parseInt(String(d.crushingCapacityMtMonth || ''), 10)
       : null;
 
-    // Proposer/Seconder must be existing committee members (Phase 1: only founders exist)
-    const proposerLower = d.proposerEmail.toLowerCase().trim();
-    const seconderLower = d.seconderEmail.toLowerCase().trim();
+    // Proposer and seconder must be different, active committee approvers because
+    // their endorsements are recorded through the access-controlled portal.
     const [proposer, seconder] = await Promise.all([
-      prisma.committeeMember.findUnique({ where: { email: proposerLower } }),
-      prisma.committeeMember.findUnique({ where: { email: seconderLower } }),
+      prisma.committeeMember.findUnique({ where: { slug: d.proposerSlug }, include: { portalUser: true } }),
+      prisma.committeeMember.findUnique({ where: { slug: d.seconderSlug }, include: { portalUser: true } }),
     ]);
-    // TEMPORARY: TEST_PROPOSER_EMAILS lets testers propose from their own
-    // mailbox while the Register of Members is empty. These addresses are not
-    // committee members and cannot vote - the approval quorum is unaffected.
     const missing: Record<string, string> = {};
-    if (!proposer && !isTestProposerAllowed(proposerLower)) {
-      missing.proposerEmail = 'Select the proposer again from the committee-member dropdown.';
+    if (!proposer?.canApproveApplications || !proposer.portalUser?.active) {
+      missing.proposerSlug = 'Select the proposer again from the committee-member dropdown.';
     }
-    if (!seconder && !isTestProposerAllowed(seconderLower)) {
-      missing.seconderEmail = 'Select the seconder again from the committee-member dropdown.';
+    if (!seconder?.canApproveApplications || !seconder.portalUser?.active) {
+      missing.seconderSlug = 'Select the seconder again from the committee-member dropdown.';
     }
-    if (!proposer || !seconder) {
-      console.warn(
-        `[apply] TEST OVERRIDE in use - proposer=${proposerLower}${proposer ? '' : ' (allowlisted)'} seconder=${seconderLower}${seconder ? '' : ' (allowlisted)'}`
-      );
+    if (d.proposerSlug === d.seconderSlug) {
+      missing.seconderSlug = 'The proposer and seconder must be different committee members.';
     }
     if (Object.keys(missing).length) {
       return NextResponse.json(
@@ -82,7 +75,7 @@ export async function POST(req: Request) {
     const existing = await prisma.membershipApplication.findFirst({
       where: {
         contactEmail: d.contactEmail.toLowerCase().trim(),
-        status: { in: ['SUBMITTED', 'UNDER_REVIEW', 'PAYMENT_PENDING', 'ACTIVE'] },
+        status: { in: ['SUBMITTED', 'SPONSOR_REVIEW', 'COMMITTEE_REVIEW', 'PAUSED_NO_QUORUM', 'ADMIN_REVIEW', 'UNDER_REVIEW', 'PAYMENT_PENDING', 'ACTIVE'] },
       },
     });
     if (existing) {
@@ -99,16 +92,16 @@ export async function POST(req: Request) {
 
     // --- Create application + review invites in a single transaction ---
     const applicationNo = await generateApplicationNo();
-    const approvers = await prisma.committeeMember.findMany({
-      where: { canApproveApplications: true },
-    });
+    if (!proposer || !seconder) {
+      return NextResponse.json({ error: 'The selected sponsors are not available.' }, { status: 400 });
+    }
 
     const application = await prisma.$transaction(async (tx) => {
       const app = await tx.membershipApplication.create({
         data: {
           applicationNo,
           tier: d.tier,
-          status: 'SUBMITTED',
+          status: 'SPONSOR_REVIEW',
           organizationName: d.organizationName,
           contactName: d.contactName,
           contactEmail: d.contactEmail.toLowerCase().trim(),
@@ -127,22 +120,25 @@ export async function POST(req: Request) {
           signatoryPhone: d.signatoryPhone,
           companyProofUrl: d.companyProofUrl,
           companyProofType: d.companyProofType,
-          proposerName: proposer?.name ?? d.proposerName,
-          proposerEmail: proposerLower,
-          seconderName: seconder?.name ?? d.seconderName,
-          seconderEmail: seconderLower,
+          proposerName: proposer.name,
+          proposerEmail: proposer.email,
+          seconderName: seconder.name,
+          seconderEmail: seconder.email,
           annualFeePaise: tier.annualFeePaise,
+          sponsorReviewDeadlineAt: reviewTokenExpiryFromNow(),
         },
       });
 
-      // Create one review record per approver with unique magic-link token
+      // Only the proposer and seconder review at this stage. Their endorsements
+      // also count toward the later five-of-eight committee quorum.
       const tokenExpiry = reviewTokenExpiryFromNow();
       await tx.applicationReview.createMany({
-        data: approvers.map((a) => ({
+        data: [proposer, seconder].map((a) => ({
           applicationId: app.id,
           committeeMemberId: a.id,
           token: generateToken(),
           tokenExpiresAt: tokenExpiry,
+          phase: 'SPONSOR',
           decision: 'PENDING',
         })),
       });
@@ -156,14 +152,14 @@ export async function POST(req: Request) {
       include: { committeeMember: true },
     });
 
-    // Mark status transitioned + send emails (async, don't block response)
-    await prisma.membershipApplication.update({
-      where: { id: application.id },
-      data: { status: 'UNDER_REVIEW' },
+    await recordAudit({
+      applicationId: application.id,
+      event: 'APPLICATION_SUBMITTED',
+      details: { proposerId: proposer.id, seconderId: seconder.id },
     });
 
-    // Dispatch emails in background
-    Promise.allSettled([
+    // Wait for the delivery attempts. Serverless work can stop after the response.
+    await Promise.allSettled([
       // Confirmation to applicant
       sendApplicationConfirmation({
         applicantEmail: application.contactEmail,
@@ -182,18 +178,20 @@ export async function POST(req: Request) {
           tierLabel: tier.label,
           contactName: application.contactName,
           reviewToken: r.token,
-        }).then(() =>
-          prisma.applicationReview.update({
-            where: { id: r.id },
-            data: { emailSentAt: new Date() },
-          })
+          phase: 'SPONSOR',
+          deadline: r.tokenExpiresAt,
+        }).then((result) =>
+          'success' in result && result.success
+            ? prisma.applicationReview.update({ where: { id: r.id }, data: { emailSentAt: new Date() } })
+            : undefined
         )
       ),
-    ]).catch((e) => console.error('[apply] background email dispatch failed', e));
+    ]);
 
     return NextResponse.json({
       success: true,
       applicationNo: application.applicationNo,
+      sponsorsAssigned: reviews.length,
       reviewersNotified: reviews.length,
     });
   } catch (err) {

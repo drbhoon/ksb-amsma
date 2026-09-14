@@ -1,8 +1,9 @@
 export const metadata = { title: 'Membership Active' };
 
-type Props = { searchParams: { no?: string; m?: string } };
+type Props = { searchParams: Promise<{ no?: string; m?: string }> };
 
-export default function PaymentSuccessPage({ searchParams }: Props) {
+export default async function PaymentSuccessPage({ searchParams }: Props) {
+  const query = await searchParams;
   return (
     <div className="min-h-screen membership-surface py-20">
       <div className="container-x max-w-2xl text-center">
@@ -19,15 +20,16 @@ export default function PaymentSuccessPage({ searchParams }: Props) {
         </p>
         <div className="membership-card p-6 mb-8 text-left inline-block min-w-[300px]">
           <div className="text-xs uppercase tracking-[0.1em] text-stone-500 mb-1">Member Number</div>
-          <div className="font-display font-bold text-2xl mb-4">{searchParams.m || 'AMSMA-M-XXXX'}</div>
+          <div className="font-display font-bold text-2xl mb-4">{query.m || 'AMSMA-M-XXXX'}</div>
           <div className="text-xs uppercase tracking-[0.1em] text-stone-500 mb-1">Application</div>
-          <div className="font-medium">{searchParams.no || '—'}</div>
+          <div className="font-medium">{query.no || '—'}</div>
         </div>
         <p className="text-sm text-stone-600 mb-8">
           A receipt has been emailed to you. A formal GST invoice will follow separately.
         </p>
-        <a href="/" className="btn-primary">Return to Homepage</a>
+        <Link href="/" className="btn-primary">Return to Homepage</Link>
       </div>
     </div>
   );
 }
+import Link from 'next/link';

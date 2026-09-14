@@ -1,9 +1,10 @@
 export const metadata = { title: 'Application Received' };
 
-type Props = { searchParams: { no?: string } };
+type Props = { searchParams: Promise<{ no?: string }> };
 
-export default function ApplySuccessPage({ searchParams }: Props) {
-  const no = searchParams.no || 'AMSMA-XXXX-XXXX';
+export default async function ApplySuccessPage({ searchParams }: Props) {
+  const query = await searchParams;
+  const no = query.no || 'AMSMA-XXXX-XXXX';
   return (
     <section className="membership-surface py-24 min-h-[60vh]">
       <div className="container-x max-w-2xl text-center">
@@ -23,11 +24,12 @@ export default function ApplySuccessPage({ searchParams }: Props) {
           <div className="font-display font-bold text-2xl mb-4">{no}</div>
           <p className="text-sm text-stone-700">
             A confirmation email has been sent to you. Please quote this application number in any future correspondence.
-            You will hear back from us once the committee has completed its review — typically within 7–14 days.
+            The proposer and seconder will review the application first. The 48-hour committee review starts after both endorsements are recorded.
           </p>
         </div>
-        <a href="/" className="btn-primary">Return to Homepage</a>
+        <Link href="/" className="btn-primary">Return to Homepage</Link>
       </div>
     </section>
   );
 }
+import Link from 'next/link';

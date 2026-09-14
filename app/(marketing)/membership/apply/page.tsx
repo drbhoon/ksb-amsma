@@ -4,9 +4,10 @@ import { MEMBERSHIP_TIERS, type MembershipTierId } from '@/config/membership';
 
 export const metadata = { title: 'Apply for Membership' };
 
-export default function ApplyPage({ searchParams }: { searchParams: { tier?: string } }) {
-  const initialTier = searchParams.tier && searchParams.tier in MEMBERSHIP_TIERS
-    ? searchParams.tier as MembershipTierId
+export default async function ApplyPage({ searchParams }: { searchParams: Promise<{ tier?: string }> }) {
+  const query = await searchParams;
+  const initialTier = query.tier && query.tier in MEMBERSHIP_TIERS
+    ? query.tier as MembershipTierId
     : '';
 
   return (

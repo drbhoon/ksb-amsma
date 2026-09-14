@@ -33,10 +33,8 @@ export const FIELD_LABELS: Record<string, string> = {
   signatoryPhone: 'Signatory phone',
   companyProofUrl: 'Document URL',
   companyProofType: 'Document type',
-  proposerName: 'Proposer name',
-  proposerEmail: 'Proposer email',
-  seconderName: 'Seconder name',
-  seconderEmail: 'Seconder email',
+  proposerSlug: 'Proposer name',
+  seconderSlug: 'Seconder name',
   agreeRules: 'Declaration',
   agreePrivacy: 'Privacy consent',
 };
@@ -141,23 +139,13 @@ export const applicationSchema = z
       errorMap: () => ({ message: 'Choose which document you are linking to.' }),
     }),
 
-    proposerName: z.preprocess(trimmed, z.string()
-      .min(2, 'Enter the proposer’s name.')
-      .max(120, 'Name cannot exceed 120 characters.')),
+    proposerSlug: z.preprocess(trimmed, z.string()
+      .min(1, 'Select a proposer from the committee-member list.')
+      .max(100, 'The proposer selection is invalid.')),
 
-    proposerEmail: z.preprocess(trimmed, z.string()
-      .min(1, 'Proposer email is required.')
-      .email('Enter a valid email address for the proposer.')
-      .max(200, 'Email cannot exceed 200 characters.')),
-
-    seconderName: z.preprocess(trimmed, z.string()
-      .min(2, 'Enter the seconder’s name.')
-      .max(120, 'Name cannot exceed 120 characters.')),
-
-    seconderEmail: z.preprocess(trimmed, z.string()
-      .min(1, 'Seconder email is required.')
-      .email('Enter a valid email address for the seconder.')
-      .max(200, 'Email cannot exceed 200 characters.')),
+    seconderSlug: z.preprocess(trimmed, z.string()
+      .min(1, 'Select a seconder from the committee-member list.')
+      .max(100, 'The seconder selection is invalid.')),
 
     agreeRules: z.literal(true, {
       errorMap: () => ({
@@ -214,13 +202,13 @@ export const applicationSchema = z
     }
 
     if (
-      d.proposerEmail &&
-      d.seconderEmail &&
-      String(d.proposerEmail).toLowerCase() === String(d.seconderEmail).toLowerCase()
+      d.proposerSlug &&
+      d.seconderSlug &&
+      d.proposerSlug === d.seconderSlug
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ['seconderEmail'],
+        path: ['seconderSlug'],
         message: 'The proposer and seconder must be two different committee members.',
       });
     }

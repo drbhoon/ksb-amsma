@@ -5,9 +5,36 @@ import { useRouter } from 'next/navigation';
 
 declare global {
   interface Window {
-    Razorpay: any;
+    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
   }
 }
+
+type RazorpaySuccess = {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+};
+
+type RazorpayFailure = { error?: { description?: string } };
+
+type RazorpayOptions = {
+  key: string;
+  amount: number;
+  currency: string;
+  order_id: string;
+  name: string;
+  description: string;
+  prefill: { name: string; email: string; contact: string };
+  notes: { application_no: string; organization: string };
+  theme: { color: string };
+  handler: (response: RazorpaySuccess) => Promise<void>;
+  modal: { ondismiss: () => void };
+};
+
+type RazorpayInstance = {
+  on: (event: 'payment.failed', handler: (response: RazorpayFailure) => void) => void;
+  open: () => void;
+};
 
 interface Props {
   paymentToken: string;
@@ -69,7 +96,7 @@ export function PaymentCheckout(props: Props) {
           organization: props.organizationName,
         },
         theme: { color: '#96501f' },
-        handler: async (response: any) => {
+        handler: async (response: RazorpaySuccess) => {
           // Verify payment signature server-side
           try {
             const verifyRes = await fetch('/api/payments/verify', {
@@ -96,7 +123,7 @@ export function PaymentCheckout(props: Props) {
       };
 
       const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', (response: any) => {
+      rzp.on('payment.failed', (response: RazorpayFailure) => {
         setError(`Payment failed: ${response.error?.description || 'Unknown error'}`);
         setLoading(false);
       });

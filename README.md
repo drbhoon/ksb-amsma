@@ -10,14 +10,14 @@ Domain: **amsma.in**
 |-------|-------|--------|
 | 1 | Scaffold, design system, homepage, newsletter | ✅ Complete |
 | 2 | Static content pages (About / Committee / Objectives) | 🔜 Placeholder folders |
-| **3** | **Membership: online application → committee review (magic-link) → Razorpay payment → Register of Members** | **✅ Complete** |
+| **3** | **Membership: application → sponsor endorsements → 48-hour committee vote → admin confirmation → payment** | **✅ Complete** |
 | 4 | Events + paid registration | ⏳ Next |
-| 5 | Admin panel (NextAuth), content management, R2 file uploads | ⏳ |
+| 5 | Access-controlled committee and admin portal | ✅ Membership workflow complete |
 | 6 | Migrate to production domain via Docker on RDC.ai | ⏳ |
 
 ## Stack
 
-Next.js 14 (App Router) · TypeScript · Tailwind · Prisma + Postgres · Razorpay · Resend
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind · Prisma + Postgres · Auth.js with Google OAuth · Razorpay · Resend
 
 ## Local development
 
@@ -38,6 +38,7 @@ Open http://localhost:3000
    - `RESEND_API_KEY`, `FROM_EMAIL` (verify domain in Resend first)
    - `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`
    - `NEXT_PUBLIC_SITE_URL` = production URL
+   - `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `PORTAL_ADMIN_EMAIL`, `CRON_SECRET`
 3. Deploy — build runs `prisma generate && next build`.
 4. **Run seed once** after first deploy: `railway run npm run db:seed`
 5. Configure Razorpay webhook in dashboard:
@@ -58,34 +59,39 @@ Business validation:
 - Duplicate contactEmail with an in-flight application → rejected
 
 On successful submit:
-- `MembershipApplication` created with status `UNDER_REVIEW`
-- One `ApplicationReview` row is created per committee member, each with a **cryptographically random single-use magic-link token** (14-day expiry)
+- `MembershipApplication` is created with status `SPONSOR_REVIEW`
+- Two sponsor-review records are created for the proposer and seconder
 - Confirmation email to applicant
-- Review invitation email to each committee member with their unique link
+- Review invitation email to the proposer and seconder
 
-### 2. Committee review (`/review/[token]` — no login)
+### 2. Sponsor endorsements and committee review
 
-Each committee member clicks their unique link to see the full application, live vote tally, and Approve/Reject buttons. Comments optional for approval, required for rejection.
+Every reviewer must sign in. The review link identifies the application but does not grant access by itself. The proposer and seconder act first. Their endorsements count toward quorum. After both endorse, the other six eligible committee members receive review emails and a 48-hour committee window starts.
 
-Vote tally logic (per Rule 4, 2/3 majority):
-- **Approvals ≥ 6/8** → status becomes `PAYMENT_PENDING`, payment-link email sent
-- **Rejections ≥ 3/8** (mathematically blocks approval) → status becomes `REJECTED`, rejection email sent
-- Otherwise → status stays `UNDER_REVIEW`
+Interim vote logic:
+- **Approvals ≥ 5/8** → `ADMIN_REVIEW`
+- **Rejections ≥ 4/8** → `ADMIN_REVIEW` with a rejection result
+- No quorum after 48 hours → `PAUSED_NO_QUORUM`; an admin can start another 48-hour window
+- The admin confirms the recorded result and cannot reverse it through the dashboard
 
-### 3. Payment (`/membership/pay/[token]`)
+### 3. Admin confirmation (`/admin`)
+
+The admin sees the full application, decision history, dates, and tally. Confirmation releases the final emails. An approved application moves to `PAYMENT_PENDING`.
+
+### 4. Payment (`/membership/pay/[token]`)
 
 Applicant clicks the payment link, Razorpay Checkout opens with the correct amount (from `MEMBERSHIP_TIERS` config). On successful payment:
 - Client-side handler → `/api/payments/verify` verifies HMAC-SHA256 signature
 - Webhook (`/api/payments/webhook`) provides server-side fallback for reconciliation
 - On verified payment: `MembershipApplication.status = ACTIVE`, `Member` row created in Register of Members with `AMSMA-M-NNNN` number, receipt emailed
 
-### 4. Active membership
+### 5. Active membership
 
 `Member` record has 12-month expiry, tier, capacity, and all details required by Rule 4.iii for the Register of Members.
 
 ## Configuration files (edit these before production)
 
-- **`config/committee-members.ts`** — the 8 founding committee members. **Update emails to real addresses before running `npm run db:seed`.**
+- **`config/committee-members.ts`** — the 8 founding committee members. Six working addresses came from `main`. Two `example.com` placeholders still require confirmed Google addresses before live use.
 - **`config/membership.ts`** — fee amounts and eligibility. Do not modify without a Managing Committee resolution (2/3 majority per Rules).
 
 ## Key numbering conventions
@@ -95,19 +101,20 @@ Applicant clicks the payment link, Razorpay Checkout opens with the correct amou
 
 ## Test the flow end-to-end locally
 
-1. `npm run db:push && npm run db:seed`
+1. Set the Google OAuth variables, then run `npm run db:push && npm run db:seed`.
 2. Set `RESEND_API_KEY` (or leave unset — emails will be logged, not sent)
 3. Set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID` to Razorpay **test-mode keys**
-4. `npm run dev`
-5. Visit `/membership/apply`, submit an application using two founder emails as proposer/seconder
-6. Check server logs for review link URLs (`http://localhost:3000/review/{token}`)
-7. Open 6 review links in different tabs → approve each → status → `PAYMENT_PENDING`
-8. Applicant receives payment link → click → use Razorpay test card `4111 1111 1111 1111`, any future expiry, any CVV
-9. On success → member record created, receipt email sent
+4. Run `npm run dev`.
+5. For the automated workflow test, use a disposable test database and enable `PORTAL_TEST_AUTH` only in that test process.
+6. Run `npm run test:workflow` to test sponsor review, five-of-eight quorum, admin confirmation, access control, the no-quorum pause, and a new 48-hour window.
+7. For a manual payment test, use Razorpay test card `4111 1111 1111 1111`, any future expiry, and any CVV.
+8. On success, a member record is created and a receipt email is sent.
 
 ## Production go-live checklist
 
-- [ ] Real committee-member emails in `config/committee-members.ts` and re-seed
+- [ ] Replace the two remaining `example.com` committee placeholders and confirm that all eight addresses can use Google sign-in
+- [ ] Google OAuth production callback: `https://amsma.in/api/auth/callback/google`
+- [ ] Run the review-deadline job at least hourly
 - [ ] Resend: verify `amsma.in` sending domain
 - [ ] Razorpay: complete KYC, switch to Live mode keys
 - [ ] Razorpay: configure production webhook URL
@@ -125,7 +132,7 @@ app/
 │   │   ├── apply/            application form
 │   │   └── pay/[token]/      Razorpay checkout page
 │   └── ...
-├── review/[token]/           magic-link committee review (standalone layout)
+├── review/[token]/           OAuth-protected committee review
 └── api/
     ├── membership/apply/     POST — create application
     ├── review/[token]/vote/  POST — record committee vote
@@ -143,7 +150,7 @@ lib/                          shared server code
 ├── db.ts, email.ts, tokens.ts, membership.ts, razorpay.ts
 
 prisma/
-├── schema.prisma             7 models: CommitteeMember, MembershipApplication,
-│                             ApplicationReview, Member, Event, Publication, etc.
-└── seed.ts                   populates committee members from config
+├── schema.prisma             application, review, user, session, audit, member,
+│                             event, and publication data models
+└── seed.ts                   populates committee members and the Google allowlist
 ```

@@ -1,11 +1,11 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { MEMBERSHIP_TIERS, formatInr } from '@/config/membership';
 import { APPROVAL_QUORUM, REJECTION_THRESHOLD } from '@/config/committee-members';
 import { emailMode, emailProvider } from '@/lib/email';
 import { siteUrl } from '@/lib/site-url';
 import { paymentsEnabled, testPaymentsEnabled } from '@/lib/membership';
-import { testProposerEmails } from '@/lib/test-overrides';
+import { getCurrentPortalUser } from '@/lib/portal-auth';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
@@ -21,16 +21,20 @@ export const metadata = {
  * Phase 3 flow untestable. This page reads the same links straight from the
  * database so testing can proceed without working email.
  *
- * Access requires DEV_ACCESS_KEY to be set AND matched via ?key=. With the env
+ * Access requires an admin portal login and DEV_ACCESS_KEY. With the env
  * var unset the route 404s, so it stays inert unless deliberately switched on.
  * Turn it off before amsma.in goes public.
  */
 
-type Props = { searchParams: { key?: string } };
+type Props = { searchParams: Promise<{ key?: string }> };
 
 export default async function DevLinksPage({ searchParams }: Props) {
+  const query = await searchParams;
   const expected = process.env.DEV_ACCESS_KEY;
-  if (!expected || searchParams.key !== expected) notFound();
+  if (!expected || query.key !== expected) notFound();
+  const user = await getCurrentPortalUser();
+  if (!user) redirect(`/portal/login?next=${encodeURIComponent(`/dev/links?key=${query.key}`)}`);
+  if (user.role !== 'ADMIN') notFound();
 
   const site = siteUrl();
 
@@ -51,7 +55,6 @@ export default async function DevLinksPage({ searchParams }: Props) {
 
   const mode = emailMode();
   const provider = emailProvider();
-  const overrideEmails = testProposerEmails();
 
   return (
     <div className="min-h-screen bg-stone-100 py-10">
@@ -62,26 +65,6 @@ export default async function DevLinksPage({ searchParams }: Props) {
             Internal testing aid — not linked from the site, not indexed.
           </p>
         </header>
-
-        {overrideEmails.length > 0 && (
-          <div className="p-4 bg-red-50 border-2 border-red-400 rounded-lg">
-            <p className="font-semibold text-red-900">Rule 4 override is ACTIVE</p>
-            <p className="text-sm text-red-800 mt-1">
-              These addresses are being accepted as Proposer or Seconder even though they are
-              not committee members:{' '}
-              {overrideEmails.map((e) => (
-                <code key={e} className="font-mono text-xs bg-white px-1.5 py-0.5 rounded mr-1">
-                  {e}
-                </code>
-              ))}
-            </p>
-            <p className="text-sm text-red-800 mt-2">
-              They cannot vote and the approval quorum is unchanged at {APPROVAL_QUORUM} of{' '}
-              {committee.length}. Remove the <code className="font-mono text-xs">TEST_PROPOSER_EMAILS</code>{' '}
-              variable to enforce Rule 4 again before the site goes public.
-            </p>
-          </div>
-        )}
 
         <Card title="Environment">
           <dl className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">

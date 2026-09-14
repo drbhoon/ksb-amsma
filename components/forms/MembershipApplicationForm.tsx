@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TIERS_LIST, MEMBERSHIP_TIERS, formatInr, type MembershipTierId } from '@/config/membership';
-import { COMMITTEE_MEMBERS } from '@/config/committee-members';
+import { PUBLIC_COMMITTEE_MEMBERS } from '@/config/committee-public';
 import { applicationSchema, toFieldErrors, FIELD_LABELS } from '@/lib/application-schema';
 
 type FormData = {
@@ -26,10 +26,8 @@ type FormData = {
   signatoryPhone: string;
   companyProofUrl: string;
   companyProofType: string;
-  proposerName: string;
-  proposerEmail: string;
-  seconderName: string;
-  seconderEmail: string;
+  proposerSlug: string;
+  seconderSlug: string;
   agreeRules: boolean;
   agreePrivacy: boolean;
 };
@@ -40,7 +38,7 @@ const initialForm: FormData = {
   crushingCapacityMtMonth: '', natureOfBusiness: '',
   signatoryName: '', signatoryDesignation: '', signatoryEmail: '', signatoryPhone: '',
   companyProofUrl: '', companyProofType: '',
-  proposerName: '', proposerEmail: '', seconderName: '', seconderEmail: '',
+  proposerSlug: '', seconderSlug: '',
   agreeRules: false, agreePrivacy: false,
 };
 
@@ -50,7 +48,7 @@ const STEP_FIELDS: Array<Array<keyof FormData>> = [
   ['organizationName', 'pan', 'gstNumber', 'addressLine', 'city', 'state', 'pincode', 'crushingCapacityMtMonth', 'natureOfBusiness'],
   ['contactName', 'contactEmail', 'contactPhone', 'signatoryName', 'signatoryDesignation', 'signatoryEmail', 'signatoryPhone'],
   ['companyProofType', 'companyProofUrl'],
-  ['proposerName', 'proposerEmail', 'seconderName', 'seconderEmail'],
+  ['proposerSlug', 'seconderSlug'],
   ['agreeRules', 'agreePrivacy'],
 ];
 
@@ -107,18 +105,14 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
   }
 
   function selectCommitteeMember(kind: 'proposer' | 'seconder', slug: string) {
-    const member = COMMITTEE_MEMBERS.find((candidate) => candidate.slug === slug);
-    const nameKey = kind === 'proposer' ? 'proposerName' : 'seconderName';
-    const emailKey = kind === 'proposer' ? 'proposerEmail' : 'seconderEmail';
+    const slugKey = kind === 'proposer' ? 'proposerSlug' : 'seconderSlug';
     setForm((current) => ({
       ...current,
-      [nameKey]: member?.name ?? '',
-      [emailKey]: member?.email ?? '',
+      [slugKey]: slug,
     }));
     setFieldErrors((current) => {
       const next = { ...current };
-      delete next[nameKey];
-      delete next[emailKey];
+      delete next[slugKey];
       return next;
     });
   }
@@ -357,19 +351,17 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
         <div className="grid md:grid-cols-2 gap-4">
           <CommitteeMemberSelect
             role="Proposer"
-            email={form.proposerEmail}
-            otherEmail={form.seconderEmail}
+            slug={form.proposerSlug}
+            otherSlug={form.seconderSlug}
             onChange={(slug) => selectCommitteeMember('proposer', slug)}
-            nameError={fieldErrors.proposerName}
-            emailError={fieldErrors.proposerEmail}
+            error={fieldErrors.proposerSlug}
           />
           <CommitteeMemberSelect
             role="Seconder"
-            email={form.seconderEmail}
-            otherEmail={form.proposerEmail}
+            slug={form.seconderSlug}
+            otherSlug={form.proposerSlug}
             onChange={(slug) => selectCommitteeMember('seconder', slug)}
-            nameError={fieldErrors.seconderName}
-            emailError={fieldErrors.seconderEmail}
+            error={fieldErrors.seconderSlug}
           />
         </div>
       </Section>}
@@ -394,7 +386,7 @@ export function MembershipApplicationForm({ initialTier = '' }: { initialTier?: 
           <span className="text-sm text-stone-700">
             I certify that the information provided is accurate. I have read and agree to abide by the
             Memorandum of Association and Rules &amp; Regulations of the Aggregate &amp; M sand Manufacturers Association.
-            I understand that admission requires a two-thirds majority approval of the Managing Committee, and that
+            I understand that admission requires approval under the Managing Committee&apos;s current quorum policy, and that
             payment of the annual subscription is required only after approval.
           </span>
         </label>
@@ -470,7 +462,7 @@ function ApplicationReview({ form, selectedTier, onEdit }: { form: FormData; sel
     <ReviewBlock title="Organisation" onEdit={() => onEdit(1)}><ReviewRow label="Organisation" value={form.organizationName} /><ReviewRow label="PAN" value={form.pan} /><ReviewRow label="Address" value={[form.addressLine, form.city, form.state, form.pincode].filter(Boolean).join(', ')} />{form.crushingCapacityMtMonth && <ReviewRow label="Capacity" value={`${form.crushingCapacityMtMonth} MT/month`} />}{form.natureOfBusiness && <ReviewRow label="Nature of business" value={form.natureOfBusiness} />}</ReviewBlock>
     <ReviewBlock title="People" onEdit={() => onEdit(2)}><ReviewRow label="Primary contact" value={`${form.contactName} · ${form.contactEmail} · ${form.contactPhone}`} /><ReviewRow label="Signatory" value={`${form.signatoryName}, ${form.signatoryDesignation} · ${form.signatoryEmail}`} /></ReviewBlock>
     <ReviewBlock title="Company proof" onEdit={() => onEdit(3)}><ReviewRow label="Document type" value={form.companyProofType.replaceAll('_', ' ')} /><ReviewRow label="Document link" value={form.companyProofUrl} /></ReviewBlock>
-    <ReviewBlock title="Nominations" onEdit={() => onEdit(4)}><ReviewRow label="Proposer" value={`${form.proposerName} · ${maskEmail(form.proposerEmail)}`} /><ReviewRow label="Seconder" value={`${form.seconderName} · ${maskEmail(form.seconderEmail)}`} /></ReviewBlock>
+    <ReviewBlock title="Nominations" onEdit={() => onEdit(4)}><ReviewRow label="Proposer" value={committeeName(form.proposerSlug)} /><ReviewRow label="Seconder" value={committeeName(form.seconderSlug)} /></ReviewBlock>
   </div>;
 }
 
@@ -604,23 +596,19 @@ function Select({ label, value, onChange, options, required, name, error }: { la
 
 function CommitteeMemberSelect({
   role,
-  email,
-  otherEmail,
+  slug,
+  otherSlug,
   onChange,
-  nameError,
-  emailError,
+  error,
 }: {
   role: 'Proposer' | 'Seconder';
-  email: string;
-  otherEmail: string;
+  slug: string;
+  otherSlug: string;
   onChange: (slug: string) => void;
-  nameError?: string;
-  emailError?: string;
+  error?: string;
 }) {
   const prefix = role.toLowerCase();
-  const selected = COMMITTEE_MEMBERS.find((member) => member.email === email);
-  const nameId = `field-${prefix}Name`;
-  const emailId = `field-${prefix}Email`;
+  const nameId = `field-${prefix}Slug`;
 
   return (
     <div className="space-y-4 border border-stone-200 bg-stone-50 p-4">
@@ -628,44 +616,27 @@ function CommitteeMemberSelect({
         <label htmlFor={nameId} className="block text-sm font-medium text-stone-700 mb-1">{role} name *</label>
         <select
           id={nameId}
-          value={selected?.slug ?? ''}
+          value={slug}
           onChange={(event) => onChange(event.target.value)}
           required
-          aria-invalid={nameError ? true : undefined}
-          aria-describedby={nameError ? `${nameId}-error` : undefined}
-          className={controlClass(!!nameError) + ' bg-white'}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${nameId}-error` : undefined}
+          className={controlClass(!!error) + ' bg-white'}
         >
           <option value="">Select a committee member…</option>
-          {COMMITTEE_MEMBERS.map((member) => (
-            <option key={member.slug} value={member.slug} disabled={member.email === otherEmail}>
+          {PUBLIC_COMMITTEE_MEMBERS.map((member) => (
+            <option key={member.slug} value={member.slug} disabled={member.slug === otherSlug}>
               {member.name}
             </option>
           ))}
         </select>
-        <FieldError id={nameId} message={nameError} />
+        <FieldError id={nameId} message={error} />
       </div>
-      <div>
-        <label htmlFor={emailId} className="block text-sm font-medium text-stone-700 mb-1">Email address</label>
-        <input
-          id={emailId}
-          type="text"
-          value={email ? maskEmail(email) : ''}
-          readOnly
-          tabIndex={-1}
-          placeholder="Auto-populated after selection"
-          aria-invalid={emailError ? true : undefined}
-          aria-describedby={emailError ? `${emailId}-error` : `${emailId}-hint`}
-          className={controlClass(!!emailError) + ' cursor-default bg-stone-100 text-stone-600'}
-        />
-        {!emailError && <p id={`${emailId}-hint`} className="mt-1 text-xs text-stone-500">The address is selected automatically and masked for privacy.</p>}
-        <FieldError id={emailId} message={emailError} />
-      </div>
+      <p className="text-xs text-stone-500">The email address is added securely after submission and is not sent to your browser.</p>
     </div>
   );
 }
 
-function maskEmail(email: string) {
-  const [local, domain] = email.split('@');
-  if (!local || !domain) return '••••••••';
-  return `${local.charAt(0)}${'•'.repeat(Math.max(4, Math.min(local.length - 1, 8)))}@${domain}`;
+function committeeName(slug: string) {
+  return PUBLIC_COMMITTEE_MEMBERS.find((member) => member.slug === slug)?.name ?? 'Not selected';
 }

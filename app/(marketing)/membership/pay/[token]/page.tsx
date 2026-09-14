@@ -8,11 +8,12 @@ import { paymentsEnabled, testPaymentsEnabled } from '@/lib/membership';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Complete Payment' };
 
-type Props = { params: { token: string } };
+type Props = { params: Promise<{ token: string }> };
 
 export default async function PaymentPage({ params }: Props) {
+  const { token } = await params;
   const app = await prisma.membershipApplication.findUnique({
-    where: { paymentToken: params.token },
+    where: { paymentToken: token },
   });
 
   if (!app) notFound();
@@ -69,7 +70,7 @@ export default async function PaymentPage({ params }: Props) {
 
             {paymentsEnabled() ? (
               <PaymentCheckout
-                paymentToken={params.token}
+                paymentToken={token}
                 applicationNo={app.applicationNo}
                 amountPaise={app.annualFeePaise}
                 amountRupees={tier.annualFeeRupees}
@@ -80,7 +81,7 @@ export default async function PaymentPage({ params }: Props) {
               />
             ) : testPaymentsEnabled() ? (
               <TestModeCheckout
-                paymentToken={params.token}
+                paymentToken={token}
                 applicationNo={app.applicationNo}
                 amountRupees={tier.annualFeeRupees}
               />

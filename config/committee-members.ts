@@ -2,12 +2,12 @@
  * AMSMA Founding Committee — single source of truth.
  *
  * Used by:
- *   - prisma/seed.ts        (creates CommitteeMember rows for magic-link approvals)
+ *   - prisma/seed.ts        (creates committee rows and the Google OAuth allowlist)
  *   - app/(marketing)/page.tsx  (homepage committee cards)
  *   - app/(marketing)/committee/page.tsx (committee page, Phase 2)
  *
- * Temporary dummy addresses are used until verified committee addresses are
- * approved for the live review workflow.
+ * Working addresses recovered from the main branch are used here. Confirm that
+ * each address is correct and linked to a Google account before live use.
  */
 
 export type CommitteeRole =
@@ -25,7 +25,7 @@ export interface CommitteeMember {
   name: string;
   role: CommitteeRole;
   title: string;                // e.g. "Director, IIT Patna"
-  email: string;                // temporary dummy email until verified
+  email: string;                // server-only working email; verify before live use
   canApproveApplications: boolean; // set false to skip a member from approval quorum
 }
 
@@ -36,7 +36,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Dr. Trilok Nath Singh',
     role: 'Founder Patron',
     title: 'Director, IIT Patna',
-    email: 'trilok.nath.singh@example.com',
+    email: 'director@iitp.ac.in',
     canApproveApplications: true,
   },
   {
@@ -45,7 +45,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Dr. Ramesh M. Bhatawdekar',
     role: 'Founder President',
     title: 'Consultant, Aggregates & Mining',
-    email: 'ramesh.bhatawdekar@example.com',
+    email: 'rbhatawdekar@example.com',
     canApproveApplications: true,
   },
   {
@@ -54,7 +54,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Mr. B.R.V. Susheel Kumar',
     role: 'First President',
     title: 'Mines Department, Telangana',
-    email: 'brv.susheel.kumar@example.com',
+    email: 'susheelkumar@example.com',
     canApproveApplications: true,
   },
   {
@@ -63,7 +63,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Dr. Karnail Singh Bhoon',
     role: 'Vice President',
     title: 'COTO, RDC Concrete (India) Ltd.',
-    email: 'karnail.singh.bhoon@example.com',
+    email: 'ksbhoon@rdcconcrete.com',
     canApproveApplications: true,
   },
   {
@@ -72,7 +72,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Mr. Anil Kumar Banchhor',
     role: 'Founder Member',
     title: 'MD & CEO, RDC Concrete (I) Ltd.',
-    email: 'anil.kumar.banchhor@example.com',
+    email: 'akbanchhor@rdcconcrete.com',
     canApproveApplications: true,
   },
   {
@@ -81,7 +81,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Prof. Rahul V. Ralegaonkar',
     role: 'Founder Member',
     title: 'Professor, VNIT Nagpur',
-    email: 'rahul.ralegaonkar@example.com',
+    email: 'rvralegaonkar@vnit.ac.in',
     canApproveApplications: true,
   },
   {
@@ -90,7 +90,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Mr. Srikant Annavarapu',
     role: 'Founder Member',
     title: 'MD, Master Geotech Services',
-    email: 'srikant.annavarapu@example.com',
+    email: 'srikant@mastergeotech.com',
     canApproveApplications: true,
   },
   {
@@ -99,7 +99,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     name: 'Mr. Rudra Mohan Sahu',
     role: 'Secretary',
     title: 'Jagannath Stones',
-    email: 'rudra.mohan.sahu@example.com',
+    email: 'rmsahu@jagannathstones.com',
     canApproveApplications: true,
   },
 ];
@@ -107,8 +107,8 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
 /** Committee members eligible to vote on applications */
 export const APPROVERS = COMMITTEE_MEMBERS.filter((m) => m.canApproveApplications);
 
-/** 2/3 majority quorum, rounded up. For 8 members → 6. */
-export const APPROVAL_QUORUM = Math.ceil((APPROVERS.length * 2) / 3);
+/** Interim governance setting confirmed for testing: 5 approvals from 8. */
+export const APPROVAL_QUORUM = 5;
 
 /** Number of rejections that mathematically block approval */
 export const REJECTION_THRESHOLD = APPROVERS.length - APPROVAL_QUORUM + 1;
