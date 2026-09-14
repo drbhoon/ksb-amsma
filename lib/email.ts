@@ -420,8 +420,9 @@ export async function sendCommitteeFinalNotice(params: {
   const html = wrap(
     `<h2 style="font-size:20px;margin:0 0 16px;">Membership application decision</h2>
      <p>Dear ${escapeHtml(params.committeeMemberName)},</p>
-     <p>The admin has confirmed the Managing Committee result for
-        <strong>${escapeHtml(params.organizationName)}</strong> (${params.applicationNo}).</p>
+     <p>The Managing Committee has confirmed the result for
+        <strong>${escapeHtml(params.organizationName)}</strong> (${params.applicationNo}),
+        and an email has been sent to the applicant.</p>
      <p>Final result: <strong>${params.result}</strong>.</p>`,
     `Final decision for ${params.applicationNo}`
   );
