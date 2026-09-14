@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { pauseExpiredCommitteeReviews } from '@/lib/approval-workflow';
 import { LogoutButton } from '@/components/portal/LogoutButton';
 import { AdminActions } from '@/components/portal/AdminActions';
+import { AdminPortalNav } from '@/components/portal/AdminPortalNav';
 import { APPROVAL_QUORUM } from '@/config/committee-members';
 
 export const dynamic = 'force-dynamic';
@@ -27,6 +28,7 @@ export default async function AdminPage() {
           <div><p className="membership-kicker !text-[#96501f]">Access controlled</p><h1 className="mt-2 text-3xl font-bold">AMSMA admin dashboard</h1><p className="mt-2 text-stone-600">Signed in as {user.name}</p></div>
           <LogoutButton />
         </div>
+        <AdminPortalNav current="applications" />
         <div className="mt-8 grid gap-5">
           {applications.length === 0 && <div className="membership-card p-8 text-stone-600">No membership applications have been submitted.</div>}
           {applications.map((application) => {

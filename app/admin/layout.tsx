@@ -9,7 +9,6 @@ export const metadata = {
 };
 
 const TABS = [
-  { href: '/admin/publications', label: 'Publications' },
   { href: '/admin/blog', label: 'Blog' },
   { href: '/admin/events', label: 'Events' },
 ];

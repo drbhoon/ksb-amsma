@@ -25,6 +25,40 @@ export const ALLOWED_LABEL = 'PDF, Word, Excel, PowerPoint, PNG, JPEG or WebP';
 
 export type UploadResult = { ok: true; fileId: string } | { ok: false; error: string };
 
+/** Store a public resource PDF after checking its type and file signature. */
+export async function storePdfUpload(file: File | null, uploadedBy?: string): Promise<UploadResult> {
+  if (!file || file.size === 0) return { ok: false, error: 'Select a PDF file.' };
+
+  if (file.size > MAX_UPLOAD_BYTES) {
+    const mb = (file.size / 1024 / 1024).toFixed(1);
+    return {
+      ok: false,
+      error: `That PDF is ${mb} MB, which exceeds the ${MAX_UPLOAD_BYTES / 1024 / 1024} MB limit. Compress it or split it into parts.`,
+    };
+  }
+
+  if (file.type !== 'application/pdf' || !file.name.toLowerCase().endsWith('.pdf')) {
+    return { ok: false, error: 'Only PDF files are accepted.' };
+  }
+
+  const bytes = Buffer.from(await file.arrayBuffer());
+  if (bytes.length < 5 || bytes.subarray(0, 5).toString('ascii') !== '%PDF-') {
+    return { ok: false, error: 'This file does not contain a valid PDF header.' };
+  }
+
+  const stored = await prisma.storedFile.create({
+    data: {
+      filename: file.name.slice(0, 200),
+      mimeType: 'application/pdf',
+      sizeBytes: bytes.length,
+      data: bytes,
+      uploadedBy,
+    },
+    select: { id: true },
+  });
+  return { ok: true, fileId: stored.id };
+}
+
 export async function storeUpload(file: File | null, uploadedBy?: string): Promise<UploadResult> {
   if (!file || file.size === 0) return { ok: false, error: 'No file was selected.' };
 

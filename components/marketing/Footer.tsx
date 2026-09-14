@@ -7,7 +7,7 @@ export function Footer() {
           <p className="amsma-footer-tag">Knowledge, standards and responsible practice for the aggregate and M sand sector.</p>
         </div>
         <nav className="amsma-footer-nav" aria-label="Footer navigation">
-          <Link href="/">Home</Link><Link href="/about">About</Link><Link href="/committee">Committee</Link><Link href="/membership">Membership</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy</Link><Link href="/portal/login">Login</Link>
+          <Link href="/">Home</Link><Link href="/about">About</Link><Link href="/committee">Committee</Link><Link href="/resources">Resources</Link><Link href="/membership">Membership</Link><Link href="/contact">Contact</Link><Link href="/privacy">Privacy</Link><Link href="/portal/login">Login</Link>
         </nav>
         <div className="amsma-footer-contact"><p>2C 183, Kalpataru Hills Ph2</p><p>Pokhran Road No 3</p><p>Thane 400610, Maharashtra, India</p><p><a href="mailto:info@amsma.in">info@amsma.in</a></p></div>
       </div>

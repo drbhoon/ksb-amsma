@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { checkPassword, startSession, endSession, isAdmin, adminConfigured } from '@/lib/admin-auth';
-import { storeUpload, slugify } from '@/lib/uploads';
+import { storeUpload, storePdfUpload, slugify } from '@/lib/uploads';
 
 export type ActionState = { error?: string; ok?: string };
 
@@ -50,7 +50,7 @@ export async function createPublication(_prev: ActionState, formData: FormData):
 
   if (title.length < 3) return { error: 'Give the document a title of at least 3 characters.' };
 
-  const upload = await storeUpload(formData.get('file') as File | null, 'admin');
+  const upload = await storePdfUpload(formData.get('file') as File | null, 'admin');
   if (!upload.ok) return { error: upload.error };
 
   await prisma.publication.create({
@@ -65,6 +65,7 @@ export async function createPublication(_prev: ActionState, formData: FormData):
 
   revalidatePath('/admin/publications');
   revalidatePath('/publications');
+  revalidatePath('/resources');
   return { ok: `"${title}" published.` };
 }
 
@@ -77,6 +78,7 @@ export async function deletePublication(formData: FormData) {
   if (pub) await prisma.storedFile.delete({ where: { id: pub.fileId } }).catch(() => {});
   revalidatePath('/admin/publications');
   revalidatePath('/publications');
+  revalidatePath('/resources');
 }
 
 export async function togglePublication(formData: FormData) {
@@ -87,6 +89,7 @@ export async function togglePublication(formData: FormData) {
   await prisma.publication.update({ where: { id }, data: { isPublished: !pub.isPublished } });
   revalidatePath('/admin/publications');
   revalidatePath('/publications');
+  revalidatePath('/resources');
 }
 
 // ---------- blog ----------

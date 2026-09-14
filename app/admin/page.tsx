@@ -12,7 +12,7 @@ export default async function AdminHome() {
       <div className="mx-auto max-w-sm">
         <h1 className="mb-2 text-xl font-semibold">Sign in</h1>
         <p className="mb-6 text-sm text-stone-600">
-          Administration for Publications, Blog and Events.
+          Administration for Blog and Events.
         </p>
         {!adminConfigured() && (
           <p className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
@@ -28,14 +28,12 @@ export default async function AdminHome() {
     );
   }
 
-  const [pubs, posts, events] = await Promise.all([
-    prisma.publication.count(),
+  const [posts, events] = await Promise.all([
     prisma.blogPost.count(),
     prisma.event.count(),
   ]);
 
   const cards = [
-    { href: '/admin/publications', label: 'Publications', count: pubs, blurb: 'Articles, regulations, government letters and circulars.' },
     { href: '/admin/blog', label: 'Blog', count: posts, blurb: 'Posts and announcements from the Association.' },
     { href: '/admin/events', label: 'Events', count: events, blurb: 'Meets and gatherings, with an optional attachment.' },
   ];
@@ -43,7 +41,7 @@ export default async function AdminHome() {
   return (
     <>
       <h1 className="mb-6 text-xl font-semibold">What would you like to update?</h1>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         {cards.map((c) => (
           <Link
             key={c.href}
