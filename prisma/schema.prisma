@@ -188,12 +188,13 @@ model PortalUser {
   id                String                  @id @default(cuid())
   email             String                  @unique
   name              String
-  passwordHash      String?          // Test-only fallback; Google OAuth is used in production
+  passwordHash      String? // Legacy field; email code login does not use passwords
   role              PortalRole
   active            Boolean                 @default(true)
   committeeMemberId String?                 @unique
   committeeMember   CommitteeMember?        @relation(fields: [committeeMemberId], references: [id], onDelete: SetNull)
   sessions          PortalSession[]
+  loginChallenges   PortalLoginChallenge[]
   adminDecisions    MembershipApplication[] @relation("AdminDecisions")
   auditEvents       AuditEvent[]
   createdAt         DateTime                @default(now())
@@ -212,6 +213,23 @@ model PortalSession {
   createdAt DateTime   @default(now())
 
   @@index([userId])
+  @@index([expiresAt])
+}
+
+model PortalLoginChallenge {
+  id         String     @id @default(cuid())
+  userId     String
+  user       PortalUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email      String
+  codeHash   String
+  tokenHash  String     @unique
+  returnPath String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int        @default(0)
+  createdAt  DateTime   @default(now())
+
+  @@index([email, createdAt])
   @@index([expiresAt])
 }
 
@@ -269,17 +287,22 @@ model Member {
 // ============================================================
 
 model Event {
-  id            String              @id @default(cuid())
-  slug          String              @unique
+  id            String   @id @default(cuid())
+  slug          String   @unique
   title         String
-  description   String              @db.Text
+  description   String   @db.Text
   location      String
   startDate     DateTime
   endDate       DateTime
   capacity      Int?
   priceInPaise  Int?
-  isPublic      Boolean             @default(true)
+  isPublic      Boolean  @default(true)
   coverImageUrl String?
+
+  // Optional circular / agenda / notice attached to the event
+  attachmentId String?
+  attachment   StoredFile? @relation("EventAttachment", fields: [attachmentId], references: [id])
+
   registrations EventRegistration[]
 
   createdAt DateTime @default(now())
@@ -317,22 +340,87 @@ model EventRegistration {
 // CONTENT (Phase 5 — placeholder)
 // ============================================================
 
+enum PublicationCategory {
+  ARTICLE
+  REGULATION
+  GOVT_LETTER
+  CIRCULAR
+  PRESENTATION
+  OTHER
+}
+
 model Publication {
-  id            String   @id @default(cuid())
-  title         String
-  description   String?  @db.Text
-  category      String
-  fileUrl       String
-  fileSizeBytes Int
-  pageCount     Int?
-  publishedAt   DateTime
-  isPublic      Boolean  @default(true)
+  id          String              @id @default(cuid())
+  title       String
+  description String?             @db.Text
+  category    PublicationCategory @default(OTHER)
+
+  fileId String
+  file   StoredFile @relation("PublicationFile", fields: [fileId], references: [id], onDelete: Restrict)
+
+  publishedAt   DateTime @default(now())
+  isPublished   Boolean  @default(true)
   downloadCount Int      @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([category, publishedAt])
+  @@index([isPublished, publishedAt])
+}
+
+// ============================================================
+// BLOG
+// ============================================================
+
+model BlogPost {
+  id      String  @id @default(cuid())
+  slug    String  @unique
+  title   String
+  excerpt String? @db.Text
+  body    String  @db.Text
+  author  String?
+
+  coverImageId String?
+  coverImage   StoredFile? @relation("BlogCover", fields: [coverImageId], references: [id])
+
+  publishedAt DateTime @default(now())
+  isPublished Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isPublished, publishedAt])
+}
+
+// ============================================================
+// UPLOADED FILES
+// ============================================================
+
+/// Uploaded documents live in Postgres rather than on disk.
+///
+/// Railway containers have an ephemeral filesystem: anything written to disk is
+/// destroyed on the next deploy or restart, so a PDF uploaded by an admin would
+/// silently disappear. Storing the bytes in the database keeps them across
+/// deploys and inside whatever backup covers the database, with no second
+/// account or set of credentials to manage.
+///
+/// The tradeoff is that this suits documents, not media libraries. If the
+/// Association ever publishes video or hundreds of megabytes of scans, move the
+/// bytes to object storage - the rest of the code only touches this model
+/// through /api/files/[id], so that swap stays contained.
+model StoredFile {
+  id         String   @id @default(cuid())
+  filename   String
+  mimeType   String
+  sizeBytes  Int
+  data       Bytes
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+
+  publications     Publication[] @relation("PublicationFile")
+  blogCovers       BlogPost[]    @relation("BlogCover")
+  eventAttachments Event[]       @relation("EventAttachment")
 }
 
 model GalleryImage {

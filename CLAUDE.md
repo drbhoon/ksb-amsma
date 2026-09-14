@@ -176,6 +176,29 @@ only reach the `EMAIL_REDIRECT_TO` addresses whatever `to` says.
    `AMSMA-M-0001`.
 7. To test rejection instead, reject on 3 links — status flips to `REJECTED`.
 
+## Content sections (Publications / Blog / Events)
+
+Public: `/publications`, `/blog`, `/blog/[slug]`, `/events`.
+Admin:  `/admin` (sign in), then `/admin/publications`, `/admin/blog`, `/admin/events`.
+
+**Uploaded files live in Postgres**, in the `StoredFile` model, and are served
+only through `/api/files/[id]`. Railway containers have an ephemeral filesystem -
+anything written to disk is destroyed on the next deploy, so a PDF an admin
+uploaded would silently vanish. Keeping the bytes in the database survives
+deploys and rides along with any database backup, with no second account to
+manage. Limits: 15 MB per file, PDF/Word/Excel/PowerPoint/PNG/JPEG/WebP only
+(`lib/uploads.ts`). If the Association ever needs a media library rather than
+documents, move the bytes to object storage - only that one route reads them.
+
+**Admin auth is a password plus a signed cookie** (`lib/admin-auth.ts`), not
+The content-admin area uses a separate password. Set `ADMIN_PASSWORD_HASH` (scrypt,
+via `node scripts/hash-admin-password.mjs`) and `SESSION_SECRET`. Sessions last
+8 hours; changing `SESSION_SECRET` signs everyone out. Swapping in magic links
+later means changing `isAdmin()` and nothing else.
+
+Every mutating action re-checks the session itself rather than trusting the page
+that rendered the form - server actions are callable directly.
+
 ## Directory layout
 
 ```
@@ -187,7 +210,7 @@ app/
 │   │   ├── apply/            application form
 │   │   └── pay/[token]/      Razorpay checkout page
 │   └── {about,committee,objectives}/  Phase 2 placeholders
-├── review/[token]/           Google OAuth-protected committee review
+├── review/[token]/           one-time-email-login-protected committee review
 ├── api/
 │   ├── membership/apply/     POST — create application, send review invites
 │   ├── review/[token]/vote/  POST — record committee vote, transition status
@@ -213,7 +236,7 @@ prisma/
 
 - **File uploads deferred:** applicants paste Google Drive URLs for company proof.
   Phase 5 replaces this with native R2 upload.
-- **Admin panel exists:** Google OAuth allowlist, committee dashboard, and admin confirmation dashboard
+- **Membership admin panel exists:** email allowlist, committee dashboard, and admin confirmation dashboard
   only, and there's no UI to view all applications, resend invites, or manually
   override a decision. Manageable at expected volume; will become painful past
   ~30 applications.

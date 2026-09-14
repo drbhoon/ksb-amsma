@@ -22,7 +22,7 @@ const statusLabel: Record<string, string> = {
 export default async function CommitteePortalPage() {
   const user = await getCurrentPortalUser();
   if (!user) redirect('/portal/login?next=/portal');
-  if (user.role === 'ADMIN') redirect('/admin');
+  if (user.role === 'ADMIN') redirect('/portal/admin');
   if (!user.committeeMemberId) {
     return <><Header /><main className="container-x py-16"><p>This account is not linked to a committee member.</p></main><Footer /></>;
   }

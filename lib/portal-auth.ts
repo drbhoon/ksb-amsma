@@ -2,7 +2,6 @@ import crypto from 'crypto';
 import { cookies } from 'next/headers';
 import { prisma } from './db';
 import { generateToken } from './tokens';
-import { auth } from '@/auth';
 
 const SESSION_COOKIE = 'amsma_portal_session';
 const SESSION_HOURS = 12;
@@ -43,15 +42,6 @@ export async function clearPortalSession(): Promise<void> {
 }
 
 export async function getCurrentPortalUser() {
-  const oauthSession = await auth();
-  const oauthEmail = oauthSession?.user?.email?.toLowerCase().trim();
-  if (oauthEmail) {
-    return prisma.portalUser.findFirst({
-      where: { email: oauthEmail, active: true },
-      include: { committeeMember: true },
-    });
-  }
-  if (process.env.PORTAL_TEST_AUTH !== 'true') return null;
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) return null;
   const session = await prisma.portalSession.findUnique({

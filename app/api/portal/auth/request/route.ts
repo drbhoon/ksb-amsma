@@ -1,0 +1,38 @@
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { createPortalLoginChallenge } from '@/lib/portal-login';
+import { sendPortalLogin } from '@/lib/email';
+import { recordAudit } from '@/lib/audit';
+
+const schema = z.object({
+  email: z.string().email().max(254),
+  next: z.string().optional(),
+});
+
+const GENERIC_MESSAGE = 'If this email is approved, a sign-in code has been sent.';
+
+export async function POST(request: Request) {
+  if (process.env.PORTAL_EMAIL_LOGIN_ENABLED !== 'true') {
+    return NextResponse.json(
+      { error: 'Portal email login is not active yet.' },
+      { status: 503 }
+    );
+  }
+  const parsed = schema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
+  }
+
+  const challenge = await createPortalLoginChallenge(parsed.data.email, parsed.data.next);
+  if (challenge) {
+    await sendPortalLogin({
+      email: challenge.user.email,
+      code: challenge.code,
+      token: challenge.token,
+      expiresAt: challenge.expiresAt,
+    });
+    await recordAudit({ actorUserId: challenge.user.id, event: 'EMAIL_LOGIN_REQUESTED' });
+  }
+
+  return NextResponse.json({ success: true, message: GENERIC_MESSAGE });
+}

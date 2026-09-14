@@ -8,6 +8,9 @@ const NAV_LINKS = [
   { href: '/about', label: 'About' },
   { href: '/#responsible-extraction', label: 'Our Work' },
   { href: '/committee', label: 'Committee' },
+  { href: '/publications', label: 'Publications' },
+  { href: '/events', label: 'Events' },
+  { href: '/blog', label: 'Blog' },
 ];
 
 export function Header() {

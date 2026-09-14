@@ -11,7 +11,7 @@ export const metadata = { title: 'Admin Dashboard' };
 
 export default async function AdminPage() {
   const user = await getCurrentPortalUser();
-  if (!user) redirect('/portal/login?next=/admin');
+  if (!user) redirect('/portal/login?next=/portal/admin');
   if (user.role !== 'ADMIN') redirect('/portal');
   await pauseExpiredCommitteeReviews();
   const applications = await prisma.membershipApplication.findMany({

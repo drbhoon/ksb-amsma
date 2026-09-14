@@ -2,12 +2,12 @@
  * AMSMA Founding Committee — single source of truth.
  *
  * Used by:
- *   - prisma/seed.ts        (creates committee rows and the Google OAuth allowlist)
+ *   - prisma/seed.ts        (creates committee rows and the portal allowlist)
  *   - app/(marketing)/page.tsx  (homepage committee cards)
  *   - app/(marketing)/committee/page.tsx (committee page, Phase 2)
  *
  * Working addresses recovered from the main branch are used here. Confirm that
- * each address is correct and linked to a Google account before live use.
+ * each address is correct and can receive one-time sign-in messages before live use.
  */
 
 export type CommitteeRole =
@@ -33,7 +33,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'trilok-nath-singh',
     initials: 'TN',
-    name: 'Dr. Trilok Nath Singh',
+    name: 'Prof. Dr. T N Singh',
     role: 'Founder Patron',
     title: 'Director, IIT Patna',
     email: 'director@iitp.ac.in',
@@ -42,7 +42,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'ramesh-bhatawdekar',
     initials: 'RB',
-    name: 'Dr. Ramesh M. Bhatawdekar',
+    name: 'Dr. Ramesh Bhatawdekar',
     role: 'Founder President',
     title: 'Consultant, Aggregates & Mining',
     email: 'rbhatawdekar@example.com',
@@ -51,7 +51,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'susheel-kumar',
     initials: 'BK',
-    name: 'Mr. B.R.V. Susheel Kumar',
+    name: 'Mr. BRV Susheel Kumar',
     role: 'First President',
     title: 'Mines Department, Telangana',
     email: 'susheelkumar@example.com',
@@ -60,7 +60,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'karnail-singh-bhoon',
     initials: 'KB',
-    name: 'Dr. Karnail Singh Bhoon',
+    name: 'Dr. K S Bhoon',
     role: 'Vice President',
     title: 'COTO, RDC Concrete (India) Ltd.',
     email: 'ksbhoon@rdcconcrete.com',
@@ -69,7 +69,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'anil-kumar-banchhor',
     initials: 'AB',
-    name: 'Mr. Anil Kumar Banchhor',
+    name: 'Mr. Anil Banchhor',
     role: 'Founder Member',
     title: 'MD & CEO, RDC Concrete (I) Ltd.',
     email: 'akbanchhor@rdcconcrete.com',
@@ -78,7 +78,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'rahul-ralegaonkar',
     initials: 'RR',
-    name: 'Prof. Rahul V. Ralegaonkar',
+    name: 'Rahul Ralegaonkar',
     role: 'Founder Member',
     title: 'Professor, VNIT Nagpur',
     email: 'rvralegaonkar@vnit.ac.in',
@@ -87,7 +87,7 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
   {
     slug: 'srikant-annavarapu',
     initials: 'SA',
-    name: 'Mr. Srikant Annavarapu',
+    name: 'Srikant Annavarapu',
     role: 'Founder Member',
     title: 'MD, Master Geotech Services',
     email: 'srikant@mastergeotech.com',

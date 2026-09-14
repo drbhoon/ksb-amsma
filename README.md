@@ -17,7 +17,7 @@ Domain: **amsma.in**
 
 ## Stack
 
-Next.js 16 (App Router) · React 19 · TypeScript · Tailwind · Prisma + Postgres · Auth.js with Google OAuth · Razorpay · Resend
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind · Prisma + Postgres · one-time email login · Razorpay · Resend/Gmail
 
 ## Local development
 
@@ -38,8 +38,9 @@ Open http://localhost:3000
    - `RESEND_API_KEY`, `FROM_EMAIL` (verify domain in Resend first)
    - `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`
    - `NEXT_PUBLIC_SITE_URL` = production URL
-   - `AUTH_URL` = the same production URL, used for Google OAuth callbacks
-   - `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `PORTAL_ADMIN_EMAIL`, `CRON_SECRET`
+   - `PORTAL_ADMIN_EMAIL`, `PORTAL_LOGIN_SECRET`, `CRON_SECRET`
+   - keep `PORTAL_EMAIL_LOGIN_ENABLED=false` until dummy-address testing is ready
+   - a mail provider and either `EMAIL_REDIRECT_TO` for safe testing or `EMAIL_LIVE=true` for real delivery
 3. Deploy — build runs `prisma generate && next build`.
 4. **Run seed once** after first deploy: `railway run npm run db:seed`
 5. Configure Razorpay webhook in dashboard:
@@ -75,7 +76,7 @@ Interim vote logic:
 - No quorum after 48 hours → `PAUSED_NO_QUORUM`; an admin can start another 48-hour window
 - The admin confirms the recorded result and cannot reverse it through the dashboard
 
-### 3. Admin confirmation (`/admin`)
+### 3. Admin confirmation (`/portal/admin`)
 
 The admin sees the full application, decision history, dates, and tally. Confirmation releases the final emails. An approved application moves to `PAYMENT_PENDING`.
 
@@ -92,7 +93,7 @@ Applicant clicks the payment link, Razorpay Checkout opens with the correct amou
 
 ## Configuration files (edit these before production)
 
-- **`config/committee-members.ts`** — the 8 founding committee members. Six working addresses came from `main`. Two `example.com` placeholders still require confirmed Google addresses before live use.
+- **`config/committee-members.ts`** — the 8 founding committee members. Six working addresses came from `main`. Two `example.com` placeholders still require confirmed inboxes before live use.
 - **`config/membership.ts`** — fee amounts and eligibility. Do not modify without a Managing Committee resolution (2/3 majority per Rules).
 
 ## Key numbering conventions
@@ -102,25 +103,25 @@ Applicant clicks the payment link, Razorpay Checkout opens with the correct amou
 
 ## Test the flow end-to-end locally
 
-1. Set the Google OAuth variables, then run `npm run db:push && npm run db:seed`.
+1. Set `PORTAL_LOGIN_SECRET`, then run `npm run db:push && npm run db:seed`.
 2. Set `RESEND_API_KEY` (or leave unset — emails will be logged, not sent)
 3. Set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID` to Razorpay **test-mode keys**
 4. Run `npm run dev`.
-5. For the automated workflow test, use a disposable test database and enable `PORTAL_TEST_AUTH` only in that test process.
+5. Use only dummy addresses in `EMAIL_REDIRECT_TO`. Do not enable live committee delivery during testing.
 6. Run `npm run test:workflow` to test sponsor review, five-of-eight quorum, admin confirmation, access control, the no-quorum pause, and a new 48-hour window.
 7. For a manual payment test, use Razorpay test card `4111 1111 1111 1111`, any future expiry, and any CVV.
 8. On success, a member record is created and a receipt email is sent.
 
 ## Production go-live checklist
 
-- [ ] Replace the two remaining `example.com` committee placeholders and confirm that all eight addresses can use Google sign-in
-- [ ] Google OAuth production callback: `https://amsma.in/api/auth/callback/google`
+- [ ] Replace the two remaining `example.com` committee placeholders and confirm that all eight inboxes can receive one-time login messages
+- [ ] Keep `PORTAL_EMAIL_LOGIN_ENABLED=false` until dummy-address testing is approved
+- [ ] Keep `EMAIL_REDIRECT_TO` set during testing; use `EMAIL_LIVE=true` only after committee approval
 - [ ] Run the review-deadline job at least hourly
 - [ ] Resend: verify `amsma.in` sending domain
 - [ ] Razorpay: complete KYC, switch to Live mode keys
 - [ ] Razorpay: configure production webhook URL
 - [ ] Set `NEXT_PUBLIC_SITE_URL=https://www.amsma.in`
-- [ ] Set `AUTH_URL=https://www.amsma.in`
 - [ ] Test with a real ₹100 transaction end-to-end, then refund
 
 ## Directory structure
@@ -134,7 +135,7 @@ app/
 │   │   ├── apply/            application form
 │   │   └── pay/[token]/      Razorpay checkout page
 │   └── ...
-├── review/[token]/           OAuth-protected committee review
+├── review/[token]/           email-login-protected committee review
 └── api/
     ├── membership/apply/     POST — create application
     ├── review/[token]/vote/  POST — record committee vote
@@ -154,5 +155,5 @@ lib/                          shared server code
 prisma/
 ├── schema.prisma             application, review, user, session, audit, member,
 │                             event, and publication data models
-└── seed.ts                   populates committee members and the Google allowlist
+└── seed.ts                   populates committee members and the portal allowlist
 ```

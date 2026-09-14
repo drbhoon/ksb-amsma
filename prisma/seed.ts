@@ -1,6 +1,5 @@
 import { PrismaClient, CommitteeRole } from '@prisma/client';
 import { COMMITTEE_MEMBERS } from '../config/committee-members';
-import { hashPassword } from '../lib/passwords';
 
 const prisma = new PrismaClient();
 
@@ -58,19 +57,13 @@ async function main() {
   console.log(`\n✓ Committee: ${total} members (${eligible} eligible to approve applications)`);
   console.log('✓ Interim quorum for approval: 5 approvals');
 
-  const testAuth = process.env.PORTAL_TEST_AUTH === 'true';
-  const seedPassword = process.env.PORTAL_SEED_PASSWORD;
-  if (testAuth && (!seedPassword || seedPassword.length < 12)) {
-    throw new Error('PORTAL_TEST_AUTH requires PORTAL_SEED_PASSWORD with at least 12 characters.');
-  }
-  const passwordHash = testAuth && seedPassword ? await hashPassword(seedPassword) : null;
-  console.log('\nCreating Google OAuth portal allowlist...');
+  console.log('\nCreating email sign-in portal allowlist...');
   for (const member of COMMITTEE_MEMBERS) {
     const committeeMember = await prisma.committeeMember.findUniqueOrThrow({ where: { slug: member.slug } });
     await prisma.portalUser.upsert({
       where: { committeeMemberId: committeeMember.id },
-      update: { email: committeeMember.email, name: committeeMember.name, role: 'COMMITTEE', active: true, ...(passwordHash ? { passwordHash } : {}) },
-      create: { email: committeeMember.email, name: committeeMember.name, role: 'COMMITTEE', committeeMemberId: committeeMember.id, passwordHash },
+      update: { email: committeeMember.email, name: committeeMember.name, role: 'COMMITTEE', active: true, passwordHash: null },
+      create: { email: committeeMember.email, name: committeeMember.name, role: 'COMMITTEE', committeeMemberId: committeeMember.id },
     });
     console.log(`  ✓ Committee login: ${committeeMember.email}`);
   }
@@ -79,10 +72,10 @@ async function main() {
   await prisma.portalUser.upsert({
     where: { email: adminEmail },
     update: { name: adminName, role: 'ADMIN', active: true },
-    create: { email: adminEmail, name: adminName, role: 'ADMIN', passwordHash },
+    create: { email: adminEmail, name: adminName, role: 'ADMIN' },
   });
   console.log(`  ✓ Admin login: ${adminEmail}`);
-  console.log(testAuth ? '  Test-only password access is enabled.' : '  Portal access uses approved Google accounts only.');
+  console.log('  Portal access uses one-time email codes for approved addresses only.');
 }
 
 main()

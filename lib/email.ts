@@ -235,6 +235,29 @@ export async function sendTestEmail(to: string) {
   return send(to, 'AMSMA - email transport test', html);
 }
 
+export async function sendPortalLogin(params: {
+  email: string;
+  code: string;
+  token: string;
+  expiresAt: Date;
+}) {
+  const loginUrl = `${SITE}/portal/login?token=${encodeURIComponent(params.token)}`;
+  const html = wrap(
+    `<h2 style="font-size:20px;margin:0 0 16px;">Sign in to the AMSMA portal</h2>
+     <p>Use this one-time code:</p>
+     <p style="font-size:30px;font-weight:800;letter-spacing:0.18em;margin:20px 0;">${params.code}</p>
+     <p>Or use the secure sign-in link:</p>
+     <p style="margin:24px 0;">${button(loginUrl, 'Sign in securely')}</p>
+     <p style="color:#6b7280;font-size:13px;">
+       The code and link expire at
+       <strong>${params.expiresAt.toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Kolkata' })} IST</strong>
+       and can be used only once. If you did not request this message, ignore it.
+     </p>`,
+    'Your one-time AMSMA portal sign-in code'
+  );
+  return send(params.email, 'Your AMSMA portal sign-in code', html);
+}
+
 // ============ Phase 1: Newsletter welcome ============
 
 export async function sendNewsletterWelcome(email: string) {
@@ -358,7 +381,7 @@ export async function sendAdminDecisionRequest(params: {
      <p>The committee review for <strong>${escapeHtml(params.organizationName)}</strong>
         (${params.applicationNo}) has reached this result: <strong>${params.result.replace('_', ' ')}</strong>.</p>
      <p>Approvals: <strong>${params.approvals}</strong><br>Rejections: <strong>${params.rejections}</strong></p>
-     <p style="margin:24px 0;">${button(`${SITE}/admin`, 'Open admin dashboard')}</p>`,
+     <p style="margin:24px 0;">${button(`${SITE}/portal/admin`, 'Open membership admin dashboard')}</p>`,
     `Admin action required for ${params.applicationNo}`
   );
   return send(params.adminEmail, `[AMSMA Admin] Action required — ${params.applicationNo}`, html);
