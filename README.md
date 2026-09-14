@@ -38,6 +38,7 @@ Open http://localhost:3000
    - `RESEND_API_KEY`, `FROM_EMAIL` (verify domain in Resend first)
    - `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`
    - `NEXT_PUBLIC_SITE_URL` = production URL
+   - `AUTH_URL` = the same production URL, used for Google OAuth callbacks
    - `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `PORTAL_ADMIN_EMAIL`, `CRON_SECRET`
 3. Deploy — build runs `prisma generate && next build`.
 4. **Run seed once** after first deploy: `railway run npm run db:seed`
@@ -118,7 +119,8 @@ Applicant clicks the payment link, Razorpay Checkout opens with the correct amou
 - [ ] Resend: verify `amsma.in` sending domain
 - [ ] Razorpay: complete KYC, switch to Live mode keys
 - [ ] Razorpay: configure production webhook URL
-- [ ] Set `NEXT_PUBLIC_SITE_URL=https://amsma.in`
+- [ ] Set `NEXT_PUBLIC_SITE_URL=https://www.amsma.in`
+- [ ] Set `AUTH_URL=https://www.amsma.in`
 - [ ] Test with a real ₹100 transaction end-to-end, then refund
 
 ## Directory structure
