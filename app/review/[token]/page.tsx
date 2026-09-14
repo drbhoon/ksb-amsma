@@ -50,14 +50,14 @@ export default async function ReviewPage({ params }: Props) {
   const { approvals, rejections, pending } = await tallyReviews(app.id);
 
   return (
-    <><Header /><main className="min-h-screen membership-surface py-12 md:py-16">
+    <><Header /><main className="min-h-screen membership-surface py-7 sm:py-10 md:py-16">
       <div className="container-x max-w-3xl">
         {/* Header card */}
-        <div className="membership-hero p-8">
-          <div className="text-xs uppercase tracking-[0.12em] text-amber-light mb-2">
+        <div className="membership-hero p-5 sm:p-8">
+          <div className="mb-2 text-[0.7rem] uppercase tracking-[0.1em] text-amber-light sm:text-xs sm:tracking-[0.12em]">
             {review.phase === 'SPONSOR' ? 'Sponsor endorsement' : 'Managing Committee review'}
           </div>
-          <h1 className="font-display font-bold text-3xl mb-2 tracking-tight">
+          <h1 className="mb-2 break-words font-display text-2xl font-bold tracking-tight sm:text-3xl">
             {app.applicationNo}
           </h1>
           <div className="text-white/70 text-sm">
@@ -66,7 +66,7 @@ export default async function ReviewPage({ params }: Props) {
         </div>
 
         {/* Body card */}
-        <div className="membership-card border-t-0 p-5 sm:p-8 space-y-8">
+        <div className="membership-card space-y-7 border-t-0 p-4 sm:space-y-8 sm:p-8">
           {expired ? (
             <StatusBanner variant="warning">
               This review link expired on {review.tokenExpiresAt.toLocaleDateString('en-IN')}.
@@ -93,7 +93,7 @@ export default async function ReviewPage({ params }: Props) {
           ) : null}
 
           {(alreadyDecided || user.role === 'ADMIN') && (
-            <div className="grid grid-cols-3 gap-3 pt-2">
+            <div className="grid grid-cols-3 gap-2 pt-2 sm:gap-3">
               <TallyCard label="Approvals" count={approvals} target={approvalTarget} colour="success" />
               <TallyCard label="Rejections" count={rejections} target={reviewerTarget - approvalTarget + 1} colour="danger" />
               <TallyCard label="Pending" count={pending} target={reviewerTarget} colour="stone" />
@@ -178,9 +178,9 @@ function TallyCard({ label, count, target, colour }: { label: string; count: num
     stone:   'bg-stone-50 text-stone-700 border-stone-200',
   };
   return (
-    <div className={`border p-4 text-center ${colourMap[colour]}`}>
-      <div className="text-xs uppercase tracking-[0.1em] font-semibold">{label}</div>
-      <div className="font-display font-bold text-2xl mt-1">{count}<span className="text-sm font-normal opacity-60"> / {target}</span></div>
+    <div className={`min-w-0 border px-1.5 py-3 text-center sm:p-4 ${colourMap[colour]}`}>
+      <div className="text-[0.62rem] font-semibold uppercase tracking-[0.04em] sm:text-xs sm:tracking-[0.1em]">{label}</div>
+      <div className="mt-1 font-display text-xl font-bold sm:text-2xl">{count}<span className="text-xs font-normal opacity-60 sm:text-sm"> / {target}</span></div>
     </div>
   );
 }

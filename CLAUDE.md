@@ -104,7 +104,7 @@ the current test round):
 | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` — reference the Postgres service |
 | `NEXT_PUBLIC_SITE_URL` | the Railway public URL, `https://`, no trailing slash |
 | `DEV_ACCESS_KEY` | a long random string — guards `/dev/links` |
-| `EMAIL_REDIRECT_TO` | `ksbhoon@rdc.in,drbhoon@gmail.com` |
+| `EMAIL_TEST_ALLOWLIST` | `eshabhoon@gmail.com,rachelgreenindia@gmail.com,chunsikali@gmail.com` |
 | `TEST_MODE_PAYMENTS` | `true` |
 
 `NEXT_PUBLIC_SITE_URL` is baked into review and payment links, so set it before
@@ -133,8 +133,8 @@ automatically once `PAYMENTS_ENABLED=true`.
 
 ### Email is fail-safe by design
 
-`config/committee-members.ts` holds **real addresses of real people** (IIT Patna,
-VNIT Nagpur, RDC). Outbound mail is therefore OFF unless explicitly switched on:
+`config/committee-members.ts` holds the eight approved addresses of real committee
+members. Outbound mail is therefore OFF unless explicitly switched on:
 
 | Env | Behaviour |
 |-----|-----------|
@@ -142,7 +142,8 @@ VNIT Nagpur, RDC). Outbound mail is therefore OFF unless explicitly switched on:
 | `EMAIL_LIVE=true` | Real delivery to real recipients. Production only. |
 | neither | Nothing sent; every attempt logged. Default. |
 
-Current testers: `ksbhoon@rdc.in`, `drbhoon@gmail.com`.
+Current test-only addresses: `eshabhoon@gmail.com`, `rachelgreenindia@gmail.com`,
+and `chunsikali@gmail.com`. Do not use a committee address for testing.
 
 **A mode alone does not send.** A transport must also be configured - these are
 two independent gates:
