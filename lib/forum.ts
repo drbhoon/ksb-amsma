@@ -3,6 +3,7 @@ import 'server-only';
 import { getCurrentPortalUser } from './portal-auth';
 import { prisma } from './db';
 import type { ForumSpace } from '@prisma/client';
+import { FORUM_TEST_EMAIL } from '@/config/forum';
 
 export const FORUM_SPACES = {
   members: { value: 'MEMBERS', title: 'Member discussions', description: 'Ideas, questions and practical knowledge for active AMSMA members.' },
@@ -22,9 +23,13 @@ export function forumSpacePath(value: ForumSpace): string {
 /** Access is checked afresh on every page and every write. */
 export async function getForumAccess() {
   const user = await getCurrentPortalUser();
-  if (!user || user.isTest) return null;
+  if (!user) return null;
+  if (user.isTest) {
+    if (user.email.toLowerCase() !== FORUM_TEST_EMAIL) return null;
+    return { user, canSeeCommittee: false, isModerator: false, isTest: true };
+  }
   if (user.role === 'ADMIN' || user.role === 'COMMITTEE') {
-    return { user, canSeeCommittee: true, isModerator: user.role === 'ADMIN' };
+    return { user, canSeeCommittee: true, isModerator: user.role === 'ADMIN', isTest: false };
   }
   if (user.role !== 'MEMBER' || !user.memberId) return null;
   const member = await prisma.member.findUnique({
@@ -34,5 +39,5 @@ export async function getForumAccess() {
   if (!member || member.status !== 'ACTIVE' || member.expiresAt <= new Date() || member.email.toLowerCase() !== user.email.toLowerCase()) {
     return null;
   }
-  return { user, canSeeCommittee: false, isModerator: false };
+  return { user, canSeeCommittee: false, isModerator: false, isTest: false };
 }

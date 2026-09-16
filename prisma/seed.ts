@@ -2,6 +2,7 @@ import { PrismaClient, CommitteeRole } from '@prisma/client';
 import { COMMITTEE_MEMBERS } from '../config/committee-members';
 import { generateToken } from '../lib/tokens';
 import { sendReviewInvitation } from '../lib/email';
+import { FORUM_TEST_EMAIL } from '../config/forum';
 
 const prisma = new PrismaClient();
 
@@ -51,6 +52,8 @@ async function resetPreviousTestDataOnce() {
   const testUserIds = testUsers.map((user) => user.id);
 
   await prisma.$transaction([
+    // The forum test topics and their posts must go before test users.
+    prisma.forumTopic.deleteMany({ where: { isTest: true } }),
     prisma.member.deleteMany({ where: { applicationId: { in: applicationIds } } }),
     prisma.auditEvent.deleteMany({
       where: {
@@ -273,6 +276,16 @@ async function main() {
     }
   } else if (testReviewerEmails.length > 0) {
     console.warn('  ⚠ Test workflow needs exactly three reviewer email addresses.');
+  }
+  // Only add the requested test address. Do not alter a real account with it.
+  const forumTestUser = await prisma.portalUser.findUnique({ where: { email: FORUM_TEST_EMAIL } });
+  if (!forumTestUser) {
+    await prisma.portalUser.create({
+      data: { email: FORUM_TEST_EMAIL, name: 'Forum Test', role: 'MEMBER', isTest: true },
+    });
+    console.log('  ✓ Isolated forum test login ready');
+  } else if (!forumTestUser.isTest) {
+    console.warn('  ⚠ Forum test email belongs to a live account; it was not changed.');
   }
   console.log('  Portal access uses one-time email codes for approved addresses only.');
 }

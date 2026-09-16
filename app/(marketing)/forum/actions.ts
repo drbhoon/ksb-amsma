@@ -38,6 +38,7 @@ export async function createForumTopic(_previous: ForumActionState, formData: Fo
   const topic = await prisma.forumTopic.create({
     data: {
       space,
+      isTest: access.isTest,
       title: parsed.data.title,
       authorId: access.user.id,
       posts: { create: { body: parsed.data.body, authorId: access.user.id } },
@@ -57,9 +58,9 @@ export async function createForumReply(_previous: ForumActionState, formData: Fo
 
   const topic = await prisma.forumTopic.findUnique({
     where: { id: parsed.data.topicId },
-    select: { space: true, isClosed: true, isHidden: true },
+    select: { space: true, isTest: true, isClosed: true, isHidden: true },
   });
-  if (!topic || topic.isHidden || topic.isClosed || (topic.space === 'COMMITTEE' && !access.canSeeCommittee)) {
+  if (!topic || topic.isTest !== access.isTest || topic.isHidden || topic.isClosed || (topic.space === 'COMMITTEE' && !access.canSeeCommittee)) {
     return { error: 'This discussion is not open for replies.' };
   }
 
@@ -88,6 +89,8 @@ export async function moderateForum(formData: FormData): Promise<void> {
   if (!id) return;
 
   if (target === 'topic' && (action === 'close' || action === 'open' || action === 'hide' || action === 'show')) {
+    const existing = await prisma.forumTopic.findUnique({ where: { id }, select: { isTest: true } });
+    if (!existing || existing.isTest !== access.isTest) return;
     const topic = await prisma.forumTopic.update({
       where: { id },
       data: action === 'close' ? { isClosed: true } : action === 'open' ? { isClosed: false } : action === 'hide' ? { isHidden: true } : { isHidden: false },
@@ -96,6 +99,8 @@ export async function moderateForum(formData: FormData): Promise<void> {
     revalidatePath(`/forum/${forumSpacePath(topic.space)}/${topic.id}`);
     revalidatePath(`/forum/${forumSpacePath(topic.space)}`);
   } else if (target === 'post' && (action === 'hide' || action === 'show')) {
+    const existing = await prisma.forumPost.findUnique({ where: { id }, select: { topic: { select: { isTest: true } } } });
+    if (!existing || existing.topic.isTest !== access.isTest) return;
     const post = await prisma.forumPost.update({
       where: { id }, data: { isHidden: action === 'hide' },
       select: { topic: { select: { id: true, space: true } } },

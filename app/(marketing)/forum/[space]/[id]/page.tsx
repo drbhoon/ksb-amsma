@@ -17,8 +17,8 @@ export default async function ForumTopicPage({ params, searchParams }: { params:
   if (!access) redirect(`/forum/login?next=/forum/${slug}/${id}`);
   if (space === 'COMMITTEE' && !access.canSeeCommittee) notFound();
 
-  const topic = await prisma.forumTopic.findUnique({ where: { id }, select: { title: true, space: true, isClosed: true, isHidden: true } });
-  if (!topic || topic.space !== space || (topic.isHidden && !access.isModerator)) notFound();
+  const topic = await prisma.forumTopic.findUnique({ where: { id }, select: { title: true, space: true, isTest: true, isClosed: true, isHidden: true } });
+  if (!topic || topic.space !== space || topic.isTest !== access.isTest || (topic.isHidden && !access.isModerator)) notFound();
 
   const requestedPage = Number((await searchParams).page || '1');
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? Math.min(requestedPage, 1000) : 1;
@@ -30,7 +30,7 @@ export default async function ForumTopicPage({ params, searchParams }: { params:
   ]);
 
   return (
-    <ForumShell title={topic.title} eyebrow={space === 'COMMITTEE' ? 'Committee discussion' : 'Member discussion'} userName={access.user.name} canSeeCommittee={access.canSeeCommittee}>
+    <ForumShell title={topic.title} eyebrow={space === 'COMMITTEE' ? 'Committee discussion' : 'Member discussion'} userName={access.user.name} canSeeCommittee={access.canSeeCommittee} isTest={access.isTest}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <Link href={`/forum/${slug}`} className="text-sm font-bold text-[#96501f] hover:underline">← All {slug} discussions</Link>
         <div className="flex flex-wrap items-center gap-3">

@@ -15,13 +15,13 @@ export default async function ForumPage({ searchParams }: { searchParams: Promis
   const spaces: ForumSpace[] = access.canSeeCommittee ? ['MEMBERS', 'COMMITTEE'] : ['MEMBERS'];
   const [recent, results] = await Promise.all([
     prisma.forumTopic.findMany({
-      where: { space: { in: spaces }, isHidden: false },
+      where: { space: { in: spaces }, isHidden: false, isTest: access.isTest },
       orderBy: { updatedAt: 'desc' }, take: 8,
       include: { author: { select: { name: true } }, _count: { select: { posts: { where: { isHidden: false } } } } },
     }),
     query ? prisma.forumTopic.findMany({
       where: {
-        space: { in: spaces }, isHidden: false,
+        space: { in: spaces }, isHidden: false, isTest: access.isTest,
         OR: [
           { title: { contains: query, mode: 'insensitive' } },
           { posts: { some: { body: { contains: query, mode: 'insensitive' }, isHidden: false } } },
@@ -33,7 +33,7 @@ export default async function ForumPage({ searchParams }: { searchParams: Promis
   ]);
 
   return (
-    <ForumShell title="Discussion forum" eyebrow="AMSMA community" userName={access.user.name} canSeeCommittee={access.canSeeCommittee}>
+    <ForumShell title="Discussion forum" eyebrow="AMSMA community" userName={access.user.name} canSeeCommittee={access.canSeeCommittee} isTest={access.isTest}>
       <p className="mb-8 max-w-3xl text-stone-600">A private place for AMSMA members to share experience, ask questions and work together.</p>
       <div className="grid gap-4 md:grid-cols-2">
         <Link href="/forum/members" className="membership-card p-6 transition hover:border-[#c9ad84] hover:bg-[#f8f2e7]">

@@ -6,12 +6,14 @@ export function ForumShell({
   eyebrow,
   userName,
   canSeeCommittee,
+  isTest,
   children,
 }: {
   title: string;
   eyebrow: string;
   userName: string;
   canSeeCommittee: boolean;
+  isTest: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -30,6 +32,7 @@ export function ForumShell({
           <Link href="/forum/members" className="hover:underline">Member discussions</Link>
           {canSeeCommittee && <Link href="/forum/committee" className="hover:underline">Committee discussions</Link>}
         </nav>
+        {isTest && <p className="mb-7 border border-[#c9ad84] bg-[#f8f2e7] px-4 py-3 text-sm font-semibold text-[#273d33]">Test forum: only you can see these test discussions. They are separate from the live member forum.</p>}
         {children}
       </div>
     </div>

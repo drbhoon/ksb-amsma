@@ -306,6 +306,7 @@ enum ForumSpace {
 model ForumTopic {
   id         String      @id @default(cuid())
   space      ForumSpace
+  isTest     Boolean     @default(false)
   title      String      @db.VarChar(160)
   authorId   String
   author     PortalUser  @relation(fields: [authorId], references: [id], onDelete: Restrict)
@@ -315,7 +316,7 @@ model ForumTopic {
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 
-  @@index([space, isHidden, updatedAt])
+  @@index([isTest, space, isHidden, updatedAt])
   @@index([authorId, createdAt])
 }
 

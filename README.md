@@ -56,6 +56,8 @@ Members can start topics, reply, search, and read older pages. Admins can hide o
 
 The forum sends no activity notices or invitations. A sign-in code is sent only when a user asks for one on the sign-in page. Keep `PORTAL_EMAIL_LOGIN_ENABLED=false` if sign-in codes must also be off. The startup seed does not send test review invitations unless `PORTAL_TEST_SEND_REVIEW_EMAILS=true` is set on purpose. Do not set that flag during forum rollout.
 
+`eshabhoon@gmail.com` is the isolated forum test account. Its topics are marked as test data and cannot be read or replied to by live members. It cannot read live topics. The seed creates this account only if the email is unused; it never changes a live account with that address. A sign-in code is sent only when the test user asks for one.
+
 ## Phase 3: Membership flow — how it works
 
 ### 1. Applicant submits application (`/membership/apply`)

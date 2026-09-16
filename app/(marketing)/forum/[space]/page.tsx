@@ -18,7 +18,7 @@ export default async function ForumSpacePage({ params, searchParams }: { params:
   const requestedPage = Number((await searchParams).page || '1');
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? Math.min(requestedPage, 1000) : 1;
   const pageSize = 20;
-  const where = { space, isHidden: false };
+  const where = { space, isHidden: false, isTest: access.isTest };
   const [total, topics] = await Promise.all([
     prisma.forumTopic.count({ where }),
     prisma.forumTopic.findMany({
@@ -29,7 +29,7 @@ export default async function ForumSpacePage({ params, searchParams }: { params:
   const label = slug === 'committee' ? FORUM_SPACES.committee : FORUM_SPACES.members;
 
   return (
-    <ForumShell title={label.title} eyebrow="Private forum" userName={access.user.name} canSeeCommittee={access.canSeeCommittee}>
+    <ForumShell title={label.title} eyebrow="Private forum" userName={access.user.name} canSeeCommittee={access.canSeeCommittee} isTest={access.isTest}>
       <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
         <p className="max-w-2xl text-stone-600">{label.description}</p>
         <Link href={`/forum/new?space=${slug}`} className="btn-primary">Start a discussion</Link>
