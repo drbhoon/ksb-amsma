@@ -7,6 +7,7 @@ export function ForumShell({
   userName,
   canSeeCommittee,
   testAccount,
+  postingSuspended,
   children,
 }: {
   title: string;
@@ -14,6 +15,7 @@ export function ForumShell({
   userName: string;
   canSeeCommittee: boolean;
   testAccount: boolean;
+  postingSuspended: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -33,6 +35,7 @@ export function ForumShell({
           {canSeeCommittee && <Link href="/forum/committee" className="hover:underline">Committee discussions</Link>}
         </nav>
         {testAccount && <p className="mb-7 border border-[#c9ad84] bg-[#f8f2e7] px-4 py-3 text-sm font-semibold text-[#273d33]">Test access to the live member forum. Other members can see any topics or replies you post here.</p>}
+        {postingSuspended && <p className="mb-7 border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">Your forum posting access is paused. You can still read discussions. Contact AMSMA if you need help.</p>}
         {children}
       </div>
     </div>

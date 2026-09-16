@@ -27,10 +27,10 @@ export async function getForumAccess() {
   if (user.isTest) {
     if (user.email.toLowerCase() !== FORUM_TEST_EMAIL) return null;
     // This one approved test login uses the live member area, not committee data.
-    return { user, canSeeCommittee: false, isModerator: false, isTest: false, testAccount: true };
+    return { user, canSeeCommittee: false, isModerator: false, isTest: false, testAccount: true, canPost: !user.forumPostingSuspended };
   }
   if (user.role === 'ADMIN' || user.role === 'COMMITTEE') {
-    return { user, canSeeCommittee: true, isModerator: user.role === 'ADMIN', isTest: false, testAccount: false };
+    return { user, canSeeCommittee: true, isModerator: user.role === 'ADMIN', isTest: false, testAccount: false, canPost: !user.forumPostingSuspended };
   }
   if (user.role !== 'MEMBER' || !user.memberId) return null;
   const member = await prisma.member.findUnique({
@@ -40,5 +40,5 @@ export async function getForumAccess() {
   if (!member || member.status !== 'ACTIVE' || member.expiresAt <= new Date() || member.email.toLowerCase() !== user.email.toLowerCase()) {
     return null;
   }
-  return { user, canSeeCommittee: false, isModerator: false, isTest: false, testAccount: false };
+  return { user, canSeeCommittee: false, isModerator: false, isTest: false, testAccount: false, canPost: !user.forumPostingSuspended };
 }

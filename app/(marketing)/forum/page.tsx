@@ -15,25 +15,25 @@ export default async function ForumPage({ searchParams }: { searchParams: Promis
   const spaces: ForumSpace[] = access.canSeeCommittee ? ['MEMBERS', 'COMMITTEE'] : ['MEMBERS'];
   const [recent, results] = await Promise.all([
     prisma.forumTopic.findMany({
-      where: { space: { in: spaces }, isHidden: false, isTest: access.isTest },
-      orderBy: { updatedAt: 'desc' }, take: 8,
-      include: { author: { select: { name: true } }, _count: { select: { posts: { where: { isHidden: false } } } } },
+      where: { space: { in: spaces }, isHidden: false, isDeleted: false, isTest: access.isTest },
+      orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }], take: 8,
+      include: { author: { select: { name: true } }, _count: { select: { posts: { where: { isHidden: false, isDeleted: false } } } } },
     }),
     query ? prisma.forumTopic.findMany({
       where: {
-        space: { in: spaces }, isHidden: false, isTest: access.isTest,
+        space: { in: spaces }, isHidden: false, isDeleted: false, isTest: access.isTest,
         OR: [
           { title: { contains: query, mode: 'insensitive' } },
-          { posts: { some: { body: { contains: query, mode: 'insensitive' }, isHidden: false } } },
+          { posts: { some: { body: { contains: query, mode: 'insensitive' }, isHidden: false, isDeleted: false } } },
         ],
       },
-      orderBy: { updatedAt: 'desc' }, take: 50,
-      include: { author: { select: { name: true } }, _count: { select: { posts: { where: { isHidden: false } } } } },
+      orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }], take: 50,
+      include: { author: { select: { name: true } }, _count: { select: { posts: { where: { isHidden: false, isDeleted: false } } } } },
     }) : Promise.resolve([]),
   ]);
 
   return (
-    <ForumShell title="Discussion forum" eyebrow="AMSMA community" userName={access.user.name} canSeeCommittee={access.canSeeCommittee} testAccount={access.testAccount}>
+    <ForumShell title="Discussion forum" eyebrow="AMSMA community" userName={access.user.name} canSeeCommittee={access.canSeeCommittee} testAccount={access.testAccount} postingSuspended={!access.canPost}>
       <p className="mb-8 max-w-3xl text-stone-600">A private place for AMSMA members to share experience, ask questions and work together.</p>
       <div className="grid gap-4 md:grid-cols-2">
         <Link href="/forum/members" className="membership-card p-6 transition hover:border-[#c9ad84] hover:bg-[#f8f2e7]">
@@ -62,7 +62,7 @@ export default async function ForumPage({ searchParams }: { searchParams: Promis
           <ul className="grid gap-3">
             {(query ? results : recent).map((topic) => (
               <li key={topic.id} className="membership-card p-5">
-                <p className="membership-kicker !text-[#96501f]">{topic.space === 'MEMBERS' ? 'Members' : 'Committee'}</p>
+                <p className="membership-kicker !text-[#96501f]">{topic.space === 'MEMBERS' ? 'Members' : 'Committee'}{topic.isPinned ? ' · Pinned' : ''}</p>
                 <h3 className="mt-1 text-lg font-bold text-[#273d33]"><Link className="hover:underline" href={`/forum/${forumSpacePath(topic.space)}/${topic.id}`}>{topic.title}</Link></h3>
                 <p className="mt-2 text-xs text-stone-600">{topic.author.name} · {topic.updatedAt.toLocaleDateString('en-IN')} · {Math.max(0, topic._count.posts - 1)} replies</p>
               </li>

@@ -198,6 +198,7 @@ model PortalUser {
   role              PortalRole
   active            Boolean                 @default(true)
   isTest            Boolean                 @default(false)
+  forumPostingSuspended Boolean            @default(false)
   committeeMemberId String?                 @unique
   committeeMember   CommitteeMember?        @relation(fields: [committeeMemberId], references: [id], onDelete: SetNull)
   memberId          String?                 @unique
@@ -313,6 +314,8 @@ model ForumTopic {
   posts      ForumPost[]
   isClosed   Boolean     @default(false)
   isHidden   Boolean     @default(false)
+  isDeleted  Boolean     @default(false)
+  isPinned   Boolean     @default(false)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 
@@ -328,6 +331,7 @@ model ForumPost {
   author    PortalUser @relation(fields: [authorId], references: [id], onDelete: Restrict)
   body      String     @db.Text
   isHidden  Boolean    @default(false)
+  isDeleted Boolean    @default(false)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 

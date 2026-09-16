@@ -21,6 +21,7 @@ const replySchema = z.object({
 export async function createForumTopic(_previous: ForumActionState, formData: FormData): Promise<ForumActionState> {
   const access = await getForumAccess();
   if (!access) return { error: 'Sign in with an active AMSMA account.' };
+  if (!access.canPost) return { error: 'Your forum posting access is paused. Please contact AMSMA.' };
   const parsed = topicSchema.safeParse({
     space: formData.get('space'),
     title: formData.get('title'),
@@ -53,14 +54,15 @@ export async function createForumTopic(_previous: ForumActionState, formData: Fo
 export async function createForumReply(_previous: ForumActionState, formData: FormData): Promise<ForumActionState> {
   const access = await getForumAccess();
   if (!access) return { error: 'Sign in with an active AMSMA account.' };
+  if (!access.canPost) return { error: 'Your forum posting access is paused. Please contact AMSMA.' };
   const parsed = replySchema.safeParse({ topicId: formData.get('topicId'), body: formData.get('body') });
   if (!parsed.success) return { error: 'Enter a message of 2–10,000 characters.' };
 
   const topic = await prisma.forumTopic.findUnique({
     where: { id: parsed.data.topicId },
-    select: { space: true, isTest: true, isClosed: true, isHidden: true },
+    select: { space: true, isTest: true, isClosed: true, isHidden: true, isDeleted: true },
   });
-  if (!topic || topic.isTest !== access.isTest || topic.isHidden || topic.isClosed || (topic.space === 'COMMITTEE' && !access.canSeeCommittee)) {
+  if (!topic || topic.isTest !== access.isTest || topic.isHidden || topic.isDeleted || topic.isClosed || (topic.space === 'COMMITTEE' && !access.canSeeCommittee)) {
     return { error: 'This discussion is not open for replies.' };
   }
 
@@ -86,26 +88,50 @@ export async function moderateForum(formData: FormData): Promise<void> {
   const target = String(formData.get('target') || '');
   const id = String(formData.get('id') || '');
   const action = String(formData.get('action') || '');
-  if (!id) return;
+  const reason = String(formData.get('reason') || '').trim().slice(0, 500);
+  if (!id || id.length > 100) return;
+  if ((action === 'delete' || action === 'suspend') && reason.length < 5) return;
 
-  if (target === 'topic' && (action === 'close' || action === 'open' || action === 'hide' || action === 'show')) {
-    const existing = await prisma.forumTopic.findUnique({ where: { id }, select: { isTest: true } });
+  if (target === 'topic' && ['close', 'open', 'hide', 'show', 'delete', 'restore', 'pin', 'unpin'].includes(action)) {
+    const existing = await prisma.forumTopic.findUnique({ where: { id }, select: { isTest: true, space: true } });
     if (!existing || existing.isTest !== access.isTest) return;
-    const topic = await prisma.forumTopic.update({
-      where: { id },
-      data: action === 'close' ? { isClosed: true } : action === 'open' ? { isClosed: false } : action === 'hide' ? { isHidden: true } : { isHidden: false },
-      select: { id: true, space: true },
-    });
-    revalidatePath(`/forum/${forumSpacePath(topic.space)}/${topic.id}`);
-    revalidatePath(`/forum/${forumSpacePath(topic.space)}`);
-  } else if (target === 'post' && (action === 'hide' || action === 'show')) {
-    const existing = await prisma.forumPost.findUnique({ where: { id }, select: { topic: { select: { isTest: true } } } });
+    const data = action === 'close' ? { isClosed: true }
+      : action === 'open' ? { isClosed: false }
+      : action === 'hide' ? { isHidden: true }
+      : action === 'show' ? { isHidden: false }
+      : action === 'delete' ? { isDeleted: true }
+      : action === 'restore' ? { isDeleted: false }
+      : action === 'pin' ? { isPinned: true } : { isPinned: false };
+    await prisma.$transaction([
+      prisma.forumTopic.update({ where: { id }, data }),
+      prisma.auditEvent.create({ data: { actorUserId: access.user.id, event: 'FORUM_MODERATION', details: { target, id, action, reason } } }),
+    ]);
+    revalidatePath(`/forum/${forumSpacePath(existing.space)}/${id}`);
+    revalidatePath(`/forum/${forumSpacePath(existing.space)}`);
+  } else if (target === 'post' && ['hide', 'show', 'delete', 'restore'].includes(action)) {
+    const existing = await prisma.forumPost.findUnique({ where: { id }, select: { topicId: true, topic: { select: { space: true, isTest: true } } } });
     if (!existing || existing.topic.isTest !== access.isTest) return;
-    const post = await prisma.forumPost.update({
-      where: { id }, data: { isHidden: action === 'hide' },
-      select: { topic: { select: { id: true, space: true } } },
-    });
-    revalidatePath(`/forum/${forumSpacePath(post.topic.space)}/${post.topic.id}`);
+    if (action === 'delete') {
+      const opening = await prisma.forumPost.findFirst({ where: { topicId: existing.topicId }, orderBy: { createdAt: 'asc' }, select: { id: true } });
+      if (opening?.id === id) return; // Remove the whole topic instead.
+    }
+    const data = action === 'hide' ? { isHidden: true }
+      : action === 'show' ? { isHidden: false }
+      : action === 'delete' ? { isDeleted: true } : { isDeleted: false };
+    await prisma.$transaction([
+      prisma.forumPost.update({ where: { id }, data }),
+      prisma.auditEvent.create({ data: { actorUserId: access.user.id, event: 'FORUM_MODERATION', details: { target, id, topicId: existing.topicId, action, reason } } }),
+    ]);
+    revalidatePath(`/forum/${forumSpacePath(existing.topic.space)}/${existing.topicId}`);
+    revalidatePath(`/forum/${forumSpacePath(existing.topic.space)}`);
+  } else if (target === 'user' && ['suspend', 'unsuspend'].includes(action)) {
+    const subject = await prisma.portalUser.findUnique({ where: { id }, select: { role: true, isTest: true } });
+    if (!subject || id === access.user.id || (subject.role !== 'MEMBER' && !subject.isTest)) return;
+    await prisma.$transaction([
+      prisma.portalUser.update({ where: { id }, data: { forumPostingSuspended: action === 'suspend' } }),
+      prisma.auditEvent.create({ data: { actorUserId: access.user.id, event: 'FORUM_MODERATION', details: { target, id, action, reason } } }),
+    ]);
   }
   revalidatePath('/forum');
+  revalidatePath('/portal/admin/forum');
 }

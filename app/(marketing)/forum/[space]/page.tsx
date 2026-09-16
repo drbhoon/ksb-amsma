@@ -18,21 +18,21 @@ export default async function ForumSpacePage({ params, searchParams }: { params:
   const requestedPage = Number((await searchParams).page || '1');
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? Math.min(requestedPage, 1000) : 1;
   const pageSize = 20;
-  const where = { space, isHidden: false, isTest: access.isTest };
+  const where = { space, isHidden: false, isDeleted: false, isTest: access.isTest };
   const [total, topics] = await Promise.all([
     prisma.forumTopic.count({ where }),
     prisma.forumTopic.findMany({
-      where, orderBy: { updatedAt: 'desc' }, skip: (page - 1) * pageSize, take: pageSize,
-      include: { author: { select: { name: true } }, _count: { select: { posts: { where: { isHidden: false } } } } },
+      where, orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }], skip: (page - 1) * pageSize, take: pageSize,
+      include: { author: { select: { name: true } }, _count: { select: { posts: { where: { isHidden: false, isDeleted: false } } } } },
     }),
   ]);
   const label = slug === 'committee' ? FORUM_SPACES.committee : FORUM_SPACES.members;
 
   return (
-    <ForumShell title={label.title} eyebrow="Private forum" userName={access.user.name} canSeeCommittee={access.canSeeCommittee} testAccount={access.testAccount}>
+    <ForumShell title={label.title} eyebrow="Private forum" userName={access.user.name} canSeeCommittee={access.canSeeCommittee} testAccount={access.testAccount} postingSuspended={!access.canPost}>
       <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
         <p className="max-w-2xl text-stone-600">{label.description}</p>
-        <Link href={`/forum/new?space=${slug}`} className="btn-primary">Start a discussion</Link>
+        {access.canPost && <Link href={`/forum/new?space=${slug}`} className="btn-primary">Start a discussion</Link>}
       </div>
       {topics.length === 0 ? (
         <div className="membership-card p-7 text-stone-600">No discussions here yet.</div>
@@ -40,7 +40,7 @@ export default async function ForumSpacePage({ params, searchParams }: { params:
         <ul className="grid gap-3">
           {topics.map((topic) => (
             <li key={topic.id} className="membership-card p-5 sm:p-6">
-              <h2 className="text-xl font-bold text-[#273d33]"><Link href={`/forum/${slug}/${topic.id}`} className="hover:underline">{topic.title}</Link></h2>
+              <h2 className="text-xl font-bold text-[#273d33]"><Link href={`/forum/${slug}/${topic.id}`} className="hover:underline">{topic.isPinned ? 'Pinned · ' : ''}{topic.title}</Link></h2>
               <p className="mt-2 text-sm text-stone-600">{topic.author.name} · {topic.updatedAt.toLocaleDateString('en-IN')} · {Math.max(0, topic._count.posts - 1)} replies{topic.isClosed ? ' · Closed' : ''}</p>
             </li>
           ))}
