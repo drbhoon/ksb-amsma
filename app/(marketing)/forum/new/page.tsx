@@ -15,7 +15,7 @@ export default async function NewForumTopicPage({ searchParams }: { searchParams
   if (space === 'COMMITTEE' && !access.canSeeCommittee) notFound();
 
   return (
-    <ForumShell title="Start a discussion" eyebrow={space === 'COMMITTEE' ? 'Committee area' : 'Member area'} userName={access.user.name} canSeeCommittee={access.canSeeCommittee} isTest={access.isTest}>
+    <ForumShell title="Start a discussion" eyebrow={space === 'COMMITTEE' ? 'Committee area' : 'Member area'} userName={access.user.name} canSeeCommittee={access.canSeeCommittee} testAccount={access.testAccount}>
       <div className="max-w-3xl"><NewTopicForm space={slug as 'members' | 'committee'} /></div>
     </ForumShell>
   );

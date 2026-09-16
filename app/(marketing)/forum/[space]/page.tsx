@@ -29,7 +29,7 @@ export default async function ForumSpacePage({ params, searchParams }: { params:
   const label = slug === 'committee' ? FORUM_SPACES.committee : FORUM_SPACES.members;
 
   return (
-    <ForumShell title={label.title} eyebrow="Private forum" userName={access.user.name} canSeeCommittee={access.canSeeCommittee} isTest={access.isTest}>
+    <ForumShell title={label.title} eyebrow="Private forum" userName={access.user.name} canSeeCommittee={access.canSeeCommittee} testAccount={access.testAccount}>
       <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
         <p className="max-w-2xl text-stone-600">{label.description}</p>
         <Link href={`/forum/new?space=${slug}`} className="btn-primary">Start a discussion</Link>

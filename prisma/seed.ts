@@ -48,7 +48,10 @@ async function resetPreviousTestDataOnce() {
     select: { id: true, applicationNo: true },
   });
   const applicationIds = applications.map((application) => application.id);
-  const testUsers = await prisma.portalUser.findMany({ where: { isTest: true }, select: { id: true } });
+  // Keep the forum test account if it has posted in the live member area.
+  const testUsers = await prisma.portalUser.findMany({
+    where: { isTest: true, email: { not: FORUM_TEST_EMAIL } }, select: { id: true },
+  });
   const testUserIds = testUsers.map((user) => user.id);
 
   await prisma.$transaction([

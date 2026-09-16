@@ -33,7 +33,7 @@ export default async function ForumPage({ searchParams }: { searchParams: Promis
   ]);
 
   return (
-    <ForumShell title="Discussion forum" eyebrow="AMSMA community" userName={access.user.name} canSeeCommittee={access.canSeeCommittee} isTest={access.isTest}>
+    <ForumShell title="Discussion forum" eyebrow="AMSMA community" userName={access.user.name} canSeeCommittee={access.canSeeCommittee} testAccount={access.testAccount}>
       <p className="mb-8 max-w-3xl text-stone-600">A private place for AMSMA members to share experience, ask questions and work together.</p>
       <div className="grid gap-4 md:grid-cols-2">
         <Link href="/forum/members" className="membership-card p-6 transition hover:border-[#c9ad84] hover:bg-[#f8f2e7]">

@@ -26,11 +26,11 @@ export default async function ForumTopicPage({ params, searchParams }: { params:
   const where = { topicId: id, ...(access.isModerator ? {} : { isHidden: false }) };
   const [total, posts] = await Promise.all([
     prisma.forumPost.count({ where }),
-    prisma.forumPost.findMany({ where, orderBy: { createdAt: 'asc' }, skip: (page - 1) * pageSize, take: pageSize, include: { author: { select: { name: true, role: true } } } }),
+    prisma.forumPost.findMany({ where, orderBy: { createdAt: 'asc' }, skip: (page - 1) * pageSize, take: pageSize, include: { author: { select: { name: true, role: true, isTest: true } } } }),
   ]);
 
   return (
-    <ForumShell title={topic.title} eyebrow={space === 'COMMITTEE' ? 'Committee discussion' : 'Member discussion'} userName={access.user.name} canSeeCommittee={access.canSeeCommittee} isTest={access.isTest}>
+    <ForumShell title={topic.title} eyebrow={space === 'COMMITTEE' ? 'Committee discussion' : 'Member discussion'} userName={access.user.name} canSeeCommittee={access.canSeeCommittee} testAccount={access.testAccount}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <Link href={`/forum/${slug}`} className="text-sm font-bold text-[#96501f] hover:underline">← All {slug} discussions</Link>
         <div className="flex flex-wrap items-center gap-3">
@@ -54,7 +54,7 @@ export default async function ForumTopicPage({ params, searchParams }: { params:
         {posts.map((post) => <li key={post.id} className={`membership-card p-5 sm:p-7 ${post.isHidden ? 'opacity-65' : ''}`}>
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-stone-200 pb-3">
             <div>
-              <p className="font-bold text-[#273d33]">{post.author.name}{post.author.role === 'ADMIN' ? ' · Admin' : post.author.role === 'COMMITTEE' ? ' · Committee' : ''}</p>
+              <p className="font-bold text-[#273d33]">{post.author.name}{post.author.isTest ? ' · Test member' : post.author.role === 'ADMIN' ? ' · Admin' : post.author.role === 'COMMITTEE' ? ' · Committee' : ''}</p>
               <p className="mt-1 text-xs text-stone-500">{post.createdAt.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata' })} IST</p>
             </div>
             {access.isModerator && <form action={moderateForum}>
