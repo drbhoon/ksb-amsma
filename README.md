@@ -52,11 +52,9 @@ Open http://localhost:3000
 
 The site has a small, private forum at `/forum`. Active, unexpired members can use the member area. Committee users and admins can also use a separate committee area. The forum uses the existing one-time-code portal sign-in. A member account is linked to an active membership when that member asks to sign in. It is not created by a bulk import.
 
-Members can start topics, reply, search, and read older pages. Admins can hide or restore posts and topics, remove or restore content, pin topics, close or reopen replies, and pause or resume a member's posting access. Removed content is kept in the database for recovery and is not shown to members. Each moderation action is recorded in the audit log. The admin moderation page is `/portal/admin/forum`. Access is checked again for each page and each post. Expired or inactive members lose access. The one approved test address described below can use the live member area; other test portal users cannot use the forum.
+Members can start topics, reply, search, and read older pages. Admins can hide or restore posts and topics, remove or restore content, pin topics, close or reopen replies, and pause or resume a member's posting access. Removed content is kept in the database for recovery and is not shown to members. Each moderation action is recorded in the audit log. The admin moderation page is `/portal/admin/forum`. Access is checked again for each page and each post. Expired or inactive members lose access. Test portal users cannot use the forum.
 
-The forum sends no activity notices or invitations. A sign-in code is sent only when a user asks for one on the sign-in page. Keep `PORTAL_EMAIL_LOGIN_ENABLED=false` if sign-in codes must also be off. The startup seed does not send test review invitations unless `PORTAL_TEST_SEND_REVIEW_EMAILS=true` is set on purpose. Do not set that flag during forum rollout.
-
-`eshabhoon@gmail.com` is the approved forum test account. It can use the live member discussion area, so its topics and replies are visible to members. It cannot open the committee area. The seed creates this account only if the email is unused; it never changes a live account with that address. A sign-in code is sent only when the test user asks for one. Remove this explicit access exception after testing.
+The forum sends no activity notices or invitations. A sign-in code is sent only when a user asks for one on the sign-in page. Keep `PORTAL_EMAIL_LOGIN_ENABLED=false` if sign-in codes must also be off. The startup seed creates only real committee and admin accounts; it sends no mail and creates no test accounts.
 
 ## Phase 3: Membership flow — how it works
 

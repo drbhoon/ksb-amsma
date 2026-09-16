@@ -3,7 +3,6 @@ import type { PortalRole } from '@prisma/client';
 import { prisma } from './db';
 import { generateToken } from './tokens';
 import { safePortalReturnPath } from './portal-auth';
-import { FORUM_TEST_EMAIL } from '@/config/forum';
 
 const CHALLENGE_MINUTES = 15;
 const MAX_REQUESTS_PER_WINDOW = 5;
@@ -91,11 +90,7 @@ export async function createForumLoginChallenge(emailValue: string, nextValue: s
   const email = normalizePortalEmail(emailValue);
   let user = await prisma.portalUser.findUnique({ where: { email } });
 
-  if (user?.active === false) return null;
-  if (user?.isTest) {
-    if (email !== FORUM_TEST_EMAIL) return null;
-    return createChallengeForUser(user, '/forum');
-  }
+  if (user?.isTest || user?.active === false) return null;
   if (user?.role === 'MEMBER' || !user) {
     const member = await prisma.member.findFirst({
       where: { email: { equals: email, mode: 'insensitive' }, status: 'ACTIVE', expiresAt: { gt: new Date() } },

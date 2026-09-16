@@ -3,7 +3,6 @@ import 'server-only';
 import { getCurrentPortalUser } from './portal-auth';
 import { prisma } from './db';
 import type { ForumSpace } from '@prisma/client';
-import { FORUM_TEST_EMAIL } from '@/config/forum';
 
 export const FORUM_SPACES = {
   members: { value: 'MEMBERS', title: 'Member discussions', description: 'Ideas, questions and practical knowledge for active AMSMA members.' },
@@ -24,11 +23,7 @@ export function forumSpacePath(value: ForumSpace): string {
 export async function getForumAccess() {
   const user = await getCurrentPortalUser();
   if (!user) return null;
-  if (user.isTest) {
-    if (user.email.toLowerCase() !== FORUM_TEST_EMAIL) return null;
-    // This one approved test login uses the live member area, not committee data.
-    return { user, canSeeCommittee: false, isModerator: false, isTest: false, testAccount: true, canPost: !user.forumPostingSuspended };
-  }
+  if (user.isTest) return null;
   if (user.role === 'ADMIN' || user.role === 'COMMITTEE') {
     return { user, canSeeCommittee: true, isModerator: user.role === 'ADMIN', isTest: false, testAccount: false, canPost: !user.forumPostingSuspended };
   }
