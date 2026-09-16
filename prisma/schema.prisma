@@ -187,6 +187,7 @@ model ApplicationReview {
 enum PortalRole {
   COMMITTEE
   ADMIN
+  MEMBER
 }
 
 model PortalUser {
@@ -199,10 +200,14 @@ model PortalUser {
   isTest            Boolean                 @default(false)
   committeeMemberId String?                 @unique
   committeeMember   CommitteeMember?        @relation(fields: [committeeMemberId], references: [id], onDelete: SetNull)
+  memberId          String?                 @unique
+  member            Member?                 @relation(fields: [memberId], references: [id], onDelete: SetNull)
   sessions          PortalSession[]
   loginChallenges   PortalLoginChallenge[]
   adminDecisions    MembershipApplication[] @relation("AdminDecisions")
   auditEvents       AuditEvent[]
+  forumTopics       ForumTopic[]
+  forumPosts        ForumPost[]
   createdAt         DateTime                @default(now())
   updatedAt         DateTime                @updatedAt
   lastLoginAt       DateTime?
@@ -284,8 +289,49 @@ model Member {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  portalUser PortalUser?
 
   @@index([status])
+}
+
+// ============================================================
+// PRIVATE DISCUSSION FOR ACTIVE MEMBERS AND COMMITTEE
+// ============================================================
+
+enum ForumSpace {
+  MEMBERS
+  COMMITTEE
+}
+
+model ForumTopic {
+  id         String      @id @default(cuid())
+  space      ForumSpace
+  title      String      @db.VarChar(160)
+  authorId   String
+  author     PortalUser  @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  posts      ForumPost[]
+  isClosed   Boolean     @default(false)
+  isHidden   Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([space, isHidden, updatedAt])
+  @@index([authorId, createdAt])
+}
+
+model ForumPost {
+  id        String     @id @default(cuid())
+  topicId   String
+  topic     ForumTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    PortalUser @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  body      String     @db.Text
+  isHidden  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([topicId, isHidden, createdAt])
+  @@index([authorId, createdAt])
 }
 
 // ============================================================

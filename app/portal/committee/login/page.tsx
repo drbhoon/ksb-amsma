@@ -8,7 +8,7 @@ export const metadata = { title: 'Committee Login' };
 export default async function CommitteeLoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const query = await searchParams;
   const user = await getCurrentPortalUser();
-  if (user) redirect(user.isTest ? '/portal/test' : user.role === 'ADMIN' ? '/portal/admin' : '/portal');
+  if (user) redirect(user.isTest ? '/portal/test' : user.role === 'ADMIN' ? '/portal/admin' : user.role === 'MEMBER' ? '/forum' : '/portal');
   const nextPath = safePortalReturnPath(query.next || '/portal');
   const assignedReview = await getReviewLoginIdentity(nextPath, 'COMMITTEE');
   return <PortalLoginScreen portalType="COMMITTEE" nextPath={nextPath} assignedReview={assignedReview} />;

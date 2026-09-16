@@ -10,8 +10,9 @@ const codeSchema = z.object({
   code: z.string().regex(/^\d{6}$/),
 }).refine((value) => Boolean(value.email) !== Boolean(value.challengeToken));
 
-function destination(role: 'ADMIN' | 'COMMITTEE', returnPath: string, isTest: boolean): string {
+function destination(role: 'ADMIN' | 'COMMITTEE' | 'MEMBER', returnPath: string, isTest: boolean): string {
   if (isTest) return returnPath.startsWith('/review/') ? returnPath : '/portal/test';
+  if (role === 'MEMBER') return returnPath.startsWith('/forum') ? returnPath : '/forum';
   if (returnPath && returnPath !== '/portal') return returnPath;
   return role === 'ADMIN' ? '/portal/admin' : '/portal';
 }

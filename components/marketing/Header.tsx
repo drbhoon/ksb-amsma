@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: '/#responsible-extraction', label: 'Our Work' },
   { href: '/committee', label: 'Committee' },
   { href: '/resources', label: 'Resources' },
+  { href: '/forum', label: 'Forum' },
   { href: '/events', label: 'Events' },
   { href: '/blog', label: 'Blog' },
 ];

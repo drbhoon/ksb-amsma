@@ -24,6 +24,7 @@ export default async function CommitteePortalPage() {
   if (!user) redirect('/portal/committee/login?next=/portal');
   if (user.isTest) redirect('/portal/test');
   if (user.role === 'ADMIN') redirect('/portal/admin');
+  if (user.role === 'MEMBER') redirect('/forum');
   if (!user.committeeMemberId) {
     return <><Header /><main className="container-x py-16"><p>This account is not linked to a committee member.</p></main><Footer /></>;
   }

@@ -251,7 +251,9 @@ async function main() {
         },
         include: { committeeMember: true },
       });
-      for (const review of pendingNotices) {
+      // Deployment and routine seeding must never send review mail by accident.
+      // Forum rollout does not send any mail to existing members.
+      for (const review of process.env.PORTAL_TEST_SEND_REVIEW_EMAILS === 'true' ? pendingNotices : []) {
         const result = await sendReviewInvitation({
           committeeMemberEmail: review.committeeMember.email,
           committeeMemberName: review.committeeMember.name,

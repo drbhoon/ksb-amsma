@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import type { PortalRole } from '@prisma/client';
 import { prisma } from './db';
 import { generateToken } from './tokens';
 import { safePortalReturnPath } from './portal-auth';
@@ -35,7 +36,7 @@ function maskEmail(email: string): string {
 }
 
 async function createChallengeForUser(
-  user: { id: string; email: string; name: string; role: 'ADMIN' | 'COMMITTEE'; isTest: boolean; active: boolean },
+  user: { id: string; email: string; name: string; role: PortalRole; isTest: boolean; active: boolean },
   nextValue: string | undefined
 ) {
   if (!user.active) return null;
@@ -82,6 +83,30 @@ export async function createPortalLoginChallenge(
   if (!user?.active || user.role !== requiredRole) return null;
 
   return createChallengeForUser(user, nextValue);
+}
+
+/** A member account is created only after its owner requests forum access. */
+export async function createForumLoginChallenge(emailValue: string, nextValue: string | undefined) {
+  const email = normalizePortalEmail(emailValue);
+  let user = await prisma.portalUser.findUnique({ where: { email } });
+
+  if (user?.isTest || user?.active === false) return null;
+  if (user?.role === 'MEMBER' || !user) {
+    const member = await prisma.member.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' }, status: 'ACTIVE', expiresAt: { gt: new Date() } },
+      select: { id: true, contactName: true },
+    });
+    if (!member) return null;
+    user = await prisma.portalUser.upsert({
+      where: { email },
+      create: { email, name: member.contactName, role: 'MEMBER', memberId: member.id },
+      update: { name: member.contactName, memberId: member.id },
+    });
+  }
+
+  if (!user || !['ADMIN', 'COMMITTEE', 'MEMBER'].includes(user.role)) return null;
+  const next = safePortalReturnPath(nextValue);
+  return createChallengeForUser(user, next.startsWith('/forum') ? next : '/forum');
 }
 
 export async function getReviewLoginIdentity(

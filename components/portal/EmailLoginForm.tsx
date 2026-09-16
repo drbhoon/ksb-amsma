@@ -4,7 +4,7 @@ import { FormEvent, useState } from 'react';
 
 type AssignedReview = { reviewToken: string; reviewerName: string; maskedEmail: string };
 
-export function EmailLoginForm({ nextPath, portalType, assignedReview }: { nextPath: string; portalType: 'ADMIN' | 'COMMITTEE'; assignedReview?: AssignedReview | null }) {
+export function EmailLoginForm({ nextPath, portalType, assignedReview }: { nextPath: string; portalType: 'ADMIN' | 'COMMITTEE' | 'FORUM'; assignedReview?: AssignedReview | null }) {
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [codeRequested, setCodeRequested] = useState(false);

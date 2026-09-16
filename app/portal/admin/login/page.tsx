@@ -8,7 +8,7 @@ export const metadata = { title: 'Admin Login' };
 export default async function AdminLoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const query = await searchParams;
   const user = await getCurrentPortalUser();
-  if (user) redirect(user.isTest ? '/portal/test' : user.role === 'ADMIN' ? '/portal/admin' : '/portal');
+  if (user) redirect(user.isTest ? '/portal/test' : user.role === 'ADMIN' ? '/portal/admin' : user.role === 'MEMBER' ? '/forum' : '/portal');
   const nextPath = safePortalReturnPath(query.next || '/portal/admin');
   const assignedReview = await getReviewLoginIdentity(nextPath, 'ADMIN');
   return <PortalLoginScreen portalType="ADMIN" nextPath={nextPath} assignedReview={assignedReview} />;

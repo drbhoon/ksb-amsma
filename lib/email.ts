@@ -261,15 +261,15 @@ export async function sendTestEmail(to: string) {
 export async function sendPortalLogin(params: {
   email: string;
   code: string;
-  role: 'ADMIN' | 'COMMITTEE';
+  role: 'ADMIN' | 'COMMITTEE' | 'MEMBER';
   expiresAt: Date;
 }) {
-  const loginUrl = params.role === 'ADMIN' ? `${SITE}/portal/admin/login` : `${SITE}/portal/committee/login`;
+  const loginUrl = params.role === 'ADMIN' ? `${SITE}/portal/admin/login` : params.role === 'MEMBER' ? `${SITE}/forum/login` : `${SITE}/portal/committee/login`;
   const html = wrap(
     `<h2 style="font-size:20px;margin:0 0 16px;">Sign in to the AMSMA portal</h2>
      <p>Use this one-time code:</p>
      <p style="font-size:30px;font-weight:800;letter-spacing:0.18em;margin:20px 0;">${params.code}</p>
-     <p style="margin:24px 0;">${button(loginUrl, `Open ${params.role === 'ADMIN' ? 'Admin' : 'Committee'} Login`)}</p>
+     <p style="margin:24px 0;">${button(loginUrl, `Open ${params.role === 'ADMIN' ? 'Admin' : params.role === 'MEMBER' ? 'Forum' : 'Committee'} Login`)}</p>
      <p>Enter the six-digit code on the login page. Opening the page does not sign you in.</p>
      <p style="color:#6b7280;font-size:13px;">
        The code expires at

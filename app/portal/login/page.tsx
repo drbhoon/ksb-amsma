@@ -8,7 +8,7 @@ export const metadata = { title: 'Portal Login' };
 
 export default async function PortalLoginPage() {
   const user = await getCurrentPortalUser();
-  if (user) redirect(user.isTest ? '/portal/test' : user.role === 'ADMIN' ? '/portal/admin' : '/portal');
+  if (user) redirect(user.isTest ? '/portal/test' : user.role === 'ADMIN' ? '/portal/admin' : user.role === 'MEMBER' ? '/forum' : '/portal');
   return (
     <><Header /><main className="membership-surface min-h-[70vh] py-14 md:py-20">
       <div className="container-x max-w-3xl">
