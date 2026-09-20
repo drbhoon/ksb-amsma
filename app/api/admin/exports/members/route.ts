@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     ]);
     filename = `amsma-committee-${today}.csv`;
   } else if (list === 'members') {
-    const members = await prisma.member.findMany({ orderBy: [{ status: 'asc' }, { organizationName: 'asc' }] });
+    const members = await prisma.member.findMany({ where: { status: { not: 'TERMINATED' } }, orderBy: [{ status: 'asc' }, { organizationName: 'asc' }] });
     body = csv([
       ['Member number', 'Organisation', 'Contact name', 'Email', 'Phone', 'Category', 'Address', 'City', 'State', 'PAN', 'GST number', 'Crushing capacity MT/month', 'Admitted at', 'Expires at', 'Status'],
       ...members.map((member) => [member.memberNo, member.organizationName, member.contactName, member.email, member.phone, member.tier, member.address, member.city, member.state, member.pan, member.gstNumber, member.crushingCapacityMtMonth, member.admittedAt, member.expiresAt, member.status]),

@@ -24,8 +24,9 @@ export async function generateApplicationNo(): Promise<string> {
  * Generate a member number for approved+paid applicants: AMSMA-M-0001
  */
 export async function generateMemberNo(): Promise<string> {
-  const count = await prisma.member.count();
-  return `AMSMA-M-${String(count + 1).padStart(4, '0')}`;
+  const latest = await prisma.member.findFirst({ orderBy: { memberNo: 'desc' }, select: { memberNo: true } });
+  const current = Number(latest?.memberNo.match(/(\d+)$/)?.[1] || 0);
+  return `AMSMA-M-${String(current + 1).padStart(4, '0')}`;
 }
 
 /** Count approvals and rejections for an application. */
