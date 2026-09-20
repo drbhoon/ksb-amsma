@@ -1,8 +1,9 @@
 import Link from 'next/link';
 
-export function AdminPortalNav({ current }: { current: 'applications' | 'resources' | 'forum' }) {
+export function AdminPortalNav({ current }: { current: 'applications' | 'members' | 'resources' | 'forum' }) {
   const links = [
     { href: '/portal/admin', label: 'Membership applications', key: 'applications' },
+    { href: '/portal/admin/members', label: 'Approved members', key: 'members' },
     { href: '/portal/admin/resources', label: 'Resource documents', key: 'resources' },
     { href: '/portal/admin/forum', label: 'Forum moderation', key: 'forum' },
   ] as const;
