@@ -14,12 +14,6 @@ const schema = z.object({
 const GENERIC_MESSAGE = 'If this email is approved, a sign-in code has been sent.';
 
 export async function POST(request: Request) {
-  if (process.env.PORTAL_EMAIL_LOGIN_ENABLED !== 'true') {
-    return NextResponse.json(
-      { error: 'Portal email login is not active yet.' },
-      { status: 503 }
-    );
-  }
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });

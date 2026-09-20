@@ -174,8 +174,17 @@ export function emailMode(): EmailMode {
   return 'off';
 }
 
-async function send(to: string, subject: string, html: string, options?: { replyTo?: string }) {
-  const mode = emailMode();
+async function send(
+  to: string,
+  subject: string,
+  html: string,
+  options?: { replyTo?: string; approvedLogin?: boolean }
+) {
+  // A sign-in email is user-initiated and is created only after the portal has
+  // confirmed an active admin, committee, or member account. Allow that one
+  // message type to reach its approved recipient without enabling unrelated
+  // automatic emails.
+  const mode: EmailMode = options?.approvedLogin ? 'live' : emailMode();
 
   if (mode === 'off') {
     console.warn(
@@ -278,7 +287,7 @@ export async function sendPortalLogin(params: {
      </p>`,
     'Your one-time AMSMA portal sign-in code'
   );
-  return send(params.email, 'Your AMSMA portal sign-in code', html);
+  return send(params.email, 'Your AMSMA portal sign-in code', html, { approvedLogin: true });
 }
 
 // ============ Phase 1: Newsletter welcome ============

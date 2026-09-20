@@ -39,8 +39,8 @@ Open http://localhost:3000
    - `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`
    - `NEXT_PUBLIC_SITE_URL` = production URL
    - `PORTAL_ADMIN_EMAIL`, `PORTAL_LOGIN_SECRET`, `CRON_SECRET`
-   - keep `PORTAL_EMAIL_LOGIN_ENABLED=false` until dummy-address testing is ready
-   - a mail provider and either `EMAIL_REDIRECT_TO` for safe testing or `EMAIL_LIVE=true` for real delivery
+   - configure a mail provider for approved users' requested sign-in codes
+   - use `EMAIL_REDIRECT_TO` for safe testing or `EMAIL_LIVE=true` for other real delivery
 3. Deploy — build runs `prisma generate && next build`.
 4. **Run seed once** after first deploy: `railway run npm run db:seed`
 5. Configure Razorpay webhook in dashboard:
@@ -54,7 +54,7 @@ The site has a small, private forum at `/forum`. Active, unexpired members can u
 
 Members can start topics, reply, search, and read older pages. Admins can hide or restore posts and topics, remove or restore content, pin topics, close or reopen replies, and pause or resume a member's posting access. Removed content is kept in the database for recovery and is not shown to members. Each moderation action is recorded in the audit log. The admin moderation page is `/portal/admin/forum`. Access is checked again for each page and each post. Expired or inactive members lose access. Test portal users cannot use the forum.
 
-The forum sends no activity notices or invitations. A sign-in code is sent only when a user asks for one on the sign-in page. Keep `PORTAL_EMAIL_LOGIN_ENABLED=false` if sign-in codes must also be off. The startup seed creates only real committee and admin accounts; it sends no mail and creates no test accounts.
+The forum sends no activity notices or invitations. A sign-in code is sent only when an active, approved user asks for one on the sign-in page. Unknown, inactive, expired, and unapproved users receive no email. The startup seed creates only real committee and admin accounts; it sends no mail and creates no test accounts.
 
 ## Phase 3: Membership flow — how it works
 
@@ -123,7 +123,6 @@ Applicant clicks the payment link, Razorpay Checkout opens with the correct amou
 ## Production go-live checklist
 
 - [ ] Replace the two remaining `example.com` committee placeholders and confirm that all eight inboxes can receive one-time login messages
-- [ ] Keep `PORTAL_EMAIL_LOGIN_ENABLED=false` until dummy-address testing is approved
 - [ ] Keep `EMAIL_REDIRECT_TO` set during testing; use `EMAIL_LIVE=true` only after committee approval
 - [ ] Run the review-deadline job at least hourly
 - [ ] Resend: verify `amsma.in` sending domain
