@@ -130,7 +130,7 @@ export async function POST(req: Request) {
       });
 
       // Only the proposer and seconder review at this stage. Their endorsements
-      // also count toward the later five-of-eight committee quorum.
+      // also count toward the later committee quorum.
       const tokenExpiry = reviewTokenExpiryFromNow();
       await tx.applicationReview.createMany({
         data: [proposer, seconder].map((a) => ({

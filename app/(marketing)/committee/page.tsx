@@ -7,6 +7,7 @@ const MEMBERS = [
   ['rahul-vasant-ralegaonkar.jpg','Rahul Ralegaonkar','Founder Member'],
   ['srikant-annavarapu.jpg','Srikant Annavarapu','Founder Member'],
   ['rudra-mohan-sahu.jpg','Mr. Rudra Mohan Sahu','Secretary'],
+  ['anil-kapoor.png','Lt Gen Dr Anil Kapoor, AVSM, VSM, PhD (Retired)','Committee Member'],
 ];
 
 export const metadata = { title: 'Managing Committee', description: 'Meet the Managing Committee that guides AMSMA.' };

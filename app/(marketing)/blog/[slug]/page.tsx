@@ -4,15 +4,17 @@ import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const post = await prisma.blogPost.findUnique({ where: { slug: params.slug } });
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = await prisma.blogPost.findUnique({ where: { slug } });
   if (!post) return { title: 'Not found' };
   return { title: post.title, description: post.excerpt ?? undefined };
 }
 
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const post = await prisma.blogPost.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     include: { coverImage: { select: { id: true } } },
   });
 

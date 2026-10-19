@@ -49,7 +49,7 @@ These come from Schedule C of the AMSMA Rules & Regulations and must not drift:
 
 - **Fees & tier eligibility** live in `config/membership.ts` — do not modify
   without a Managing Committee resolution passed by 2/3 majority.
-- **Interim approval quorum:** 5 of 8 committee members. This is pending final governance confirmation.
+- **Interim approval quorum:** 5 of 9 committee members. This is pending final governance confirmation.
 - **Rejection threshold:** 4 of 8 rejections mathematically block five approvals.
 - **Payment window after approval:** 14 days.
 - **Proposer & Seconder:** both required, both must have active committee portal accounts. Their endorsements count toward quorum.
@@ -70,7 +70,7 @@ concurrent applications.
 
 ## Configuration files — edit before production
 
-- **`config/committee-members.ts`** — the 8 founding committee members. These are
+- **`config/committee-members.ts`** — the 9 Managing Committee members. These are
   working addresses recovered from `main`. Two entries still use `example.com` placeholders. Confirm all addresses before live email delivery.
   They are safe during testing only because outbound mail is gated behind
   `EMAIL_REDIRECT_TO` / `EMAIL_LIVE` (see "Email is fail-safe by design").
@@ -83,7 +83,7 @@ concurrent applications.
 cp .env.example .env.local     # edit — at minimum set DATABASE_URL
 npm install
 npm run db:migrate             # apply prisma/migrations (or db:push for a scratch DB)
-npm run db:seed                # populate 8 founding committee members
+npm run db:seed                # populate the Managing Committee
 npm run dev                    # http://localhost:3000
 ```
 
@@ -93,7 +93,7 @@ Project `amsma-website` deploys from `main` of `github.com/drbhoon/ksb-amsma`.
 
 Schema and seed are handled automatically by `railway.toml`:
 `prisma migrate deploy` applies `prisma/migrations/0_init` (all 9 tables), then
-`db:seed` upserts the 8 committee members. The seed is idempotent, so it is safe
+`db:seed` upserts the Managing Committee members. The seed is idempotent, so it is safe
 on every boot; a seed failure is logged but does not block startup.
 
 Variables to set (the five marked `[SET NOW]` in `.env.example` are enough for
@@ -119,7 +119,7 @@ until the domain is verified. Testing therefore runs without email and without
 payments, using two mechanisms added for the purpose:
 
 **1. Test console — `/dev/links?key=<DEV_ACCESS_KEY>`**
-Lists every application with its 8 committee review links, the payment link, the
+Lists every application with its committee review links, the payment link, the
 live vote tally, and an environment panel (committee seeded? email mode? payment
 mode?). This is how the committee review step is reached while email is down.
 404s unless `DEV_ACCESS_KEY` is set. Turn it off before the site goes public.
@@ -133,7 +133,7 @@ automatically once `PAYMENTS_ENABLED=true`.
 
 ### Email is fail-safe by design
 
-`config/committee-members.ts` holds the eight approved addresses of real committee
+`config/committee-members.ts` holds the approved addresses of real committee
 members. Outbound mail is therefore OFF unless explicitly switched on:
 
 | Env | Behaviour |
@@ -166,7 +166,7 @@ only reach the `EMAIL_REDIRECT_TO` addresses whatever `to` says.
 
 ### Test walkthrough
 
-1. Open `/dev/links?key=…` — confirm "Committee seeded 8 / 8". If it shows 0, the
+1. Open `/dev/links?key=…` — confirm "Committee seeded 9 / 9". If it shows 0, the
    seed did not run and no application can be submitted.
 2. Copy any two committee emails from that page.
 3. Submit at `/membership/apply` using those two as Proposer and Seconder.
@@ -222,7 +222,7 @@ app/
 │   │   └── webhook/          POST — server-side webhook reconciliation
 │   └── newsletter/subscribe/ POST — Phase 1
 config/
-├── committee-members.ts      SINGLE SOURCE — 8 founders + quorum math
+├── committee-members.ts      SINGLE SOURCE — committee + quorum math
 └── membership.ts             SINGLE SOURCE — 4 tiers + fees
 lib/
 ├── db.ts, email.ts, tokens.ts, membership.ts, razorpay.ts

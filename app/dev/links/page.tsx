@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { MEMBERSHIP_TIERS, formatInr } from '@/config/membership';
-import { APPROVAL_QUORUM, REJECTION_THRESHOLD } from '@/config/committee-members';
+import { APPROVAL_QUORUM, APPROVERS, REJECTION_THRESHOLD } from '@/config/committee-members';
 import { emailMode, emailProvider } from '@/lib/email';
 import { siteUrl } from '@/lib/site-url';
 import { paymentsEnabled, testPaymentsEnabled } from '@/lib/membership';
@@ -68,7 +68,7 @@ export default async function DevLinksPage({ searchParams }: Props) {
 
         <Card title="Environment">
           <dl className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <Stat k="Committee seeded" v={`${committee.length} / 8`} bad={committee.length !== 8} />
+            <Stat k="Committee seeded" v={`${committee.length} / ${APPROVERS.length}`} bad={committee.length !== APPROVERS.length} />
             <Stat k="Approvals needed" v={String(APPROVAL_QUORUM)} />
             <Stat k="Rejections block at" v={String(REJECTION_THRESHOLD)} />
             <Stat k="Newsletter signups" v={String(subscriberCount)} />

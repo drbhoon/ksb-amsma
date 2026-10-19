@@ -22,6 +22,7 @@ enum CommitteeRole {
   SECRETARY
   TREASURER
   FOUNDER_MEMBER
+  COMMITTEE_MEMBER
 }
 
 model CommitteeMember {

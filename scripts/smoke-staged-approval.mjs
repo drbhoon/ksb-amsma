@@ -1,6 +1,6 @@
 // Destructive end-to-end test for a disposable database only.
 // Tests: submit -> two sponsor endorsements -> 48-hour committee stage ->
-// five-of-eight quorum -> admin confirmation -> payment pending.
+// committee quorum -> admin confirmation -> payment pending.
 
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
@@ -45,7 +45,7 @@ await prisma.membershipApplication.deleteMany({});
 const committee = await prisma.committeeMember.findMany({
   where: { canApproveApplications: true }, orderBy: { name: 'asc' },
 });
-ok(committee.length === 8, `eligible committee count = ${committee.length}`);
+ok(committee.length === 9, `eligible committee count = ${committee.length}`);
 const proposer = committee[0];
 const seconder = committee[1];
 
@@ -86,7 +86,7 @@ application = await prisma.membershipApplication.findUnique({
   where: { id: application.id }, include: { reviews: { include: { committeeMember: true } } },
 });
 ok(application.status === 'COMMITTEE_REVIEW', `after sponsors = ${application.status}`);
-ok(application.reviews.length === 8, `total review records = ${application.reviews.length}`);
+ok(application.reviews.length === 9, `total review records = ${application.reviews.length}`);
 ok(application.reviews.filter((r) => r.decision === 'APPROVE').length === 2, 'sponsor endorsements count as two approvals');
 ok(Boolean(application.committeeReviewDeadlineAt), '48-hour committee deadline exists');
 

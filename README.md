@@ -25,7 +25,7 @@ Next.js 16 (App Router) · React 19 · TypeScript · Tailwind · Prisma + Postgr
 cp .env.example .env.local  # then edit
 npm install
 npm run db:push             # push Prisma schema to database
-npm run db:seed             # populate 8 founding committee members
+npm run db:seed             # populate the Managing Committee
 npm run dev
 ```
 
@@ -76,11 +76,11 @@ On successful submit:
 
 ### 2. Sponsor endorsements and committee review
 
-Every reviewer must sign in. The review link identifies the application but does not grant access by itself. The proposer and seconder act first. Their endorsements count toward quorum. After both endorse, the other six eligible committee members receive review emails and a 48-hour committee window starts.
+Every reviewer must sign in. The review link identifies the application but does not grant access by itself. The proposer and seconder act first. Their endorsements count toward quorum. After both endorse, the other eligible committee members receive review emails and a 48-hour committee window starts.
 
 Interim vote logic:
-- **Approvals ≥ 5/8** → `ADMIN_REVIEW`
-- **Rejections ≥ 4/8** → `ADMIN_REVIEW` with a rejection result
+- **Approvals ≥ 5/9** → `ADMIN_REVIEW`
+- **Rejections ≥ 5/9** → `ADMIN_REVIEW` with a rejection result
 - No quorum after 48 hours → `PAUSED_NO_QUORUM`; an admin can start another 48-hour window
 - The admin confirms the recorded result and cannot reverse it through the dashboard
 
@@ -101,7 +101,7 @@ Applicant clicks the payment link, Razorpay Checkout opens with the correct amou
 
 ## Configuration files (edit these before production)
 
-- **`config/committee-members.ts`** — the 8 founding committee members. Six working addresses came from `main`. Two `example.com` placeholders still require confirmed inboxes before live use.
+- **`config/committee-members.ts`** — the nine Managing Committee members and approved portal email addresses.
 - **`config/membership.ts`** — fee amounts and eligibility. Do not modify without a Managing Committee resolution (2/3 majority per Rules).
 
 ## Key numbering conventions
@@ -116,13 +116,13 @@ Applicant clicks the payment link, Razorpay Checkout opens with the correct amou
 3. Set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `NEXT_PUBLIC_RAZORPAY_KEY_ID` to Razorpay **test-mode keys**
 4. Run `npm run dev`.
 5. Use only dummy addresses in `EMAIL_REDIRECT_TO`. Do not enable live committee delivery during testing.
-6. Run `npm run test:workflow` to test sponsor review, five-of-eight quorum, admin confirmation, access control, the no-quorum pause, and a new 48-hour window.
+6. Run `npm run test:workflow` to test sponsor review, committee quorum, admin confirmation, access control, the no-quorum pause, and a new 48-hour window.
 7. For a manual payment test, use Razorpay test card `4111 1111 1111 1111`, any future expiry, and any CVV.
 8. On success, a member record is created and a receipt email is sent.
 
 ## Production go-live checklist
 
-- [ ] Replace the two remaining `example.com` committee placeholders and confirm that all eight inboxes can receive one-time login messages
+- [ ] Confirm that all committee inboxes can receive one-time login messages
 - [ ] Keep `EMAIL_REDIRECT_TO` set during testing; use `EMAIL_LIVE=true` only after committee approval
 - [ ] Run the review-deadline job at least hourly
 - [ ] Resend: verify `amsma.in` sending domain

@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 import nodemailer, { type Transporter } from 'nodemailer';
 import { siteUrl } from './site-url';
+import { APPROVERS, APPROVAL_QUORUM } from '@/config/committee-members';
 
 /**
  * Sender address.
@@ -541,8 +542,8 @@ export async function sendApplicationConfirmation(params: {
            <td style="padding:6px 12px;">${params.tierLabel}</td></tr>
      </table>
      <p>Your proposer and seconder will review the application first. After both endorse it,
-        the 48-hour Managing Committee review will start. The current interim quorum is five
-        approvals from eight eligible members.</p>
+        the 48-hour Managing Committee review will start. The current interim quorum is
+        ${APPROVAL_QUORUM} approvals from ${APPROVERS.length} eligible members.</p>
      <p>We will notify you as soon as a decision has been reached. If approved, you
         will receive a payment link to activate your membership.</p>`,
     `Application ${params.applicationNo} received`

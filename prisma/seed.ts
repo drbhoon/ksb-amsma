@@ -11,6 +11,7 @@ const roleMap: Record<string, CommitteeRole> = {
   'Secretary': 'SECRETARY',
   'Treasurer': 'TREASURER',
   'Founder Member': 'FOUNDER_MEMBER',
+  'Committee Member': 'COMMITTEE_MEMBER',
 };
 
 async function main() {

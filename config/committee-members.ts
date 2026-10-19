@@ -1,12 +1,12 @@
 /**
- * AMSMA Founding Committee — single source of truth.
+ * AMSMA Managing Committee — single source of truth.
  *
  * Used by:
  *   - prisma/seed.ts        (creates committee rows and the portal allowlist)
  *   - app/(marketing)/page.tsx  (homepage committee cards)
  *   - app/(marketing)/committee/page.tsx (committee page, Phase 2)
  *
- * The eight email addresses below were approved by the user on 14 September 2026.
+ * The committee email addresses below were approved by the user.
  * Do not replace them with older addresses recovered from another branch or file.
  * Email delivery remains controlled separately by the fail-safe settings in
  * lib/email.ts.
@@ -19,7 +19,8 @@ export type CommitteeRole =
   | 'Vice President'
   | 'Secretary'
   | 'Treasurer'
-  | 'Founder Member';
+  | 'Founder Member'
+  | 'Committee Member';
 
 export interface CommitteeMember {
   slug: string;                 // URL slug for /committee/[slug] (Phase 2)
@@ -104,12 +105,21 @@ export const COMMITTEE_MEMBERS: CommitteeMember[] = [
     email: 'rudra.sahu@jagannathstones.com',
     canApproveApplications: true,
   },
+  {
+    slug: 'anil-kapoor',
+    initials: 'AK',
+    name: 'Lt Gen Dr Anil Kapoor',
+    role: 'Committee Member',
+    title: 'AVSM, VSM, PhD (Retired)',
+    email: 'anilkapoor2012@yahoo.co.in',
+    canApproveApplications: true,
+  },
 ];
 
 /** Committee members eligible to vote on applications */
 export const APPROVERS = COMMITTEE_MEMBERS.filter((m) => m.canApproveApplications);
 
-/** Interim governance setting confirmed for testing: 5 approvals from 8. */
+/** Interim governance setting: 5 approvals from the eligible committee. */
 export const APPROVAL_QUORUM = 5;
 
 /** Number of rejections that mathematically block approval */

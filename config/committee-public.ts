@@ -11,4 +11,5 @@ export const PUBLIC_COMMITTEE_MEMBERS = [
   { slug: 'rahul-ralegaonkar', name: 'Prof. Rahul V. Ralegaonkar' },
   { slug: 'srikant-annavarapu', name: 'Mr. Srikant Annavarapu' },
   { slug: 'rudra-mohan-sahu', name: 'Mr. Rudra Mohan Sahu' },
+  { slug: 'anil-kapoor', name: 'Lt Gen Dr Anil Kapoor' },
 ] as const;
